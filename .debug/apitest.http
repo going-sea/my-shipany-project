@@ -1,0 +1,13 @@
+@baseUrl = http://localhost:3000
+
+### Add config
+POST {{baseUrl}}/api/add-config
+Content-Type: application/json
+
+{
+  "name": "foo",
+  "value": "bar"
+}
+
+### Get configs
+POST {{baseUrl}}/api/get-configs
