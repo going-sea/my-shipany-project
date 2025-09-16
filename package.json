@@ -11,11 +11,7 @@
     "db:migrate": "npx drizzle-kit migrate --config=src/core/db/config.ts",
     "db:push": "npx drizzle-kit push --config=src/core/db/config.ts",
     "db:studio": "npx drizzle-kit studio --config=src/core/db/config.ts",
-    "auth:generate": "npx @better-auth/cli generate --config=src/core/auth/index.ts",
-    "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "cf:upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
-    "cf:typegen": "wrangler types src/types/cloudflare.d.ts --env-interface CloudflareEnv "
+    "auth:generate": "npx @better-auth/cli generate --config=src/core/auth/index.ts"
   },
   "dependencies": {
     "@ai-sdk/replicate": "^1.0.8",
@@ -27,7 +23,6 @@
     "@hookform/resolvers": "^5.2.1",
     "@libsql/client": "^0.15.9",
     "@next/third-parties": "^15.5.3",
-    "@opennextjs/cloudflare": "^1.8.0",
     "@openrouter/ai-sdk-provider": "^1.2.0",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-avatar": "^1.1.10",
