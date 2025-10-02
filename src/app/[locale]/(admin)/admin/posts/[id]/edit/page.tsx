@@ -15,6 +15,7 @@ import {
   TaxonomyType,
 } from "@/shared/services/taxonomy";
 import { Empty } from "@/shared/blocks/common";
+import { Crumb } from "@/shared/types/blocks/common";
 
 export default async function PostEditPage({
   params,
@@ -32,6 +33,12 @@ export default async function PostEditPage({
   if (!user) {
     return <Empty message="no auth" />;
   }
+
+  const crumbs: Crumb[] = [
+    { title: "Admin", url: "/admin" },
+    { title: "Posts", url: "/admin/posts" },
+    { title: "Edit Post", is_active: true },
+  ];
 
   const categories = await getTaxonomies({
     type: TaxonomyType.CATEGORY,
@@ -136,7 +143,7 @@ export default async function PostEditPage({
 
   return (
     <>
-      <Header />
+      <Header crumbs={crumbs} />
       <Main>
         <MainHeader title="Edit Post" />
         <FormCard form={form} className="md:max-w-xl" />

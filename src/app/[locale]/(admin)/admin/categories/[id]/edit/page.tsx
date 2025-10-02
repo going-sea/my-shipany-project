@@ -8,6 +8,8 @@ import {
   UpdateTaxonomy,
 } from "@/shared/services/taxonomy";
 import { getUserInfo } from "@/shared/services/user";
+import { Empty } from "@/shared/blocks/common";
+import { Crumb } from "@/shared/types/blocks/common";
 
 export default async function CategoryEditPage({
   params,
@@ -18,17 +20,23 @@ export default async function CategoryEditPage({
 
   const category = await findTaxonomy({ id });
   if (!category) {
-    return "Category not found";
+    return <Empty message="Category not found" />;
   }
 
   const user = await getUserInfo();
   if (!user) {
-    return "no auth";
+    return <Empty message="no auth" />;
   }
 
   if (!user || category.userId !== user.id) {
-    return "access denied";
+    return <Empty message="access denied" />;
   }
+
+  const crumbs: Crumb[] = [
+    { title: "Admin", url: "/admin" },
+    { title: "Categories", url: "/admin/categories" },
+    { title: "Edit Category", is_active: true },
+  ];
 
   const form: Form = {
     fields: [
@@ -104,7 +112,7 @@ export default async function CategoryEditPage({
 
   return (
     <>
-      <Header />
+      <Header crumbs={crumbs} />
       <Main>
         <MainHeader title="Edit Category" />
         <FormCard form={form} className="md:max-w-xl" />

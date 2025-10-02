@@ -3,7 +3,12 @@ import { db } from "@/core/db";
 import { and, count, desc, eq } from "drizzle-orm";
 import { NewSubscription } from "./subscription";
 import { NewCredit } from "./credit";
-export type Order = typeof order.$inferSelect;
+import { appendUserToResult, User } from "./user";
+import { PaymentType } from "@/extensions/payment";
+
+export type Order = typeof order.$inferSelect & {
+  user?: User;
+};
 export type NewOrder = typeof order.$inferInsert;
 export type UpdateOrder = Partial<
   Omit<NewOrder, "id" | "orderNo" | "createdAt">
@@ -34,11 +39,15 @@ export async function createOrder(newOrder: NewOrder) {
 export async function getOrders({
   userId,
   status,
+  getUser,
+  paymentType,
   page = 1,
   limit = 30,
 }: {
   userId?: string;
   status?: string;
+  getUser?: boolean;
+  paymentType?: PaymentType;
   page?: number;
   limit?: number;
 } = {}): Promise<Order[]> {
@@ -48,12 +57,17 @@ export async function getOrders({
     .where(
       and(
         userId ? eq(order.userId, userId) : undefined,
-        status ? eq(order.status, status) : undefined
+        status ? eq(order.status, status) : undefined,
+        paymentType ? eq(order.paymentType, paymentType) : undefined
       )
     )
     .orderBy(desc(order.createdAt))
     .limit(limit)
     .offset((page - 1) * limit);
+
+  if (getUser) {
+    return appendUserToResult(result);
+  }
 
   return result;
 }
@@ -63,9 +77,11 @@ export async function getOrders({
  */
 export async function getOrdersCount({
   userId,
+  paymentType,
   status,
 }: {
   userId?: string;
+  paymentType?: PaymentType;
   status?: string;
 } = {}): Promise<number> {
   const [result] = await db()
@@ -74,7 +90,8 @@ export async function getOrdersCount({
     .where(
       and(
         userId ? eq(order.userId, userId) : undefined,
-        status ? eq(order.status, status) : undefined
+        status ? eq(order.status, status) : undefined,
+        paymentType ? eq(order.paymentType, paymentType) : undefined
       )
     );
 

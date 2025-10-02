@@ -6,12 +6,19 @@ import { getUserInfo } from "@/shared/services/user";
 import { addPost, NewPost, PostType } from "@/shared/services/post";
 import { PostStatus } from "@/shared/services/post";
 import { Empty } from "@/shared/blocks/common";
+import { Crumb } from "@/shared/types/blocks/common";
 
 export default async function PostAddPage() {
   const user = await getUserInfo();
   if (!user) {
     return <Empty message="no auth" />;
   }
+
+  const crumbs: Crumb[] = [
+    { title: "Admin", url: "/admin" },
+    { title: "Posts", url: "/admin/posts" },
+    { title: "Add Post", is_active: true },
+  ];
 
   const form: Form = {
     fields: [
@@ -99,7 +106,7 @@ export default async function PostAddPage() {
 
   return (
     <>
-      <Header />
+      <Header crumbs={crumbs} />
       <Main>
         <MainHeader title="Add Post" />
         <FormCard form={form} className="md:max-w-xl" />

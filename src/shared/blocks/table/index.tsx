@@ -16,6 +16,7 @@ import { Copy } from "./copy";
 import { type TableColumn } from "@/shared/types/blocks/table";
 import { type Pagination } from "@/shared/types/blocks/common";
 import { Dropdown } from "./dropdown";
+import { User } from "./user";
 
 export function Table({
   columns,
@@ -107,11 +108,20 @@ export function Table({
                         className={column.className}
                       />
                     );
+                  } else if (column.type === "user") {
+                    cellContent = (
+                      <User
+                        placeholder={column.placeholder}
+                        value={value}
+                        metadata={column.metadata}
+                        className={column.className}
+                      />
+                    );
                   }
 
                   return (
                     <TableCell key={iidx} className={column.className}>
-                      {cellContent}
+                      {cellContent || column.placeholder}
                     </TableCell>
                   );
                 })}

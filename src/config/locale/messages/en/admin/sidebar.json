@@ -8,7 +8,7 @@
       },
       "url": "/admin"
     },
-    "show_trigger": true
+    "show_trigger": false
   },
   "main_navs": [
     {
@@ -88,7 +88,7 @@
         }
       ]
     },
-    "show_email": true,
+    "show_email": false,
     "show_signout": true,
     "signout_callback": "/"
   },
@@ -106,11 +106,29 @@
           "url": "https://github.com/shipanyai/shipany-template-two",
           "icon": "Github",
           "target": "_blank"
+        },
+        {
+          "title": "Twitter",
+          "url": "https://twitter.com/shipanyai",
+          "icon": "Twitter",
+          "target": "_blank"
+        },
+        {
+          "title": "Discord",
+          "url": "https://discord.gg/HQNnrzjZQS",
+          "icon": "RiDiscordFill",
+          "target": "_blank"
+        },
+        {
+          "title": "Email",
+          "url": "mailto:support@shipany.codes",
+          "icon": "Mail",
+          "target": "_blank"
         }
       ]
     },
     "show_theme": true,
-    "show_locale": true
+    "show_locale": false
   },
   "variant": "sidebar"
 }

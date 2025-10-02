@@ -25,14 +25,13 @@ export function FormCard({
         </CardHeader>
       )}
       {form.description && (
-        <CardDescription>{form.description}</CardDescription>
+        <CardDescription className="px-6">{form.description}</CardDescription>
       )}
       {form && (
         <CardContent>
           <Form {...form} />
         </CardContent>
       )}
-      {form.submit && <CardFooter></CardFooter>}
     </Card>
   );
 }

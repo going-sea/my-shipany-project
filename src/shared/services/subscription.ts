@@ -1,8 +1,11 @@
 import { subscription } from "@/config/db/schema";
 import { db } from "@/core/db";
 import { and, count, desc, eq } from "drizzle-orm";
+import { appendUserToResult, User } from "./user";
 
-export type Subscription = typeof subscription.$inferSelect;
+export type Subscription = typeof subscription.$inferSelect & {
+  user?: User;
+};
 export type NewSubscription = typeof subscription.$inferInsert;
 export type UpdateSubscription = Partial<
   Omit<NewSubscription, "id" | "subscriptionNo" | "createdAt">
@@ -55,11 +58,15 @@ export async function findSubscriptionBySubscriptionNo(subscriptionNo: string) {
 export async function getSubscriptions({
   userId,
   status,
+  interval,
+  getUser,
   page = 1,
   limit = 30,
 }: {
   userId?: string;
   status?: string;
+  getUser?: boolean;
+  interval?: string;
   page?: number;
   limit?: number;
 }): Promise<Subscription[]> {
@@ -69,12 +76,17 @@ export async function getSubscriptions({
     .where(
       and(
         userId ? eq(subscription.userId, userId) : undefined,
-        status ? eq(subscription.status, status) : undefined
+        status ? eq(subscription.status, status) : undefined,
+        interval ? eq(subscription.interval, interval) : undefined
       )
     )
     .orderBy(desc(subscription.createdAt))
     .limit(limit)
     .offset((page - 1) * limit);
+
+  if (getUser) {
+    return appendUserToResult(result);
+  }
 
   return result;
 }
@@ -85,9 +97,11 @@ export async function getSubscriptions({
 export async function getSubscriptionsCount({
   userId,
   status,
+  interval,
 }: {
   userId?: string;
   status?: string;
+  interval?: string;
 } = {}): Promise<number> {
   const [result] = await db()
     .select({ count: count() })
@@ -95,7 +109,8 @@ export async function getSubscriptionsCount({
     .where(
       and(
         userId ? eq(subscription.userId, userId) : undefined,
-        status ? eq(subscription.status, status) : undefined
+        status ? eq(subscription.status, status) : undefined,
+        interval ? eq(subscription.interval, interval) : undefined
       )
     );
 

@@ -3,11 +3,17 @@ import { TableCard } from "@/shared/blocks/table";
 import { type Table } from "@/shared/types/blocks/table";
 import { getUsers } from "@/shared/services/user";
 import { getTranslations } from "next-intl/server";
+import { Crumb } from "@/shared/types/blocks/common";
 
 export default async function AdminUsersPage() {
   const t = await getTranslations("admin.user.list");
 
   const users = await getUsers();
+
+  const crumbs: Crumb[] = [
+    { title: "Admin", url: "/admin" },
+    { title: "Users", is_active: true },
+  ];
 
   const table: Table = {
     columns: [
@@ -23,7 +29,7 @@ export default async function AdminUsersPage() {
 
   return (
     <>
-      <Header />
+      <Header crumbs={crumbs} />
       <Main>
         <MainHeader title={t("title")} />
         <TableCard table={table} />

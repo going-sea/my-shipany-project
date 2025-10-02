@@ -1,7 +1,7 @@
 import { Header, Main, MainHeader } from "@/shared/blocks/dashboard";
 import { TableCard } from "@/shared/blocks/table";
 import { type Table } from "@/shared/types/blocks/table";
-import { Button } from "@/shared/types/blocks/common";
+import { Button, Crumb } from "@/shared/types/blocks/common";
 import {
   getTaxonomies,
   getTaxonomiesCount,
@@ -18,6 +18,11 @@ export default async function CategoriesPage({
   const { page: pageNum, pageSize } = await searchParams;
   const page = pageNum || 1;
   const limit = pageSize || 30;
+
+  const crumbs: Crumb[] = [
+    { title: "Admin", url: "/admin" },
+    { title: "Categories", is_active: true },
+  ];
 
   const total = await getTaxonomiesCount({
     type: TaxonomyType.CATEGORY,
@@ -88,7 +93,7 @@ export default async function CategoriesPage({
 
   return (
     <>
-      <Header />
+      <Header crumbs={crumbs} />
       <Main>
         <MainHeader title="Categories" actions={actions} />
         <TableCard table={table} />

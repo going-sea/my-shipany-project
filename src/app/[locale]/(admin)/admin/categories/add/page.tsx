@@ -9,12 +9,20 @@ import {
 } from "@/shared/services/taxonomy";
 import { getUuid } from "@/shared/lib/hash";
 import { getUserInfo } from "@/shared/services/user";
+import { Crumb } from "@/shared/types/blocks/common";
+import { Empty } from "@/shared/blocks/common";
 
 export default async function CategoryAddPage() {
   const user = await getUserInfo();
   if (!user) {
-    return "no auth";
+    return <Empty message="no auth" />;
   }
+
+  const crumbs: Crumb[] = [
+    { title: "Admin", url: "/admin" },
+    { title: "Categories", url: "/admin/categories" },
+    { title: "Add Category", is_active: true },
+  ];
 
   const form: Form = {
     fields: [
@@ -92,7 +100,7 @@ export default async function CategoryAddPage() {
 
   return (
     <>
-      <Header />
+      <Header crumbs={crumbs} />
       <Main>
         <MainHeader title="Add Category" />
         <FormCard form={form} className="md:max-w-xl" />

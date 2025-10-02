@@ -4,8 +4,11 @@ import { Order } from "./order";
 import { getSnowId, getUuid } from "@/shared/lib/hash";
 import { and, asc, desc, eq, gt, sum, or, isNull, count } from "drizzle-orm";
 import { PaymentType } from "@/extensions/payment";
+import { appendUserToResult, getUserByUserIds, User } from "./user";
 
-export type Credit = typeof credit.$inferSelect;
+export type Credit = typeof credit.$inferSelect & {
+  user?: User;
+};
 export type NewCredit = typeof credit.$inferInsert;
 export type UpdateCredit = Partial<
   Omit<NewCredit, "id" | "transactionNo" | "createdAt">
@@ -76,12 +79,14 @@ export async function getCredits({
   userId,
   status,
   transactionType,
+  getUser = false,
   page = 1,
   limit = 30,
 }: {
   userId?: string;
   status?: CreditStatus;
   transactionType?: CreditTransactionType;
+  getUser?: boolean;
   page?: number;
   limit?: number;
 }): Promise<Credit[]> {
@@ -100,6 +105,10 @@ export async function getCredits({
     .orderBy(desc(credit.createdAt))
     .limit(limit)
     .offset((page - 1) * limit);
+
+  if (getUser) {
+    return appendUserToResult(result);
+  }
 
   return result;
 }

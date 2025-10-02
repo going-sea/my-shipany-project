@@ -3,14 +3,12 @@
 import { cn } from "@/shared/lib/utils";
 import { ScrollArea } from "@/shared/components/ui/scroll-area";
 import { ScrollBar } from "@/shared/components/ui/scroll-area";
-import {
-  Nav,
-  NavItem,
-  Button as ButtonType,
-} from "@/shared/types/blocks/common";
-import { Link } from "@/core/i18n/navigation";
+import { Button as ButtonType, Tab } from "@/shared/types/blocks/common";
+import { Link, usePathname, useRouter } from "@/core/i18n/navigation";
 import { Button } from "@/shared/components/ui/button";
 import { SmartIcon } from "@/shared/blocks/common/smart-icon";
+import { TabsTrigger, Tabs, TabsList } from "@/shared/components/ui/tabs";
+import { useEffect, useState } from "react";
 
 export function MainHeader({
   title,
@@ -20,9 +18,29 @@ export function MainHeader({
 }: {
   title?: string;
   description?: string;
-  tabs?: NavItem[];
+  tabs?: Tab[];
   actions?: ButtonType[];
 }) {
+  const url = typeof window !== "undefined" ? window.location.href : "";
+  const router = useRouter();
+  const [tabName, setTabName] = useState(
+    tabs?.find((tab) => tab.is_active)?.name || ""
+  );
+  const [tab, setTab] = useState({} as Tab);
+
+  useEffect(() => {
+    if (tabName) {
+      setTab(tabs?.find((tab) => tab.name === tabName) || ({} as Tab));
+    }
+  }, [tabName]);
+
+  useEffect(() => {
+    console.log("tab", tab);
+    if (tab && tab.url && tab.url !== url) {
+      router.push(tab.url);
+    }
+  }, [tab]);
+
   return (
     <div className="flex flex-col">
       <div className="flex items-center justify-between mb-6">
@@ -53,20 +71,15 @@ export function MainHeader({
         <div className="relative mb-8">
           <ScrollArea className="w-full lg:max-w-none">
             <div className="space-x-2 flex items-center">
-              {tabs?.map((tab) => (
-                <Link key={tab.title || tab.title} href={tab.url || ""}>
-                  <div
-                    className={cn(
-                      "px-4 py-1 rounded-full border text-sm text-muted-foreground block duration-150",
-                      tab.is_active
-                        ? "bg-primary text-primary-foreground font-bold"
-                        : "hover:bg-primary hover:text-primary-foreground"
-                    )}
-                  >
-                    {tab.title}
-                  </div>
-                </Link>
-              ))}
+              <Tabs value={tabName} onValueChange={setTabName}>
+                <TabsList>
+                  {tabs.map((tab, idx) => (
+                    <TabsTrigger key={idx} value={tab.name || ""}>
+                      {tab.title}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
             </div>
             <ScrollBar orientation="horizontal" className="invisible" />
           </ScrollArea>

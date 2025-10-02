@@ -4,8 +4,9 @@ import { type Table } from "@/shared/types/blocks/table";
 import { getUserInfo } from "@/shared/services/user";
 import { getPosts, getPostsCount, Post } from "@/shared/services/post";
 import { PostType } from "@/shared/services/post";
-import { Button } from "@/shared/types/blocks/common";
+import { Button, Crumb } from "@/shared/types/blocks/common";
 import { getTaxonomies, TaxonomyType } from "@/shared/services/taxonomy";
+import { Empty } from "@/shared/blocks/common";
 
 export default async function PostsPage({
   searchParams,
@@ -18,8 +19,13 @@ export default async function PostsPage({
 
   const user = await getUserInfo();
   if (!user) {
-    return "no auth";
+    return <Empty message="no auth" />;
   }
+
+  const crumbs: Crumb[] = [
+    { title: "Admin", url: "/admin" },
+    { title: "Posts", is_active: true },
+  ];
 
   const total = await getPostsCount({
     type: PostType.ARTICLE,
@@ -34,7 +40,6 @@ export default async function PostsPage({
   const table: Table = {
     columns: [
       { name: "title", title: "Title" },
-      { name: "description", title: "Description" },
       {
         name: "categories",
         title: "Categories",
@@ -100,7 +105,7 @@ export default async function PostsPage({
 
   return (
     <>
-      <Header />
+      <Header crumbs={crumbs} />
       <Main>
         <MainHeader title="Posts" actions={actions} />
         <TableCard table={table} />

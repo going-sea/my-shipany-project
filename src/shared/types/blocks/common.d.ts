@@ -44,6 +44,10 @@ export interface Nav {
   className?: string;
 }
 
+export interface Crumb extends NavItem {}
+
+export interface Tab extends NavItem {}
+
 // button props for button component
 export interface Button extends NavItem {
   size?: "default" | "sm" | "lg" | "icon";

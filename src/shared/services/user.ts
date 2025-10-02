@@ -1,6 +1,6 @@
 import { user } from "@/config/db/schema";
 import { db } from "@/core/db";
-import { desc } from "drizzle-orm";
+import { desc, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
 import { auth } from "@/core/auth";
 import { getRemainingCredits } from "./credit";
@@ -33,6 +33,15 @@ export async function getUsers({
   return result;
 }
 
+export async function getUserByUserIds(userIds: string[]) {
+  const result = await db()
+    .select()
+    .from(user)
+    .where(inArray(user.id, userIds));
+
+  return result;
+}
+
 export async function getUserInfo() {
   const signUser = await getSignUser();
 
@@ -51,4 +60,19 @@ export async function getSignUser() {
   });
 
   return session?.user;
+}
+
+export async function appendUserToResult(result: any) {
+  if (!result || !result.length) {
+    return result;
+  }
+
+  const userIds = result.map((item: any) => item.userId);
+  const users = await getUserByUserIds(userIds);
+  result = result.map((item: any) => {
+    const user = users.find((user: any) => user.id === item.userId);
+    return { ...item, user };
+  });
+
+  return result;
 }

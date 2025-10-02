@@ -43,7 +43,8 @@ export function Nav({ nav, className }: { nav: NavType; className?: string }) {
                     asChild
                     tooltip={item?.title}
                     className={`${
-                      item?.is_active || pathname.endsWith(item?.url as string)
+                      item?.is_active ||
+                      (item?.url && pathname.startsWith(item?.url as string))
                         ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
                         : ""
                     }`}

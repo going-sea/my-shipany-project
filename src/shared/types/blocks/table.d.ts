@@ -3,7 +3,7 @@ import { Pagination } from "./common";
 export interface TableColumn {
   name?: string;
   title?: string;
-  type?: "copy" | "image" | "time" | "label" | "dropdown";
+  type?: "copy" | "image" | "time" | "label" | "dropdown" | "user";
   placeholder?: string;
   metadata?: any;
   className?: string;
