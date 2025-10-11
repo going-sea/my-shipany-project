@@ -27,6 +27,10 @@ const nextConfig = {
       },
     ];
   },
+  experimental: {
+    turbopackFileSystemCacheForDev: true,
+  },
+  reactCompiler: true,
 };
 
 const withMDX = createMDX({
