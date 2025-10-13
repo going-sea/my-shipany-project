@@ -14,7 +14,7 @@ export function db() {
   }
 
   // Singleton mode: reuse existing connection (good for traditional servers)
-  if (envConfigs.db_singleton_enabled) {
+  if (envConfigs.db_singleton_enabled === "true") {
     // Return existing instance if already initialized
     if (dbInstance) {
       return dbInstance;
