@@ -6,6 +6,7 @@ import { envConfigs } from "@/config";
 import { getAdsService } from "@/shared/services/ads";
 import { getAnalyticsService } from "@/shared/services/analytics";
 import { Noto_Sans_Mono, Merriweather, JetBrains_Mono } from "next/font/google";
+import NextTopLoader from "nextjs-toploader";
 
 const notoSansMono = Noto_Sans_Mono({
   subsets: ["latin"],
@@ -95,6 +96,17 @@ export default async function RootLayout({
         {analyticsHeadScripts}
       </head>
       <body suppressHydrationWarning>
+        <NextTopLoader
+          color="#6466F1"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={true}
+          easing="ease"
+          speed={200}
+        />
+
         {children}
 
         {/* inject ads body scripts */}
