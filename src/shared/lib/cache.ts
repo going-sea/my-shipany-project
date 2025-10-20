@@ -9,13 +9,13 @@ export const cacheGet = (key: string): string | null => {
 
   let valueArr = valueWithExpires.split(":");
   if (!valueArr || valueArr.length < 2) {
-    return null;
+    return valueWithExpires;
   }
 
   const expiresAt = Number(valueArr[0]);
   const currTimestamp = getTimestamp();
 
-  if (expiresAt !== -1 && expiresAt < currTimestamp) {
+  if (expiresAt > 0 && expiresAt < currTimestamp) {
     // value expired
     cacheRemove(key);
 
@@ -30,7 +30,12 @@ export const cacheGet = (key: string): string | null => {
 
 // set data to cache
 // expiresAt: absolute timestamp, -1 means no expire
-export const cacheSet = (key: string, value: string, expiresAt: number) => {
+export const cacheSet = (key: string, value: string, expiresAt: number = 0) => {
+  if (!expiresAt) {
+    localStorage.setItem(key, value);
+    return;
+  }
+
   const valueWithExpires = expiresAt + ":" + value;
 
   localStorage.setItem(key, valueWithExpires);

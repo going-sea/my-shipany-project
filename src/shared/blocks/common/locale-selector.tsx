@@ -12,6 +12,7 @@ import { useLocale } from "next-intl";
 import { usePathname, useRouter } from "@/core/i18n/navigation";
 import { Button } from "@/shared/components/ui/button";
 import { useEffect, useState } from "react";
+import { cacheSet } from "@/shared/lib/cache";
 
 export function LocaleSelector({
   type = "icon",
@@ -30,7 +31,7 @@ export function LocaleSelector({
   const handleSwitchLanguage = (value: string) => {
     if (value !== currentLocale) {
       // Update localStorage to sync with locale detector
-      localStorage.setItem("locale", value);
+      cacheSet("locale", value);
       router.push(pathname, {
         locale: value,
       });

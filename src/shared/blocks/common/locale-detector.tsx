@@ -51,6 +51,7 @@ export function LocaleDetector() {
   const switchToLocale = useCallback(
     (locale: string) => {
       router.replace(pathname, { locale });
+      cacheSet(PREFERRED_LOCALE_KEY, locale);
       setShowBanner(false);
     },
     [router, pathname]
@@ -70,7 +71,7 @@ export function LocaleDetector() {
 
     // Check if user has dismissed the banner or already set a preference
     const dismissed = isDismissed();
-    const preferredLocale = localStorage.getItem(PREFERRED_LOCALE_KEY);
+    const preferredLocale = cacheGet(PREFERRED_LOCALE_KEY);
 
     // If user has previously clicked to switch locale, auto-switch to that preference
     if (preferredLocale && preferredLocale !== currentLocale) {
