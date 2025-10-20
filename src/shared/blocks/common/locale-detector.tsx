@@ -94,21 +94,56 @@ export function LocaleDetector() {
     }
   }, [currentLocale, switchToLocale]);
 
-  // Adjust header position when banner is shown
+  // Adjust header and main content position when banner is shown
   useEffect(() => {
     if (showBanner && bannerRef.current) {
       const bannerHeight = bannerRef.current.offsetHeight;
+
+      // Adjust header if exists
       const header = document.querySelector("header");
       if (header) {
         header.style.top = `${bannerHeight}px`;
       }
+
+      // Adjust sidebar container (fixed positioned sidebar)
+      const sidebarContainer = document.querySelector(
+        '[data-slot="sidebar-container"]'
+      );
+      if (sidebarContainer) {
+        (sidebarContainer as HTMLElement).style.top = `${bannerHeight}px`;
+        (sidebarContainer as HTMLElement).style.height =
+          `calc(100vh - ${bannerHeight}px)`;
+      }
+
+      // Adjust sidebar wrapper (for dashboard/sidebar layouts)
+      const sidebarWrapper = document.querySelector(
+        '[data-slot="sidebar-wrapper"]'
+      );
+      if (sidebarWrapper) {
+        (sidebarWrapper as HTMLElement).style.paddingTop = `${bannerHeight}px`;
+      }
     }
 
     return () => {
-      // Reset header position when component unmounts or banner is hidden
+      // Reset positions when component unmounts or banner is hidden
       const header = document.querySelector("header");
       if (header) {
         header.style.top = "0px";
+      }
+
+      const sidebarContainer = document.querySelector(
+        '[data-slot="sidebar-container"]'
+      );
+      if (sidebarContainer) {
+        (sidebarContainer as HTMLElement).style.top = "0px";
+        (sidebarContainer as HTMLElement).style.height = "100vh";
+      }
+
+      const sidebarWrapper = document.querySelector(
+        '[data-slot="sidebar-wrapper"]'
+      );
+      if (sidebarWrapper) {
+        (sidebarWrapper as HTMLElement).style.paddingTop = "0px";
       }
     };
   }, [showBanner]);
@@ -122,10 +157,28 @@ export function LocaleDetector() {
   const handleDismiss = () => {
     setDismissed();
     setShowBanner(false);
+
     // Reset header position
     const header = document.querySelector("header");
     if (header) {
       header.style.top = "0px";
+    }
+
+    // Reset sidebar container
+    const sidebarContainer = document.querySelector(
+      '[data-slot="sidebar-container"]'
+    );
+    if (sidebarContainer) {
+      (sidebarContainer as HTMLElement).style.top = "0px";
+      (sidebarContainer as HTMLElement).style.height = "100vh";
+    }
+
+    // Reset sidebar wrapper padding
+    const sidebarWrapper = document.querySelector(
+      '[data-slot="sidebar-wrapper"]'
+    );
+    if (sidebarWrapper) {
+      (sidebarWrapper as HTMLElement).style.paddingTop = "0px";
     }
   };
 

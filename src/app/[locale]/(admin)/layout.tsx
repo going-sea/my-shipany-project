@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { DashboardLayout } from "@/shared/blocks/dashboard/layout";
 import { Sidebar as SidebarType } from "@/shared/types/blocks/dashboard";
 import { requireAdminAccess } from "@/core/rbac/permission";
+import { LocaleDetector } from "@/shared/blocks/common";
 
 /**
  * Admin layout to manage datas
@@ -27,5 +28,10 @@ export default async function AdminLayout({
 
   const sidebar: SidebarType = t.raw("sidebar");
 
-  return <DashboardLayout sidebar={sidebar}>{children}</DashboardLayout>;
+  return (
+    <DashboardLayout sidebar={sidebar}>
+      <LocaleDetector />
+      {children}
+    </DashboardLayout>
+  );
 }
