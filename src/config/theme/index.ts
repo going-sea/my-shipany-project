@@ -1,3 +1,3 @@
-export const themeNames = ['default', 'magic'];
+export const themeNames = ['default'];
 
 export const defaultTheme = 'default';

@@ -1,5 +1,5 @@
 import { envConfigs } from '@/config';
-import { defaultTheme, themeNames } from '@/config/theme';
+import { defaultTheme } from '@/config/theme';
 
 /**
  * get active theme
@@ -7,7 +7,7 @@ import { defaultTheme, themeNames } from '@/config/theme';
 export function getActiveTheme(): string {
   const theme = envConfigs.theme as string;
 
-  if (themeNames.includes(theme)) {
+  if (theme) {
     return theme;
   }
 
@@ -25,7 +25,7 @@ export async function getThemePage(pageName: string, theme?: string) {
     const module = await import(`@/themes/${loadTheme}/pages/${pageName}`);
     return module.default;
   } catch (error) {
-    console.error(
+    console.log(
       `Failed to load page "${pageName}" from theme "${theme}":`,
       error
     );
@@ -58,7 +58,7 @@ export async function getThemeLayout(layoutName: string, theme?: string) {
     const module = await import(`@/themes/${loadTheme}/layouts/${layoutName}`);
     return module.default;
   } catch (error) {
-    console.error(
+    console.log(
       `Failed to load layout "${layoutName}" from theme "${theme}":`,
       error
     );
