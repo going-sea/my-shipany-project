@@ -20,6 +20,7 @@ export interface ContextValue {
   isShowPaymentModal: boolean;
   setIsShowPaymentModal: (show: boolean) => void;
   configs: Record<string, string>;
+  fetchUserCredits: () => Promise<void>;
 }
 
 const AppContext = createContext({} as ContextValue);
@@ -118,6 +119,7 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
         isShowPaymentModal,
         setIsShowPaymentModal,
         configs,
+        fetchUserCredits,
       }}
     >
       {children}

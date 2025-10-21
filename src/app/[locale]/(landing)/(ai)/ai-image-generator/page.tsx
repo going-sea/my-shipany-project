@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { ImageGenerator } from '@/shared/blocks/generator/image-generator';
+import { ImageGenerator } from '@/shared/blocks/generator/image';
 import { getMetadata } from '@/shared/lib/seo';
 import { CTA, FAQ, Hero, Showcases } from '@/themes/default/blocks';
 

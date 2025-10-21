@@ -454,3 +454,36 @@ export const userRole = pgTable(
     index('idx_user_role_user_expires').on(table.userId, table.expiresAt),
   ]
 );
+
+export const aiTask = pgTable(
+  'ai_task',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    mediaType: text('media_type').notNull(),
+    provider: text('provider').notNull(),
+    model: text('model').notNull(),
+    prompt: text('prompt').notNull(),
+    options: text('options'),
+    status: text('status').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    deletedAt: timestamp('deleted_at'),
+    taskId: text('task_id'), // provider task id
+    taskInfo: text('task_info'), // provider task info
+    taskResult: text('task_result'), // provider task result
+    costCredits: integer('cost_credits').notNull().default(0),
+  },
+  (table) => [
+    // Composite: Query user's AI tasks by status
+    // Can also be used for: WHERE userId = ? (left-prefix)
+    index('idx_ai_task_user_media_type').on(table.userId, table.mediaType),
+    // Composite: Query user's AI tasks by media type and provider
+    // Can also be used for: WHERE mediaType = ? AND provider = ? (left-prefix)
+    index('idx_ai_task_media_type_status').on(table.mediaType, table.status),
+  ]
+);

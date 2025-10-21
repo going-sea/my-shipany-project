@@ -6,9 +6,9 @@ export interface AIConfigs {
 }
 
 /**
- * ai generate content type
+ * ai media type
  */
-export enum AIGenerateType {
+export enum AIMediaType {
   MUSIC = 'music',
   IMAGE = 'image',
   VIDEO = 'video',
@@ -16,47 +16,65 @@ export enum AIGenerateType {
   SPEECH = 'speech',
 }
 
-/**
- * AI generate request
- */
-export interface AIGenerateRequest {
-  provider: string;
-  mediaType: AIGenerateType;
-  model: string;
+export interface AISong {
+  id?: string;
+  createTime?: Date;
+  audioUrl: string;
+  imageUrl: string;
+  duration: number;
   prompt: string;
+  title: string;
+  tags: string;
+  style: string;
+  model?: string;
+  artist?: string;
+  album?: string;
+}
+
+/**
+ * AI generate params
+ */
+export interface AIGenerateParams {
+  mediaType: AIMediaType;
+  prompt: string;
+  model?: string;
+  // custom options
   options?: any;
   // receive notify result
-  callbackUrl: string;
+  callbackUrl?: string;
   // is return stream
   stream?: boolean;
   // is async
   async?: boolean;
 }
 
-/**
- * AI generate task result
- */
-export interface AIGenerateResult {
-  success: boolean;
-  error?: string;
-  taskId?: string;
-  status?: string;
-  provider: string;
-  providerResult?: any;
+export enum AITaskStatus {
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  SUCCESS = 'success',
+  FAILED = 'failed',
 }
 
 /**
- * AI query task request
+ * AI task info
  */
-export interface AIQueryRequest {
-  provider?: string;
-  taskId: string;
+export interface AITaskInfo {
+  songs?: AISong[];
+  status?: string; // provider task status
+  errorCode?: string;
+  errorMessage?: string;
+  createTime?: Date;
 }
 
 /**
- * AI query task result
+ * AI task result
  */
-export interface AIQueryResult {}
+export interface AITaskResult {
+  taskStatus: AITaskStatus;
+  taskId: string; // provider task id
+  taskInfo?: AITaskInfo;
+  taskResult?: any; // raw result from provider
+}
 
 /**
  * AI Provider provide AI functions
@@ -69,10 +87,10 @@ export interface AIProvider {
   configs: AIConfigs;
 
   // generate content
-  generate(request: AIGenerateRequest): Promise<AIGenerateResult>;
+  generate({ params }: { params: AIGenerateParams }): Promise<AITaskResult>;
 
   // query task
-  query?(request: AIQueryRequest): Promise<AIQueryResult>;
+  query?({ taskId }: { taskId: string }): Promise<AITaskResult>;
 }
 
 /**
@@ -102,9 +120,9 @@ export class AIManager {
     return this.providers.map((p) => p.name);
   }
 
-  // get all types
-  getGenerateTypes(): string[] {
-    return Object.values(AIGenerateType);
+  // get all media types
+  getMediaTypes(): string[] {
+    return Object.values(AIMediaType);
   }
 
   getDefaultProvider(): AIProvider | undefined {
@@ -117,47 +135,58 @@ export class AIManager {
   }
 
   // generate content
-  generate(request: AIGenerateRequest): Promise<AIGenerateResult> {
-    let defaultProvider = this.getDefaultProvider();
-
-    if (request.provider) {
-      const provider = this.getProvider(request.provider);
-      if (!provider) {
-        throw new Error(`AI provider '${request.provider}' not found`);
+  generate({
+    params,
+    provider,
+  }: {
+    params: AIGenerateParams;
+    provider?: string;
+  }): Promise<AITaskResult> {
+    if (provider) {
+      const providerInstance = this.getProvider(provider);
+      if (!providerInstance) {
+        throw new Error(`AI provider '${provider}' not found`);
       }
-
-      defaultProvider = provider;
+      return providerInstance.generate({ params });
     }
 
+    const defaultProvider = this.getDefaultProvider();
     if (!defaultProvider) {
       throw new Error('No AI provider configured');
     }
 
-    return defaultProvider.generate(request);
+    return defaultProvider.generate({ params });
   }
 
   // query content
-  query(request: AIQueryRequest): Promise<AIQueryResult> {
-    let defaultProvider = this.getDefaultProvider();
-
-    if (request.provider) {
-      const provider = this.getProvider(request.provider);
-      if (!provider) {
-        throw new Error(`AI provider '${request.provider}' not found`);
+  query({
+    taskId,
+    provider,
+  }: {
+    taskId: string;
+    provider?: string;
+  }): Promise<AITaskResult> {
+    if (provider) {
+      const providerInstance = this.getProvider(provider);
+      if (!providerInstance) {
+        throw new Error(`AI provider '${provider}' not found`);
       }
-
-      defaultProvider = provider;
+      if (!providerInstance.query) {
+        throw new Error(`AI provider '${provider}' no query method`);
+      }
+      return providerInstance.query({ taskId });
     }
 
+    const defaultProvider = this.getDefaultProvider();
     if (!defaultProvider) {
       throw new Error('No AI provider configured');
     }
 
     if (!defaultProvider.query) {
-      throw new Error(`AI provider '${request.provider}' no query method`);
+      throw new Error(`AI provider '${defaultProvider.name}' no query method`);
     }
 
-    return defaultProvider.query(request);
+    return defaultProvider.query({ taskId });
   }
 }
 

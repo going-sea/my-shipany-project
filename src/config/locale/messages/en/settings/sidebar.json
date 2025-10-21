@@ -7,5 +7,9 @@
     "security": "Security",
     "credits": "Credits",
     "apikeys": "API Keys"
+  },
+  "top_nav": {
+    "activity": "Activity",
+    "settings": "Settings"
   }
 }

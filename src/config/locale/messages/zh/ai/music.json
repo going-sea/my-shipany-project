@@ -1,0 +1,32 @@
+{
+  "metadata": {
+    "title": "AI 音乐生成器",
+    "description": "使用 AI 音乐模型生成音乐，支持音乐到音乐和文本到音乐。"
+  },
+  "page": {
+    "title": "AI 音乐生成器",
+    "description": "使用 AI 音乐模型生成音乐，支持音乐到音乐和文本到音乐。"
+  },
+  "generator": {
+    "prompt": "提示词",
+    "prompt_placeholder": "罗密欧与朱丽叶的爱情故事",
+    "generate": "生成音乐",
+    "loading": "加载中...",
+    "generating": "生成中...",
+    "sign_in_to_generate": "登录生成音乐",
+    "credits_cost": "消耗 {credits} 积分",
+    "credits_remaining": "剩余 {credits} 积分",
+    "buy_credits": "购买积分",
+    "generation_progress": "生成进度",
+    "time_cost": "这可能需要 2-3 分钟...",
+    "generated_song": "已生成歌曲",
+    "ready_to_play": "准备播放",
+    "audio_generating": "音频生成中...",
+    "generating_song": "正在生成歌曲...",
+    "waiting_generation": "请稍候，我们正在创建您的杰作",
+    "no_song_generated": "没有生成歌曲",
+    "downloading": "下载中...",
+    "download_success": "下载成功",
+    "download_failed": "下载失败"
+  }
+}

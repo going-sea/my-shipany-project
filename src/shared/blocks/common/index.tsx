@@ -23,3 +23,5 @@ export * from './markdown-preview';
 export * from './markdown-editor';
 
 export * from '../sign/sign-user';
+
+export * from './audio-player';

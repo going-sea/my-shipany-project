@@ -7,5 +7,9 @@
     "security": "安全设置",
     "credits": "积分",
     "apikeys": "API 密钥"
+  },
+  "top_nav": {
+    "activity": "活动",
+    "settings": "设置"
   }
 }

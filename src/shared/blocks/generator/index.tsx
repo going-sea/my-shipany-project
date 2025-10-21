@@ -1,2 +1,2 @@
-export * from './music-generator';
-export * from './image-generator';
+export * from './music';
+export * from './image';

@@ -1,0 +1,10 @@
+{
+  "title": "Activity",
+  "nav": {
+    "tasks": "AI Tasks"
+  },
+  "top_nav": {
+    "activity": "Activity",
+    "settings": "Settings"
+  }
+}

@@ -1,5 +1,11 @@
 import { respData, respErr } from '@/shared/lib/resp';
 import { getAIService } from '@/shared/services/ai';
+import {
+  findAITaskById,
+  UpdateAITask,
+  updateAITaskById,
+} from '@/shared/services/ai_task';
+import { getUserInfo } from '@/shared/services/user';
 
 export async function POST(req: Request) {
   try {
@@ -8,18 +14,51 @@ export async function POST(req: Request) {
       return respErr('invalid params');
     }
 
-    const provider = 'kie';
+    const user = await getUserInfo();
+    if (!user) {
+      return respErr('no auth, please sign in');
+    }
+
+    const task = await findAITaskById(taskId);
+    if (!task || !task.taskId) {
+      return respErr('task not found');
+    }
+
+    if (task.userId !== user.id) {
+      return respErr('no permission');
+    }
 
     const aiService = await getAIService();
+    const aiProvider = aiService.getProvider(task.provider);
+    if (!aiProvider) {
+      return respErr('invalid ai provider');
+    }
 
-    const result = await aiService.query({
-      provider,
-      taskId,
+    const result = await aiProvider?.query?.({
+      taskId: task.taskId,
     });
 
-    return respData(result);
+    if (!result?.taskStatus) {
+      return respErr('query ai task failed');
+    }
+
+    // update ai task
+    const updateAITask: UpdateAITask = {
+      status: result.taskStatus,
+      taskInfo: result.taskInfo ? JSON.stringify(result.taskInfo) : null,
+      taskResult: result.taskResult ? JSON.stringify(result.taskResult) : null,
+    };
+    if (updateAITask.taskInfo !== task.taskInfo) {
+      await updateAITaskById(task.id, updateAITask);
+    }
+
+    task.status = updateAITask.status || '';
+    task.taskInfo = updateAITask.taskInfo || null;
+    task.taskResult = updateAITask.taskResult || null;
+
+    return respData(task);
   } catch (e: any) {
-    console.log('query failed');
+    console.log('ai query failed', e);
     return respErr(e.message);
   }
 }

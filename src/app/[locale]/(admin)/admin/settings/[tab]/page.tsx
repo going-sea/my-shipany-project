@@ -148,6 +148,7 @@ export default async function SettingsPage({
           <FormCard
             key={form.title}
             title={form.title}
+            description={form.description}
             form={form}
             className="mb-8 md:max-w-xl"
           />

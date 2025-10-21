@@ -13,10 +13,12 @@ import {
   Play,
   User,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { useSession } from '@/core/auth/client';
 import { Link } from '@/core/i18n/navigation';
+import { AISong, AITaskStatus } from '@/extensions/ai';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import {
@@ -40,7 +42,7 @@ import { Textarea } from '@/shared/components/ui/textarea';
 import { useAppContext } from '@/shared/contexts/app';
 import { cn } from '@/shared/lib/utils';
 
-interface SunoSongData {
+interface SongData {
   id: string;
   audioUrl: string;
   sourceAudioUrl: string;
@@ -74,11 +76,14 @@ interface SongGeneratorProps {
 }
 
 export function MusicGenerator({ className, srOnlyTitle }: SongGeneratorProps) {
-  const { user, isCheckSign, setIsShowSignModal } = useAppContext();
+  const t = useTranslations('ai.music');
+  const { user, isCheckSign, setIsShowSignModal, fetchUserCredits } =
+    useAppContext();
 
   // Form state
-  const [customMode, setCustomMode] = useState(false);
+  const [provider, setProvider] = useState('kie');
   const [model, setModel] = useState('V5');
+  const [customMode, setCustomMode] = useState(false);
   const [title, setTitle] = useState('');
   const [style, setStyle] = useState('');
   const [instrumental, setInstrumental] = useState(false);
@@ -101,6 +106,13 @@ export function MusicGenerator({ className, srOnlyTitle }: SongGeneratorProps) {
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Client-side mounting state to prevent hydration mismatch
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Task polling
   const pollTaskStatus = async (taskId: string) => {
     try {
@@ -108,15 +120,16 @@ export function MusicGenerator({ className, srOnlyTitle }: SongGeneratorProps) {
       if (generationStartTime) {
         const elapsedTime = Date.now() - generationStartTime;
         if (elapsedTime > 180000) {
-          setIsGenerating(false);
           setProgress(0);
+          setIsGenerating(false);
           setGenerationStartTime(null);
-          toast.error('Song generation timed out. Please try again.');
+          toast.error('Generate music timed out. Please try again.');
           return true; // Stop polling
         }
       }
 
-      const response = await fetch('/api/ai/query', {
+      // request api to query task
+      const resp = await fetch('/api/ai/query', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -124,148 +137,80 @@ export function MusicGenerator({ className, srOnlyTitle }: SongGeneratorProps) {
         body: JSON.stringify({ taskId }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to query task status');
+      if (!resp.ok) {
+        throw new Error(`request failed with status: ${resp.status}`);
       }
 
-      const { code, message, data } = await response.json();
+      const { code, message, data } = await resp.json();
       if (code !== 0) {
-        throw new Error(message || 'Failed to query task status');
+        throw new Error(message);
       }
 
-      if (data) {
-        const { status, response: responseData } = data;
+      const { status, taskInfo } = data;
+      if (!status || !taskInfo) {
+        throw new Error('Query task info failed');
+      }
 
-        // Handle ERROR status (any status containing ERROR)
-        if (status && status.includes('ERROR')) {
-          setIsGenerating(false);
-          setProgress(0);
-          setGenerationStartTime(null);
+      const task = JSON.parse(taskInfo);
+      const { errorCode, errorMessage, songs } = task;
+      if (errorCode || errorMessage) {
+        throw new Error(errorMessage);
+      }
 
-          let errorMessage = 'Song generation failed';
-          if (status === 'SENSITIVE_WORD_ERROR') {
-            errorMessage =
-              'Generation failed due to sensitive content. Please modify your prompt and try again.';
-          } else {
-            errorMessage = `Generation failed: ${status
-              .replace('_ERROR', '')
-              .toLowerCase()
-              .replace('_', ' ')}`;
-          }
+      // handle task status
 
-          toast.error(errorMessage);
-          throw new Error(errorMessage);
-        }
-
-        // Handle TEXT_SUCCESS - show title and cover
-        if (status === 'TEXT_SUCCESS') {
-          setProgress(60);
-          if (responseData?.sunoData && responseData.sunoData.length > 0) {
-            const songs = responseData.sunoData.map((song: SunoSongData) => ({
-              id: song.id,
-              title: song.title || title || 'Generated Song',
-              duration: song.duration || 0,
-              audioUrl: '', // Not available yet
-              imageUrl: song.imageUrl,
-              artist: 'Suno AI',
-              style: song.tags || style || 'AI Generated',
-              status: 'text_success',
-              prompt: song.prompt,
-            }));
-            setGeneratedSongs(songs);
-          }
-          return false; // Continue polling
-        }
-
-        // Handle FIRST_SUCCESS - show songs with audio, but continue polling for all songs
-        if (status === 'FIRST_SUCCESS') {
-          setProgress(85);
-          if (responseData?.sunoData && responseData.sunoData.length > 0) {
-            const allSongs = responseData.sunoData.map(
-              (song: SunoSongData) => ({
-                id: song.id,
-                title: song.title || title || 'Generated Song',
-                duration: song.duration || 0,
-                audioUrl: song.audioUrl || '', // Keep empty string for songs without audio yet
-                imageUrl: song.imageUrl,
-                artist: 'Suno AI',
-                style: song.tags || style || 'AI Generated',
-                status: song.audioUrl ? 'first_success' : 'generating',
-                prompt: song.prompt,
-              })
-            );
-
-            setGeneratedSongs(allSongs);
-
-            // Check if all songs have audio
-            const songsWithAudio = responseData.sunoData.filter(
-              (song: SunoSongData) => song.audioUrl
-            );
-            const totalSongs = responseData.sunoData.length;
-
-            if (songsWithAudio.length === totalSongs) {
-              // All songs have audio, we can stop polling
-              setProgress(100);
-              setIsGenerating(false);
-              setGenerationStartTime(null);
-              toast.success(`All ${totalSongs} songs generated successfully!`);
-              return true; // Stop polling
-            } else {
-              // Some songs still generating audio, continue polling
-              toast.success(
-                `${songsWithAudio.length}/${totalSongs} songs ready, generating remaining...`
-              );
-              return false; // Continue polling
-            }
-          }
-          return false; // Continue polling if no data
-        }
-
-        // Handle final SUCCESS
-        if (status === 'SUCCESS') {
-          if (responseData?.sunoData && responseData.sunoData.length > 0) {
-            const completeSongs = responseData.sunoData.map(
-              (song: SunoSongData) => ({
-                id: song.id,
-                title: song.title || title || 'Generated Song',
-                duration: song.duration || 0,
-                audioUrl: song.audioUrl || '',
-                imageUrl: song.imageUrl,
-                artist: 'Suno AI',
-                style: song.tags || style || 'AI Generated',
-                status: 'success',
-                prompt: song.prompt,
-              })
-            );
-            setGeneratedSongs(completeSongs);
-
-            const songsWithAudio = completeSongs.filter(
-              (song: GeneratedSong) => song.audioUrl
-            );
-            const totalSongs = completeSongs.length;
-            toast.success(
-              `Generation completed! ${songsWithAudio.length}/${totalSongs} songs with audio.`
-            );
-          }
-          setProgress(100);
-          setIsGenerating(false);
-          setGenerationStartTime(null);
-          return true;
-        }
-
-        // Handle FAILED status
-        if (status === 'FAILED' || status === 'failed') {
-          setIsGenerating(false);
-          setProgress(0);
-          setGenerationStartTime(null);
-          toast.error('Song generation failed. Please try again.');
-          throw new Error('Song generation failed');
-        }
-
-        // Still processing - update progress
-        setProgress((prev) => Math.min(prev + 3, 80));
+      // task pending
+      if (status === AITaskStatus.PENDING) {
+        setProgress(10);
         return false;
       }
+
+      // task processing
+      if (status === AITaskStatus.PROCESSING) {
+        setProgress(20);
+
+        const isTextSuccess = songs.some((song: AISong) => song.imageUrl);
+        const isFirstSuccess = songs.some((song: AISong) => song.audioUrl);
+
+        // text success
+        if (isTextSuccess) {
+          setProgress(60);
+          setGeneratedSongs(songs);
+          return false;
+        }
+
+        // first success
+        if (isFirstSuccess) {
+          setProgress(85);
+          setGeneratedSongs(songs);
+          return false;
+        }
+
+        // final success
+        return false;
+      }
+
+      // task failed, final status
+      if (status === AITaskStatus.FAILED) {
+        setProgress(0);
+        setIsGenerating(false);
+        setGenerationStartTime(null);
+        toast.error('Generate music failed: ' + errorMessage);
+        return true;
+      }
+
+      // task success, final status
+      if (status === AITaskStatus.SUCCESS) {
+        setGeneratedSongs(songs);
+
+        setProgress(100);
+        setIsGenerating(false);
+        setGenerationStartTime(null);
+        return true;
+      }
+
+      // Still processing - update progress
+      setProgress((prev) => Math.min(prev + 3, 80));
       return false;
     } catch (error: any) {
       console.error('Error polling task:', error);
@@ -293,7 +238,7 @@ export function MusicGenerator({ className, srOnlyTitle }: SongGeneratorProps) {
 
   const handleGenerate = async () => {
     if (!prompt) {
-      toast.error('Please enter either a style of music or lyrics');
+      toast.error('Please enter prompt');
       return;
     }
 
@@ -304,43 +249,47 @@ export function MusicGenerator({ className, srOnlyTitle }: SongGeneratorProps) {
     setGenerationStartTime(Date.now()); // Set generation start time
 
     try {
-      const response = await fetch('/api/ai/generate', {
+      const resp = await fetch('/api/ai/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           mediaType: 'music',
-          provider: 'kie',
+          provider: provider,
           model: model,
           prompt: prompt,
           options: {
             style: style,
             title: title,
+            lyrics: lyrics,
             customMode: customMode,
             instrumental: instrumental,
           },
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate song');
+      if (!resp.ok) {
+        throw new Error(`request failed with status: ${resp.status}`);
       }
 
-      const { code, message, data } = await response.json();
+      const { code, message, data } = await resp.json();
       if (code !== 0) {
-        throw new Error(message || 'Failed to generate song');
+        throw new Error(message || 'Failed to generate music');
       }
 
-      if (data?.taskId) {
-        setTaskId(data.taskId);
-        setProgress(20);
-      } else {
-        throw new Error(message || 'Failed to start generation');
+      const { id: taskId } = data;
+      if (!taskId) {
+        throw new Error('Failed to generate music');
       }
-    } catch (error) {
-      console.error('Generation error:', error);
-      toast.error('Failed to generate song. Please try again.');
+
+      // refresh user credits
+      await fetchUserCredits();
+
+      setTaskId(taskId);
+      setProgress(20);
+    } catch (err: any) {
+      toast.error('Failed to generate music: ' + err.message);
       setIsGenerating(false);
       setProgress(0);
       setGenerationStartTime(null);
@@ -398,14 +347,39 @@ export function MusicGenerator({ className, srOnlyTitle }: SongGeneratorProps) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const downloadAudio = (song: GeneratedSong) => {
-    if (song?.audioUrl) {
+  const downloadAudio = async (song: GeneratedSong) => {
+    if (!song?.audioUrl) return;
+
+    try {
+      toast.info(t('generator.downloading'));
+
+      // Fetch the audio file
+      const response = await fetch(song.audioUrl);
+      if (!response.ok) {
+        throw new Error('Failed to fetch audio file');
+      }
+
+      // Convert to blob
+      const blob = await response.blob();
+
+      // Create object URL
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Create and trigger download
       const link = document.createElement('a');
-      link.href = song.audioUrl;
+      link.href = blobUrl;
       link.download = `${song.title}.mp3`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      // Clean up object URL
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+
+      toast.success(t('generator.download_success'));
+    } catch (error) {
+      console.error('Failed to download audio:', error);
+      toast.error(t('generator.download_failed'));
     }
   };
 
@@ -484,36 +458,42 @@ export function MusicGenerator({ className, srOnlyTitle }: SongGeneratorProps) {
                 </div> */}
 
                 <div className="space-y-2">
-                  <Label htmlFor="prompt">Prompt</Label>
+                  <Label htmlFor="prompt">{t('generator.prompt')}</Label>
                   <Textarea
                     id="prompt"
-                    placeholder="A love story of Romeo and Juliet"
+                    placeholder={t('generator.prompt_placeholder')}
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                     className="min-h-32"
                     required
                   />
                 </div>
-                {isCheckSign ? (
+                {!isMounted ? (
+                  <Button className="w-full" size="lg" disabled>
+                    <Music className="mr-2 h-4 w-4" />
+                    {t('generator.generate')}
+                  </Button>
+                ) : isCheckSign ? (
                   <Button className="w-full" size="lg">
-                    <Loader2 className="size-4 animate-spin" /> Loading...
+                    <Loader2 className="size-4 animate-spin" />{' '}
+                    {t('generator.loading')}
                   </Button>
                 ) : user ? (
                   <Button
                     onClick={handleGenerate}
-                    disabled={isGenerating || (!style && !prompt)}
+                    disabled={isGenerating}
                     className="w-full"
                     size="lg"
                   >
                     {isGenerating ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating...
+                        {t('generator.generating')}
                       </>
                     ) : (
                       <>
                         <Music className="mr-2 h-4 w-4" />
-                        Generate Music
+                        {t('generator.generate')}
                       </>
                     )}
                   </Button>
@@ -523,25 +503,45 @@ export function MusicGenerator({ className, srOnlyTitle }: SongGeneratorProps) {
                     size="lg"
                     onClick={() => setIsShowSignModal(true)}
                   >
-                    <User className="mr-2 h-4 w-4" /> Sign In to Generate Music
+                    <User className="mr-2 h-4 w-4" />{' '}
+                    {t('generator.sign_in_to_generate')}
                   </Button>
                 )}
 
-                {user && user.credits && user.credits.remainingCredits > 0 ? (
+                {!isMounted ? (
                   <div className="mb-6 flex items-center justify-between text-sm">
-                    <span className="text-destructive">1 credits cost</span>
+                    <span className="text-primary">
+                      {t('generator.credits_cost', { credits: 1 })}
+                    </span>
                     <span className="text-foreground font-medium">
-                      {user.credits.remainingCredits} credits remaining
+                      {t('generator.credits_remaining', { credits: 0 })}
+                    </span>
+                  </div>
+                ) : user &&
+                  user.credits &&
+                  user.credits.remainingCredits > 0 ? (
+                  <div className="mb-6 flex items-center justify-between text-sm">
+                    <span className="text-primary">
+                      {t('generator.credits_cost', { credits: 1 })}
+                    </span>
+                    <span className="text-foreground font-medium">
+                      {t('generator.credits_remaining', {
+                        credits: user.credits.remainingCredits,
+                      })}
                     </span>
                   </div>
                 ) : (
                   <div className="mb-6 flex items-center justify-between text-sm">
-                    <span className="text-destructive">
-                      1 credits cost, {0} credits remaining
+                    <span className="text-primary">
+                      {t('generator.credits_cost', { credits: 1 })},{' '}
+                      {t('generator.credits_remaining', {
+                        credits: user?.credits?.remainingCredits || 0,
+                      })}
                     </span>
                     <Link href="/pricing">
                       <Button className="w-full" size="lg" variant="outline">
-                        <CreditCard className="size-4" /> Buy Credits
+                        <CreditCard className="size-4" />{' '}
+                        {t('generator.buy_credits')}
                       </Button>
                     </Link>
                   </div>
@@ -550,12 +550,12 @@ export function MusicGenerator({ className, srOnlyTitle }: SongGeneratorProps) {
                 {isGenerating && (
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span>Generation Progress</span>
+                      <span>{t('generator.generation_progress')}</span>
                       <span>{progress}%</span>
                     </div>
                     <Progress value={progress} className="w-full" />
                     <p className="text-muted-foreground text-center text-sm">
-                      This may take up to 2-3 minutes...
+                      {t('generator.time_cost')}
                     </p>
                   </div>
                 )}
@@ -567,7 +567,7 @@ export function MusicGenerator({ className, srOnlyTitle }: SongGeneratorProps) {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Music className="h-5 w-5" />
-                  Generated Song
+                  {t('generator.generated_song')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -627,29 +627,32 @@ export function MusicGenerator({ className, srOnlyTitle }: SongGeneratorProps) {
                                 <span>{formatDuration(song.duration)}</span>
                               </div>
                               <div className="mb-2 line-clamp-1 flex flex-wrap gap-1">
-                                {song.style
-                                  .split(',')
-                                  .slice(0, 2)
-                                  .map((tag, tagIndex) => (
-                                    <Badge
-                                      key={tagIndex}
-                                      variant="default"
-                                      className="text-xs"
-                                    >
-                                      {tag.trim()}
-                                    </Badge>
-                                  ))}
+                                {song.style &&
+                                  song.style
+                                    .split(',')
+                                    .slice(0, 2)
+                                    .map((tag, tagIndex) => (
+                                      <Badge
+                                        key={tagIndex}
+                                        variant="default"
+                                        className="text-xs"
+                                      >
+                                        {tag.trim()}
+                                      </Badge>
+                                    ))}
                               </div>
                               <div className="flex items-center gap-2 text-sm">
                                 {song.audioUrl ? (
                                   <div className="flex items-center gap-2 text-green-600">
                                     <CheckCircle className="h-4 w-4" />
-                                    <span>Ready to play</span>
+                                    <span>{t('generator.ready_to_play')}</span>
                                   </div>
                                 ) : (
                                   <div className="flex items-center gap-2 text-yellow-600">
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    <span>Audio generating...</span>
+                                    <span>
+                                      {t('generator.audio_generating')}
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -681,13 +684,8 @@ export function MusicGenerator({ className, srOnlyTitle }: SongGeneratorProps) {
                     </div>
                     <p className="text-muted-foreground mb-2">
                       {isGenerating
-                        ? 'Your song is being generated...'
-                        : 'No song generated yet'}
-                    </p>
-                    <p className="text-muted-foreground text-sm">
-                      {isGenerating
-                        ? 'Please wait while we create your masterpiece'
-                        : 'Fill out the form and click generate to create your song'}
+                        ? t('generator.generating_song')
+                        : t('generator.no_song_generated')}
                     </p>
                   </div>
                 )}

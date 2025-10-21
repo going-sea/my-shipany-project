@@ -27,6 +27,18 @@
           "icon": "DollarSign"
         },
         {
+          "title": "AI",
+          "icon": "RiRobot2Line",
+          "children": [
+            {
+              "title": "AI 音乐生成器",
+              "description": "使用 AI 生成美妙的音乐",
+              "url": "/ai-music-generator",
+              "icon": "RiMusic2Line"
+            }
+          ]
+        },
+        {
           "title": "博客",
           "url": "/blog",
           "icon": "Newspaper"

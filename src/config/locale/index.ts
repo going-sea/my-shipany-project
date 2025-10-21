@@ -40,4 +40,7 @@ export const localeMessagesPaths = [
   'admin/credits',
   'admin/settings',
   'admin/apikeys',
+  'ai/music',
+  'activity/sidebar',
+  'activity/ai-tasks',
 ];

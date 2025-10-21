@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { getTranslations } from 'next-intl/server';
 
 import { ConsoleLayout } from '@/shared/blocks/console/layout';
 import { getPathname } from '@/shared/lib/browser';
@@ -9,48 +10,50 @@ export default async function ActivityLayout({
 }: {
   children: ReactNode;
 }) {
+  const t = await getTranslations('activity.sidebar');
+
   // settings title
-  const title = 'Activity';
+  const title = t('title');
 
   const pathname = await getPathname();
 
   // settings nav
   const nav: Nav = {
-    title: 'Activity',
+    title: t('title'),
     items: [
       {
-        title: 'Tasks',
-        url: '/activity/tasks',
-        icon: 'Task',
-        is_active: pathname === '/activity/tasks',
+        title: t('nav.tasks'),
+        url: '/activity/ai-tasks',
+        icon: 'RiTaskLine',
+        is_active: pathname === '/activity/ai-tasks',
       },
-      {
-        title: 'Chats',
-        url: '/activity/chats',
-        icon: 'Chat',
-        is_active: pathname === '/activity/chats',
-      },
-      {
-        title: 'Feedbacks',
-        url: '/activity/feedbacks',
-        icon: 'Feedback',
-        is_active: pathname === '/activity/feedbacks',
-      },
+      // {
+      //   title: 'Chats',
+      //   url: '/activity/chats',
+      //   icon: 'Chat',
+      //   is_active: pathname === '/activity/chats',
+      // },
+      // {
+      //   title: 'Feedbacks',
+      //   url: '/activity/feedbacks',
+      //   icon: 'Feedback',
+      //   is_active: pathname === '/activity/feedbacks',
+      // },
     ],
   };
 
   const topNav: Nav = {
     items: [
       {
-        title: 'Activity',
+        title: t('top_nav.activity'),
         url: '/activity',
         icon: 'Activity',
         is_active: true,
       },
       {
-        title: 'Settings',
+        title: t('top_nav.settings'),
         url: '/settings',
-        icon: 'Settings',
+        icon: 'RiSettingsLine',
         is_active: false,
       },
     ],

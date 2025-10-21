@@ -6,11 +6,11 @@ import { getMetadata } from '@/shared/lib/seo';
 import { CTA, FAQ } from '@/themes/default/blocks';
 
 export const generateMetadata = getMetadata({
-  metadataKey: 'demo.ai-music-generator.metadata',
-  canonicalUrl: '/demo/ai-music-generator',
+  metadataKey: 'ai.music.metadata',
+  canonicalUrl: '/ai-music-generator',
 });
 
-export default async function GeneratePage({
+export default async function AiMusicGeneratorPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
@@ -19,16 +19,16 @@ export default async function GeneratePage({
   setRequestLocale(locale);
 
   const t = await getTranslations('landing');
-  const tt = await getTranslations('demo.ai-music-generator');
+  const tt = await getTranslations('ai.music');
 
   return (
     <>
       <PageHeader
-        title={tt.raw('title')}
-        description={tt.raw('description')}
+        title={tt.raw('page.title')}
+        description={tt.raw('page.description')}
         className="mt-16 -mb-32"
       />
-      <MusicGenerator srOnlyTitle={tt.raw('h1-title')} />
+      <MusicGenerator srOnlyTitle={tt.raw('page.title')} />
       <FAQ faq={t.raw('faq')} />
       <CTA cta={t.raw('cta')} className="bg-muted" />
     </>

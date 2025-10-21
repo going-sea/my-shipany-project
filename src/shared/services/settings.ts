@@ -106,19 +106,25 @@ export async function getSettingGroups() {
     {
       name: 'openrouter',
       title: t('groups.openrouter'),
-      description: 'custom your openrouter settings',
+      description: `Custom <a href="https://openrouter.ai" class="text-primary" target="_blank">OpenRouter</a> settings`,
       tab: 'ai',
     },
     {
       name: 'replicate',
       title: t('groups.replicate'),
-      description: 'custom your replicate settings',
+      description: `Custom <a href="https://replicate.com" class="text-primary" target="_blank">Replicate</a> settings`,
       tab: 'ai',
     },
     {
       name: 'fal',
-      title: t('groups.fal'),
-      description: 'custom your fal settings',
+      title: 'Fal',
+      description: `Custom <a href="https://fal.ai" class="text-primary" target="_blank">Fal</a> settings`,
+      tab: 'ai',
+    },
+    {
+      name: 'kie',
+      title: 'Kie',
+      description: `Custom <a href="https://kie.ai" class="text-primary" target="_blank">Kie</a> settings`,
       tab: 'ai',
     },
   ];
@@ -442,6 +448,15 @@ export async function getSettings() {
       placeholder: 'fal_xxx',
       group: 'fal',
       tip: 'Fal API Key is used to access the Fal API',
+      tab: 'ai',
+    },
+    {
+      name: 'kie_api_key',
+      title: 'Kie API Key',
+      type: 'password',
+      placeholder: 'xxx',
+      group: 'kie',
+      tip: 'Kie API Key is used to access the Kie API',
       tab: 'ai',
     },
   ];

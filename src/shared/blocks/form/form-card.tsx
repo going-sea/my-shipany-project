@@ -61,7 +61,11 @@ export function FormCard({
       {(title || description) && (
         <CardHeader>
           {title && <CardTitle>{title}</CardTitle>}
-          {description && <CardDescription>{description}</CardDescription>}
+          {description && (
+            <CardDescription
+              dangerouslySetInnerHTML={{ __html: description }}
+            />
+          )}
         </CardHeader>
       )}
 

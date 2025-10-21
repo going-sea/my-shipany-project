@@ -27,6 +27,18 @@
           "icon": "DollarSign"
         },
         {
+          "title": "AI",
+          "icon": "RiRobot2Line",
+          "children": [
+            {
+              "title": "AI Music Generator",
+              "description": "Use AI to generate music",
+              "url": "/ai-music-generator",
+              "icon": "RiMusic2Line"
+            }
+          ]
+        },
+        {
           "title": "Blog",
           "url": "/blog",
           "icon": "Newspaper"
