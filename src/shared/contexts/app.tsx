@@ -8,7 +8,8 @@ import {
   useState,
 } from 'react';
 
-import { useSession } from '@/core/auth/client';
+import { getAuthClient, useSession } from '@/core/auth/client';
+import { useRouter } from '@/core/i18n/navigation';
 import { envConfigs } from '@/config';
 import { User } from '@/shared/services/user';
 
@@ -29,6 +30,7 @@ const AppContext = createContext({} as ContextValue);
 export const useAppContext = () => useContext(AppContext);
 
 export const AppContextProvider = ({ children }: { children: ReactNode }) => {
+  const router = useRouter();
   const [configs, setConfigs] = useState<Record<string, string>>({});
 
   // sign user
@@ -107,18 +109,53 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const showOneTap = async function (configs: Record<string, string>) {
+    try {
+      const authClient = getAuthClient(configs);
+      await authClient.oneTap({
+        callbackURL: '/',
+        onPromptNotification: (notification: any) => {
+          // Handle prompt dismissal silently
+          // This callback is triggered when the prompt is dismissed or skipped
+          console.log('One Tap prompt notification:', notification);
+        },
+        // fetchOptions: {
+        //   onSuccess: () => {
+        //     router.push('/');
+        //   },
+        // },
+      });
+    } catch (error) {
+      // Silently handle One Tap cancellation errors
+      // These errors occur when users close the prompt or decline to sign in
+      // Common errors: FedCM NetworkError, AbortError, etc.
+    }
+  };
+
   useEffect(() => {
     fetchConfigs();
   }, []);
 
   useEffect(() => {
     if (session && session.user) {
-      // setUser(session.user as User);
+      setUser(session.user as User);
       fetchUserInfo();
     } else {
       setUser(null);
     }
   }, [session]);
+
+  useEffect(() => {
+    if (
+      configs &&
+      configs.google_client_id &&
+      configs.google_one_tap_enabled === 'true' &&
+      !session &&
+      !isPending
+    ) {
+      showOneTap(configs);
+    }
+  }, [configs, session, isPending]);
 
   useEffect(() => {
     if (user && !user.credits) {

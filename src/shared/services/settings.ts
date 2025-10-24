@@ -143,7 +143,15 @@ export async function getSettings() {
     },
     {
       name: 'google_auth_enabled',
-      title: 'Enabled',
+      title: 'Auth Enabled',
+      type: 'switch',
+      value: 'false',
+      group: 'google_auth',
+      tab: 'auth',
+    },
+    {
+      name: 'google_one_tap_enabled',
+      title: 'OneTap Enabled',
       type: 'switch',
       value: 'false',
       group: 'google_auth',
@@ -167,7 +175,7 @@ export async function getSettings() {
     },
     {
       name: 'github_auth_enabled',
-      title: 'Enabled',
+      title: 'Auth Enabled',
       type: 'switch',
       group: 'github_auth',
       tab: 'auth',
@@ -467,6 +475,8 @@ export async function getSettings() {
 export const publicSettingNames = [
   'email_auth_enabled',
   'google_auth_enabled',
+  'google_one_tap_enabled',
+  'google_client_id',
   'github_auth_enabled',
   'select_payment_enabled',
   'default_payment_provider',

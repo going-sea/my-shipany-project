@@ -1,4 +1,5 @@
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { oneTap } from 'better-auth/plugins';
 
 import { db } from '@/core/db';
 import { envConfigs } from '@/config';
@@ -45,6 +46,10 @@ export async function getAuthOptions() {
       enabled: configs.email_auth_enabled !== 'false',
     },
     socialProviders: await getSocialProviders(configs),
+    plugins:
+      configs.google_client_id && configs.google_one_tap_enabled === 'true'
+        ? [oneTap()]
+        : [],
   };
 }
 
