@@ -55,6 +55,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher:
-    '/((?!api|trpc|_next|_vercel|privacy-policy|terms-of-service|.*\\..*).*)',
+  matcher: '/((?!api|trpc|_next|_vercel|.*\\..*).*)',
 };

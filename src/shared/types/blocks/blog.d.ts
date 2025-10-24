@@ -23,6 +23,7 @@ export interface Post {
   url?: string;
   target?: string;
   categories?: Category[];
+  body?: any;
 }
 
 export interface Category {

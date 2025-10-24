@@ -1,3 +1,5 @@
+import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
+import { Calendar } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Link } from '@/core/i18n/navigation';
@@ -80,6 +82,33 @@ export function Blog({
                     <p className="text-muted-foreground mb-3 md:mb-4 lg:mb-6">
                       {item.description}
                     </p>
+
+                    <div className="text-muted-foreground flex items-center text-xs">
+                      {item.created_at && (
+                        <div className="flex items-center gap-2">
+                          <Calendar className="size-4" />
+                          {item.created_at}
+                        </div>
+                      )}
+                      <div className="flex-1"></div>
+                      {(item.author_name || item.author_image) && (
+                        <div className="flex items-center gap-2">
+                          {item.author_image && (
+                            <Avatar>
+                              <AvatarImage
+                                src={item.author_image || ''}
+                                alt={item.author_name || ''}
+                                className="size-6"
+                              />
+                              <AvatarFallback>
+                                {item.author_name?.charAt(0) || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                          )}
+                          {item.author_name}
+                        </div>
+                      )}
+                    </div>
 
                     {/* {blog.readMoreText && (
                       <p className="flex items-center hover:underline">

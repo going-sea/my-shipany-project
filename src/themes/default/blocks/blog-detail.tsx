@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { CalendarIcon, ListIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import {
@@ -22,6 +23,7 @@ export function BlogDetail({ post }: { post: PostType }) {
     {
       title: t('crumb'),
       url: '/blog',
+      icon: 'Newspaper',
       is_active: false,
     },
     {
@@ -78,6 +80,19 @@ export function BlogDetail({ post }: { post: PostType }) {
     }
   };
 
+  // Check if TOC should be shown
+  const showToc = tocItems.length > 0;
+
+  // Check if Author info should be shown
+  const showAuthor = post.author_name || post.author_image || post.author_role;
+
+  // Calculate main content column span based on what sidebars are shown
+  const getMainColSpan = () => {
+    if (showToc && showAuthor) return 'lg:col-span-6';
+    if (showToc || showAuthor) return 'lg:col-span-9';
+    return 'lg:col-span-12';
+  };
+
   return (
     <section id={post.id}>
       <div className="py-24 md:py-32">
@@ -89,22 +104,27 @@ export function BlogDetail({ post }: { post: PostType }) {
             <h1 className="text-foreground mx-auto mb-4 w-full text-3xl font-bold md:max-w-4xl md:text-4xl">
               {post.title}
             </h1>
-            <div className="text-muted-foreground mb-8 flex items-center justify-center gap-4 text-sm">
-              {post.author_name && <span>By {post.author_name}</span>}
-              {post.created_at && <span>{post.created_at}</span>}
+            <div className="text-muted-foreground text-md mb-8 flex items-center justify-center gap-4">
+              {post.created_at && (
+                <div className="text-muted-foreground text-md mb-8 flex items-center justify-center gap-2">
+                  <CalendarIcon className="size-4" /> {post.created_at}
+                </div>
+              )}
             </div>
           </div>
 
           {/* Main Content Grid */}
           <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-12">
             {/* Table of Contents - Left Sidebar */}
-            <div className="lg:col-span-3">
-              <div className="sticky top-24 hidden md:block">
-                <div className="bg-muted/30 rounded-lg">
-                  <h2 className="text-foreground px-6 pt-4 font-semibold">
-                    {t('toc')}
-                  </h2>
-                  {tocItems.length > 0 ? (
+            {showToc && (
+              <div className="lg:col-span-3">
+                <div className="sticky top-24 hidden md:block">
+                  <div className="bg-muted/30 rounded-lg">
+                    <h2 className="text-foreground px-4 pt-4 font-semibold">
+                      <div className="flex items-center gap-2">
+                        <ListIcon className="size-4" /> {t('toc')}
+                      </div>
+                    </h2>
                     <nav className="space-y-2 p-4">
                       {tocItems.map((item) => (
                         <li
@@ -115,23 +135,19 @@ export function BlogDetail({ post }: { post: PostType }) {
                               ? 'bg-primary text-primary-foreground font-medium'
                               : 'hover:bg-muted hover:text-muted-foreground text-muted-foreground'
                           }`}
-                          style={{ paddingLeft: `${(item.level - 1) * 12}px` }}
+                          style={{ paddingLeft: `${(item.level - 0) * 8}px` }}
                         >
                           {item.text}
                         </li>
                       ))}
                     </nav>
-                  ) : (
-                    <p className="text-muted-foreground p-6 text-sm">
-                      {t('no_content')}
-                    </p>
-                  )}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Main Content - Center */}
-            <div className="lg:col-span-6">
+            <div className={getMainColSpan()}>
               <article className="p-0">
                 {post.content && (
                   <div className="prose prose-lg text-muted-foreground max-w-none space-y-6 *:leading-relaxed">
@@ -142,32 +158,35 @@ export function BlogDetail({ post }: { post: PostType }) {
             </div>
 
             {/* Author Info - Right Sidebar */}
-            <div className="lg:col-span-3">
-              <div className="sticky top-24">
-                <div className="bg-muted/30 rounded-lg p-6">
-                  <div className="text-center">
-                    {post.author_image && (
-                      <div className="ring-foreground/10 mx-auto mb-4 aspect-square size-20 overflow-hidden rounded-xl border border-transparent shadow-md ring-1 shadow-black/15">
-                        <img
-                          src={post.author_image}
-                          alt={post.author_name}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    )}
-                    <p className="text-foreground mb-1 text-lg font-semibold">
-                      {post.author_name}
-                    </p>
-                    <p className="text-muted-foreground mb-4 text-sm">
-                      {post.author_role}
-                    </p>
-                    <div className="text-muted-foreground space-y-1 text-xs">
-                      <p></p>
+            {showAuthor && (
+              <div className="lg:col-span-3">
+                <div className="sticky top-24">
+                  <div className="bg-muted/30 rounded-lg p-6">
+                    <div className="text-center">
+                      {post.author_image && (
+                        <div className="ring-foreground/10 mx-auto mb-4 aspect-square size-20 overflow-hidden rounded-xl border border-transparent shadow-md ring-1 shadow-black/15">
+                          <img
+                            src={post.author_image}
+                            alt={post.author_name}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      )}
+                      {post.author_name && (
+                        <p className="text-foreground mb-1 text-lg font-semibold">
+                          {post.author_name}
+                        </p>
+                      )}
+                      {post.author_role && (
+                        <p className="text-muted-foreground mb-4 text-sm">
+                          {post.author_role}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

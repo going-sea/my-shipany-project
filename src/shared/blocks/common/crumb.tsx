@@ -1,6 +1,7 @@
 import { ChevronRight } from 'lucide-react';
 
 import { Link } from '@/core/i18n/navigation';
+import { SmartIcon } from '@/shared/blocks/common';
 import { NavItem } from '@/shared/types/blocks/common';
 
 export function Crumb({ items }: { items: NavItem[] }) {
@@ -12,10 +13,13 @@ export function Crumb({ items }: { items: NavItem[] }) {
           <div key={index} className="flex items-center">
             <Link
               href={item.url || ''}
-              className={`hover:text-foreground line-clamp-1 min-w-8 transition-colors ${
+              className={`hover:text-foreground line-clamp-1 flex min-w-8 items-center gap-2 transition-colors ${
                 isActive ? 'text-primary hover:text-primary font-medium' : ''
               }`}
             >
+              {item.icon && (
+                <SmartIcon name={item.icon as string} className="size-4" />
+              )}
               {item.title}
             </Link>
 
