@@ -7,7 +7,7 @@ import { db } from '@/core/db';
 import { pagesSource, postsSource } from '@/core/docs/source';
 import { generateTOC } from '@/core/docs/toc';
 import { post } from '@/config/db/schema';
-import { MDXContent } from '@/shared/blocks/common/mdx-content';
+import { MarkdownContent } from '@/shared/blocks/common/markdown-content';
 import {
   Category as BlogCategoryType,
   Post as BlogPostType,
@@ -158,8 +158,8 @@ export async function getPost({
     // post exist in database
     const content = postData.content || '';
 
-    // Convert markdown content to MDXContent component
-    const body = content ? <MDXContent source={content} /> : undefined;
+    // Convert markdown content to MarkdownContent component
+    const body = content ? <MarkdownContent content={content} /> : undefined;
 
     // Generate TOC from content
     const toc = content ? generateTOC(content) : undefined;
