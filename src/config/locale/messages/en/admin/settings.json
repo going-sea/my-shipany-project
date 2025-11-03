@@ -18,7 +18,9 @@
     "plausible": "Plausible",
     "openpanel": "OpenPanel",
     "vercel_analytics": "Vercel Analytics",
-    "adsense": "Adsense"
+    "adsense": "Adsense",
+    "affonso": "Affonso",
+    "promotekit": "PromoteKit"
   },
   "edit": {
     "title": "Settings",
@@ -33,7 +35,8 @@
       "storage": "Storage",
       "ai": "AI",
       "analytics": "Analytics",
-      "ads": "Ads"
+      "ads": "Ads",
+      "affiliate": "Affiliate"
     },
     "buttons": {
       "submit": "Save"

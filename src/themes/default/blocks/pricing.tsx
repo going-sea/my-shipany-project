@@ -18,6 +18,7 @@ import {
 } from '@/shared/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { useAppContext } from '@/shared/contexts/app';
+import { getCookie } from '@/shared/lib/cookie';
 import { cn } from '@/shared/lib/utils';
 import { Subscription } from '@/shared/services/subscription';
 import {
@@ -73,8 +74,39 @@ export function Pricing({
       setPricingItem(item);
       setIsShowPaymentModal(true);
     } else {
-      handleCheckout(item);
+      handleCheckout(item, configs.default_payment_provider);
     }
+  };
+
+  const getAffiliateMetadata = ({
+    paymentProvider,
+  }: {
+    paymentProvider: string;
+  }) => {
+    const affiliateMetadata: Record<string, string> = {};
+
+    // get Affonso referral
+    if (
+      configs.affonso_enabled === 'true' &&
+      ['stripe', 'creem'].includes(paymentProvider)
+    ) {
+      const affonsoReferral = getCookie('affonso_referral') || '';
+      affiliateMetadata.affonso_referral = affonsoReferral;
+    }
+
+    // get PromoteKit referral
+    if (
+      configs.promotekit_enabled === 'true' &&
+      ['stripe'].includes(paymentProvider)
+    ) {
+      const promotekitReferral =
+        typeof window !== 'undefined' && (window as any).promotekit_referral
+          ? (window as any).promotekit_referral
+          : getCookie('promotekit_referral') || '';
+      affiliateMetadata.promotekit_referral = promotekitReferral;
+    }
+
+    return affiliateMetadata;
   };
 
   const handleCheckout = async (
@@ -87,11 +119,16 @@ export function Pricing({
         return;
       }
 
+      const affiliateMetadata = getAffiliateMetadata({
+        paymentProvider: paymentProvider || '',
+      });
+
       const params = {
         product_id: item.product_id,
         currency: item.currency,
         locale: locale || 'en',
         payment_provider: paymentProvider || '',
+        metadata: affiliateMetadata,
       };
 
       setIsLoading(true);

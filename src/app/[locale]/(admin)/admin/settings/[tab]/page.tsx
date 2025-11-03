@@ -4,9 +4,13 @@ import { PERMISSIONS, requireAllPermissions } from '@/core/rbac';
 import { Header, Main, MainHeader } from '@/shared/blocks/dashboard';
 import { FormCard } from '@/shared/blocks/form';
 import { getConfigs, saveConfigs } from '@/shared/services/config';
-import { getSettingGroups, getSettings } from '@/shared/services/settings';
+import {
+  getSettingGroups,
+  getSettings,
+  getSettingTabs,
+} from '@/shared/services/settings';
 import { getUserInfo } from '@/shared/services/user';
-import { Crumb, Tab } from '@/shared/types/blocks/common';
+import { Crumb } from '@/shared/types/blocks/common';
 import { Form as FormType } from '@/shared/types/blocks/form';
 
 export default async function SettingsPage({
@@ -36,51 +40,7 @@ export default async function SettingsPage({
     { title: t('edit.crumbs.settings'), is_active: true },
   ];
 
-  const tabs: Tab[] = [
-    {
-      name: 'auth',
-      title: t('edit.tabs.auth'),
-      url: '/admin/settings/auth',
-      is_active: tab === 'auth',
-    },
-    {
-      name: 'payment',
-      title: t('edit.tabs.payment'),
-      url: '/admin/settings/payment',
-      is_active: tab === 'payment',
-    },
-    {
-      name: 'email',
-      title: t('edit.tabs.email'),
-      url: '/admin/settings/email',
-      is_active: tab === 'email',
-    },
-    {
-      name: 'storage',
-      title: t('edit.tabs.storage'),
-      url: '/admin/settings/storage',
-      is_active: tab === 'storage',
-    },
-
-    {
-      name: 'ai',
-      title: t('edit.tabs.ai'),
-      url: '/admin/settings/ai',
-      is_active: tab === 'ai',
-    },
-    {
-      name: 'analytics',
-      title: t('edit.tabs.analytics'),
-      url: '/admin/settings/analytics',
-      is_active: tab === 'analytics',
-    },
-    {
-      name: 'ads',
-      title: t('edit.tabs.ads'),
-      url: '/admin/settings/ads',
-      is_active: tab === 'ads',
-    },
-  ];
+  const tabs = await getSettingTabs(tab ?? 'auth');
 
   const handleSubmit = async (data: FormData, passby: any) => {
     'use server';

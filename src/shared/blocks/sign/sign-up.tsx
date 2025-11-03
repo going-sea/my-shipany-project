@@ -55,6 +55,28 @@ export function SignUp({
     }
   }
 
+  const reportAffiliate = ({
+    userEmail,
+    stripeCustomerId,
+  }: {
+    userEmail: string;
+    stripeCustomerId?: string;
+  }) => {
+    if (typeof window === 'undefined' || !configs) {
+      return;
+    }
+
+    const windowObject = window as any;
+
+    if (configs.affonso_enabled === 'true' && windowObject.Affonso) {
+      windowObject.Affonso.signup(userEmail);
+    }
+
+    if (configs.promotekit_enabled === 'true' && windowObject.promotekit) {
+      windowObject.promotekit.refer(userEmail, stripeCustomerId);
+    }
+  };
+
   const handleSignUp = async () => {
     if (loading) {
       return;
@@ -79,6 +101,8 @@ export function SignUp({
           setLoading(false);
         },
         onSuccess: (ctx) => {
+          // report affiliate
+          reportAffiliate({ userEmail: email });
           router.push(callbackUrl);
         },
         onError: (e: any) => {

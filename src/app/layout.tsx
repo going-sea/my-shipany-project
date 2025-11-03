@@ -7,6 +7,7 @@ import NextTopLoader from 'nextjs-toploader';
 import { envConfigs } from '@/config';
 import { locales } from '@/config/locale';
 import { getAdsService } from '@/shared/services/ads';
+import { getAffiliateService } from '@/shared/services/affiliate';
 import { getAnalyticsService } from '@/shared/services/analytics';
 
 const notoSansMono = Noto_Sans_Mono({
@@ -48,6 +49,11 @@ export default async function RootLayout({
   let analyticsHeadScripts = null;
   let analyticsBodyScripts = null;
 
+  // affiliate components
+  let affiliateMetaTags = null;
+  let affiliateHeadScripts = null;
+  let affiliateBodyScripts = null;
+
   if (isProduction) {
     // get ads components
     const adsService = await getAdsService();
@@ -60,6 +66,12 @@ export default async function RootLayout({
     analyticsMetaTags = analyticsService.getMetaTags();
     analyticsHeadScripts = analyticsService.getHeadScripts();
     analyticsBodyScripts = analyticsService.getBodyScripts();
+
+    // get affiliate components
+    const affiliateService = await getAffiliateService();
+    affiliateMetaTags = affiliateService.getMetaTags();
+    affiliateHeadScripts = affiliateService.getHeadScripts();
+    affiliateBodyScripts = affiliateService.getBodyScripts();
   }
 
   return (
@@ -95,6 +107,11 @@ export default async function RootLayout({
         {analyticsMetaTags}
         {/* inject analytics head scripts */}
         {analyticsHeadScripts}
+
+        {/* inject affiliate meta tags */}
+        {affiliateMetaTags}
+        {/* inject affiliate head scripts */}
+        {affiliateHeadScripts}
       </head>
       <body suppressHydrationWarning className="overflow-x-hidden">
         <NextTopLoader
@@ -115,6 +132,9 @@ export default async function RootLayout({
 
         {/* inject analytics body scripts */}
         {analyticsBodyScripts}
+
+        {/* inject affiliate body scripts */}
+        {affiliateBodyScripts}
       </body>
     </html>
   );

@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
+import { Tab } from '@/shared/types/blocks/common';
+
 export interface Setting {
   name: string;
   title: string;
@@ -20,6 +22,64 @@ export interface SettingGroup {
   title: string;
   description?: string;
   tab: string;
+}
+
+export async function getSettingTabs(tab: string) {
+  const t = await getTranslations('admin.settings');
+
+  const tabs: Tab[] = [
+    {
+      name: 'auth',
+      title: t('edit.tabs.auth'),
+      url: '/admin/settings/auth',
+      is_active: tab === 'auth',
+    },
+    {
+      name: 'payment',
+      title: t('edit.tabs.payment'),
+      url: '/admin/settings/payment',
+      is_active: tab === 'payment',
+    },
+    {
+      name: 'email',
+      title: t('edit.tabs.email'),
+      url: '/admin/settings/email',
+      is_active: tab === 'email',
+    },
+    {
+      name: 'storage',
+      title: t('edit.tabs.storage'),
+      url: '/admin/settings/storage',
+      is_active: tab === 'storage',
+    },
+
+    {
+      name: 'ai',
+      title: t('edit.tabs.ai'),
+      url: '/admin/settings/ai',
+      is_active: tab === 'ai',
+    },
+    {
+      name: 'analytics',
+      title: t('edit.tabs.analytics'),
+      url: '/admin/settings/analytics',
+      is_active: tab === 'analytics',
+    },
+    {
+      name: 'ads',
+      title: t('edit.tabs.ads'),
+      url: '/admin/settings/ads',
+      is_active: tab === 'ads',
+    },
+    {
+      name: 'affiliate',
+      title: t('edit.tabs.affiliate'),
+      url: '/admin/settings/affiliate',
+      is_active: tab === 'affiliate',
+    },
+  ];
+
+  return tabs;
 }
 
 export async function getSettingGroups() {
@@ -115,12 +175,6 @@ export async function getSettingGroups() {
       tab: 'storage',
     },
     {
-      name: 'adsense',
-      title: t('groups.adsense'),
-      description: 'custom your adsense settings',
-      tab: 'ads',
-    },
-    {
       name: 'openrouter',
       title: t('groups.openrouter'),
       description: `Custom <a href="https://openrouter.ai" class="text-primary" target="_blank">OpenRouter</a> settings`,
@@ -143,6 +197,26 @@ export async function getSettingGroups() {
       title: 'Kie',
       description: `Custom <a href="https://kie.ai" class="text-primary" target="_blank">Kie</a> settings`,
       tab: 'ai',
+    },
+    {
+      name: 'adsense',
+      title: t('groups.adsense'),
+      description: 'custom your adsense settings',
+      tab: 'ads',
+    },
+    {
+      name: 'affonso',
+      title: t('groups.affonso'),
+      description:
+        'custom your <a href="https://affonso.io?atp=shipany" class="text-primary" target="_blank">Affonso</a> settings',
+      tab: 'affiliate',
+    },
+    {
+      name: 'promotekit',
+      title: t('groups.promotekit'),
+      description:
+        'custom your <a href="https://www.promotekit.com?via=shipany" class="text-primary" target="_blank">PromoteKit</a> settings',
+      tab: 'affiliate',
     },
   ];
   return settingGroups;
@@ -459,14 +533,6 @@ export async function getSettings() {
       tab: 'storage',
     },
     {
-      name: 'adsense_code',
-      title: 'Adsense Code',
-      type: 'text',
-      placeholder: 'ca-pub-xxx',
-      group: 'adsense',
-      tab: 'ads',
-    },
-    {
       name: 'openrouter_api_key',
       title: 'OpenRouter API Key',
       type: 'password',
@@ -500,6 +566,58 @@ export async function getSettings() {
       tip: 'Kie API Key is used to access the Kie API',
       tab: 'ai',
     },
+    {
+      name: 'adsense_code',
+      title: 'Adsense Code',
+      type: 'text',
+      placeholder: 'ca-pub-xxx',
+      group: 'adsense',
+      tab: 'ads',
+    },
+    {
+      name: 'affonso_enabled',
+      title: 'Affonso Enabled',
+      type: 'switch',
+      value: 'false',
+      group: 'affonso',
+      tab: 'affiliate',
+    },
+    {
+      name: 'affonso_id',
+      title: 'Affonso ID',
+      type: 'text',
+      placeholder: 'xxx',
+      tip: 'Affonso Program ID',
+      group: 'affonso',
+      tab: 'affiliate',
+    },
+    {
+      name: 'affonso_cookie_duration',
+      title: 'Affonso Cookie Duration',
+      type: 'number',
+      placeholder: '30',
+      tip: 'Affonso Cookie Duration in days, default is 30 days',
+      value: '30',
+      group: 'affonso',
+      tab: 'affiliate',
+    },
+    {
+      name: 'promotekit_enabled',
+      title: 'PromoteKit Enabled',
+      type: 'switch',
+      value: 'false',
+      group: 'promotekit',
+      tab: 'affiliate',
+    },
+    {
+      name: 'promotekit_id',
+      title: 'PromoteKit ID',
+      type: 'text',
+      placeholder: 'xxx',
+      tip: 'PromoteKit Program ID',
+      group: 'promotekit',
+      tab: 'affiliate',
+    },
   ];
 
   return settings;
@@ -516,4 +634,6 @@ export const publicSettingNames = [
   'stripe_enabled',
   'creem_enabled',
   'paypal_enabled',
+  'affonso_enabled',
+  'promotekit_enabled',
 ];

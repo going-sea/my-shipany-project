@@ -18,7 +18,9 @@
     "plausible": "Plausible",
     "openpanel": "OpenPanel",
     "vercel_analytics": "Vercel Analytics",
-    "adsense": "Adsense"
+    "adsense": "Adsense",
+    "affonso": "Affonso",
+    "promotekit": "PromoteKit"
   },
   "edit": {
     "title": "设置",
@@ -33,7 +35,8 @@
       "storage": "存储",
       "ai": "AI",
       "analytics": "分析",
-      "ads": "广告"
+      "ads": "广告",
+      "affiliate": "联盟营销"
     },
     "buttons": {
       "submit": "保存"

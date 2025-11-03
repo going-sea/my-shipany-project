@@ -20,7 +20,8 @@ import { getUserInfo } from '@/shared/services/user';
 
 export async function POST(req: Request) {
   try {
-    const { product_id, currency, locale, payment_provider } = await req.json();
+    const { product_id, currency, locale, payment_provider, metadata } =
+      await req.json();
     if (!product_id) {
       return respErr('product_id is required');
     }
@@ -119,6 +120,7 @@ export async function POST(req: Request) {
         app_name: configs.app_name,
         order_no: orderNo,
         user_id: user.id,
+        ...(metadata || {}),
       },
       successUrl: `${configs.app_url}/api/payment/callback?order_no=${orderNo}`,
       cancelUrl: `${callbackBaseUrl}/pricing`,
