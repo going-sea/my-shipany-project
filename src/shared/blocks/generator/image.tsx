@@ -1,271 +1,763 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  IconChevronLeft,
-  IconChevronRight,
-  IconUpload,
-  IconX,
-} from '@tabler/icons-react';
+  CreditCard,
+  Download,
+  ImageIcon,
+  Loader2,
+  Sparkles,
+  User,
+} from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 
+import { Link } from '@/core/i18n/navigation';
+import { AIMediaType, AITaskStatus } from '@/extensions/ai';
+import {
+  ImageUploader,
+  ImageUploaderValue,
+  LazyImage,
+} from '@/shared/blocks/common';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent } from '@/shared/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/shared/components/ui/card';
+import { Label } from '@/shared/components/ui/label';
+import { Progress } from '@/shared/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { useAppContext } from '@/shared/contexts/app';
-import { cn } from '@/shared/lib/utils';
 
 interface ImageGeneratorProps {
   allowMultipleImages?: boolean;
   maxImages?: number;
+  maxSizeMB?: number;
+  srOnlyTitle?: string;
+}
+
+interface GeneratedImage {
+  id: string;
+  url: string;
+  provider?: string;
+  model?: string;
+  prompt?: string;
+}
+
+interface BackendTask {
+  id: string;
+  status: string;
+  provider: string;
+  model: string;
+  prompt: string | null;
+  taskResult: string | null;
+}
+
+type ImageGeneratorTab = 'text-to-image' | 'image-to-image';
+
+const POLL_INTERVAL = 5000;
+const GENERATION_TIMEOUT = 180000;
+const MAX_PROMPT_LENGTH = 2000;
+
+const MODEL_OPTIONS = [
+  {
+    value: 'black-forest-labs/flux-schnell',
+    label: 'FLUX Schnell',
+    scenes: ['text-to-image'],
+  },
+  {
+    value: 'google/nano-banana',
+    label: 'Nano Banana',
+    scenes: ['text-to-image', 'image-to-image'],
+  },
+  {
+    value: 'bytedance/seedream-4',
+    label: 'Seedream 4',
+    scenes: ['text-to-image', 'image-to-image'],
+  },
+];
+
+const PROVIDER_OPTIONS = [
+  {
+    value: 'replicate',
+    label: 'Replicate',
+  },
+];
+
+function parseTaskResult(taskResult: string | null): any {
+  if (!taskResult) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(taskResult);
+  } catch (error) {
+    console.warn('Failed to parse taskResult:', error);
+    return null;
+  }
+}
+
+function extractImageUrls(result: any): string[] {
+  if (!result) {
+    return [];
+  }
+
+  const output = result.output ?? result.images ?? result.data;
+
+  if (!output) {
+    return [];
+  }
+
+  if (typeof output === 'string') {
+    return [output];
+  }
+
+  if (Array.isArray(output)) {
+    return output
+      .flatMap((item) => {
+        if (!item) return [];
+        if (typeof item === 'string') return [item];
+        if (typeof item === 'object') {
+          const candidate = item.url ?? item.uri ?? item.image ?? item.src;
+          return typeof candidate === 'string' ? [candidate] : [];
+        }
+        return [];
+      })
+      .filter(Boolean);
+  }
+
+  if (typeof output === 'object') {
+    const candidate = output.url ?? output.uri ?? output.image ?? output.src;
+    if (typeof candidate === 'string') {
+      return [candidate];
+    }
+  }
+
+  return [];
 }
 
 export function ImageGenerator({
-  allowMultipleImages = false,
-  maxImages = 8,
-}: ImageGeneratorProps = {}) {
-  const [activeTab, setActiveTab] = useState('image-to-image');
-  const [prompt, setPrompt] = useState('What do you want to create?');
-  const [uploadedImages, setUploadedImages] = useState<File[]>([]);
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
+  allowMultipleImages = true,
+  maxImages = 9,
+  maxSizeMB = 5,
+  srOnlyTitle,
+}: ImageGeneratorProps) {
+  const t = useTranslations('ai.image.generator');
 
-  const { user } = useAppContext();
+  const [activeTab, setActiveTab] =
+    useState<ImageGeneratorTab>('text-to-image');
+
+  const [costCredits, setCostCredits] = useState<number>(2);
+  const [provider, setProvider] = useState(PROVIDER_OPTIONS[0]?.value ?? '');
+  const [model, setModel] = useState(MODEL_OPTIONS[0]?.value ?? '');
+  const [prompt, setPrompt] = useState('');
+  const [referenceImageItems, setReferenceImageItems] = useState<
+    ImageUploaderValue[]
+  >([]);
+  const [referenceImageUrls, setReferenceImageUrls] = useState<string[]>([]);
+  const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [taskId, setTaskId] = useState<string | null>(null);
+  const [generationStartTime, setGenerationStartTime] = useState<number | null>(
+    null
+  );
+  const [taskStatus, setTaskStatus] = useState<AITaskStatus | null>(null);
+  const [downloadingImageId, setDownloadingImageId] = useState<string | null>(
+    null
+  );
+  const [isMounted, setIsMounted] = useState(false);
+
+  const { user, isCheckSign, setIsShowSignModal, fetchUserCredits } =
+    useAppContext();
 
   useEffect(() => {
-    console.log('user', user);
-  }, [user]);
+    setIsMounted(true);
+  }, []);
 
-  // Sample preview images
-  const sampleImages = [
-    'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop',
-  ];
+  const promptLength = prompt.trim().length;
+  const remainingCredits = user?.credits?.remainingCredits ?? 0;
+  const isPromptTooLong = promptLength > MAX_PROMPT_LENGTH;
+  const isTextToImageMode = activeTab === 'text-to-image';
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    const maxUpload = allowMultipleImages ? maxImages : 1;
-    const newFiles = files.slice(0, maxUpload - uploadedImages.length);
+  useEffect(() => {
+    if (activeTab === 'text-to-image') {
+      setModel('black-forest-labs/flux-schnell');
+      setCostCredits(2);
+    } else {
+      setModel('google/nano-banana');
+      setCostCredits(4);
+    }
+  }, [activeTab]);
 
-    setUploadedImages((prev) => [...prev, ...newFiles]);
-
-    // Create preview URLs
-    newFiles.forEach((file) => {
-      const url = URL.createObjectURL(file);
-      setPreviewUrls((prev) => [...prev, url]);
-    });
-  };
-
-  const removeImage = (index: number) => {
-    const urlToRemove = previewUrls[index];
-
-    // Revoke the object URL to prevent memory leaks
-    if (urlToRemove && urlToRemove.startsWith('blob:')) {
-      URL.revokeObjectURL(urlToRemove);
+  const taskStatusLabel = useMemo(() => {
+    if (!taskStatus) {
+      return '';
     }
 
-    setUploadedImages((prev) => prev.filter((_, i) => i !== index));
-    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+    switch (taskStatus) {
+      case AITaskStatus.PENDING:
+        return 'Waiting for the model to start';
+      case AITaskStatus.PROCESSING:
+        return 'Generating your image...';
+      case AITaskStatus.SUCCESS:
+        return 'Image generation completed';
+      case AITaskStatus.FAILED:
+        return 'Generation failed';
+      default:
+        return '';
+    }
+  }, [taskStatus]);
+
+  const handleReferenceImagesChange = useCallback(
+    (items: ImageUploaderValue[]) => {
+      setReferenceImageItems(items);
+      const uploadedUrls = items
+        .filter((item) => item.status === 'uploaded' && item.url)
+        .map((item) => item.url as string);
+      setReferenceImageUrls(uploadedUrls);
+    },
+    []
+  );
+
+  const isReferenceUploading = useMemo(
+    () => referenceImageItems.some((item) => item.status === 'uploading'),
+    [referenceImageItems]
+  );
+
+  const hasReferenceUploadError = useMemo(
+    () => referenceImageItems.some((item) => item.status === 'error'),
+    [referenceImageItems]
+  );
+
+  const resetTaskState = useCallback(() => {
+    setIsGenerating(false);
+    setProgress(0);
+    setTaskId(null);
+    setGenerationStartTime(null);
+    setTaskStatus(null);
+  }, []);
+
+  const pollTaskStatus = useCallback(
+    async (id: string) => {
+      try {
+        if (
+          generationStartTime &&
+          Date.now() - generationStartTime > GENERATION_TIMEOUT
+        ) {
+          resetTaskState();
+          toast.error('Image generation timed out. Please try again.');
+          return true;
+        }
+
+        const resp = await fetch('/api/ai/query', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ taskId: id }),
+        });
+
+        if (!resp.ok) {
+          throw new Error(`request failed with status: ${resp.status}`);
+        }
+
+        const { code, message, data } = await resp.json();
+        if (code !== 0) {
+          throw new Error(message || 'Query task failed');
+        }
+
+        const task = data as BackendTask;
+        const currentStatus = task.status as AITaskStatus;
+        setTaskStatus(currentStatus);
+
+        const parsedResult = parseTaskResult(task.taskResult);
+        const imageUrls = extractImageUrls(parsedResult);
+
+        if (currentStatus === AITaskStatus.PENDING) {
+          setProgress((prev) => Math.max(prev, 20));
+          return false;
+        }
+
+        if (currentStatus === AITaskStatus.PROCESSING) {
+          if (imageUrls.length > 0) {
+            setGeneratedImages(
+              imageUrls.map((url, index) => ({
+                id: `${task.id}-${index}`,
+                url,
+                provider: task.provider,
+                model: task.model,
+                prompt: task.prompt ?? undefined,
+              }))
+            );
+            setProgress((prev) => Math.max(prev, 85));
+          } else {
+            setProgress((prev) => Math.min(prev + 10, 80));
+          }
+          return false;
+        }
+
+        if (currentStatus === AITaskStatus.SUCCESS) {
+          if (imageUrls.length === 0) {
+            toast.error('The provider returned no images. Please retry.');
+          } else {
+            setGeneratedImages(
+              imageUrls.map((url, index) => ({
+                id: `${task.id}-${index}`,
+                url,
+                provider: task.provider,
+                model: task.model,
+                prompt: task.prompt ?? undefined,
+              }))
+            );
+            toast.success('Image generated successfully');
+          }
+
+          setProgress(100);
+          resetTaskState();
+          return true;
+        }
+
+        if (currentStatus === AITaskStatus.FAILED) {
+          const errorMessage =
+            parsedResult?.error ||
+            parsedResult?.failure_reason ||
+            'Generate image failed';
+          toast.error(errorMessage);
+          resetTaskState();
+          return true;
+        }
+
+        setProgress((prev) => Math.min(prev + 5, 95));
+        return false;
+      } catch (error: any) {
+        console.error('Error polling image task:', error);
+        toast.error(`Query task failed: ${error.message}`);
+        resetTaskState();
+        return true;
+      }
+    },
+    [generationStartTime, resetTaskState]
+  );
+
+  useEffect(() => {
+    if (!taskId || !isGenerating) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const tick = async () => {
+      if (!taskId) {
+        return;
+      }
+      const completed = await pollTaskStatus(taskId);
+      if (completed) {
+        cancelled = true;
+      }
+    };
+
+    tick();
+
+    const interval = setInterval(async () => {
+      if (cancelled || !taskId) {
+        clearInterval(interval);
+        return;
+      }
+      const completed = await pollTaskStatus(taskId);
+      if (completed) {
+        clearInterval(interval);
+      }
+    }, POLL_INTERVAL);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [taskId, isGenerating, pollTaskStatus]);
+
+  const handleGenerate = async () => {
+    if (!user) {
+      setIsShowSignModal(true);
+      return;
+    }
+
+    if (remainingCredits < costCredits) {
+      toast.error('Insufficient credits. Please top up to keep creating.');
+      return;
+    }
+
+    const trimmedPrompt = prompt.trim();
+    if (!trimmedPrompt) {
+      toast.error('Please enter a prompt before generating.');
+      return;
+    }
+
+    if (!provider || !model) {
+      toast.error('Provider or model is not configured correctly.');
+      return;
+    }
+
+    if (!isTextToImageMode && referenceImageUrls.length === 0) {
+      toast.error('Please upload reference images before generating.');
+      return;
+    }
+
+    setIsGenerating(true);
+    setProgress(15);
+    setTaskStatus(AITaskStatus.PENDING);
+    setGeneratedImages([]);
+    setGenerationStartTime(Date.now());
+
+    try {
+      const options: any = {};
+
+      if (!isTextToImageMode) {
+        options.image_input = referenceImageUrls;
+      }
+
+      const resp = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mediaType: AIMediaType.IMAGE,
+          scene: isTextToImageMode ? 'text-to-image' : 'image-to-image',
+          provider,
+          model,
+          prompt: trimmedPrompt,
+          options,
+        }),
+      });
+
+      if (!resp.ok) {
+        throw new Error(`request failed with status: ${resp.status}`);
+      }
+
+      const { code, message, data } = await resp.json();
+      if (code !== 0) {
+        throw new Error(message || 'Failed to create an image task');
+      }
+
+      const newTaskId = data?.id;
+      if (!newTaskId) {
+        throw new Error('Task id missing in response');
+      }
+
+      setTaskId(newTaskId);
+      setProgress(25);
+
+      await fetchUserCredits();
+    } catch (error: any) {
+      console.error('Failed to generate image:', error);
+      toast.error(`Failed to generate image: ${error.message}`);
+      resetTaskState();
+    }
   };
 
-  const nextPreview = () => {
-    setCurrentPreviewIndex((prev) => (prev + 1) % sampleImages.length);
-  };
+  const handleDownloadImage = async (image: GeneratedImage) => {
+    if (!image.url) {
+      return;
+    }
 
-  const prevPreview = () => {
-    setCurrentPreviewIndex(
-      (prev) => (prev - 1 + sampleImages.length) % sampleImages.length
-    );
+    try {
+      setDownloadingImageId(image.id);
+      const resp = await fetch(image.url);
+      if (!resp.ok) {
+        throw new Error('Failed to fetch image');
+      }
+
+      const blob = await resp.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `${image.id}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 200);
+      toast.success('Image downloaded');
+    } catch (error) {
+      console.error('Failed to download image:', error);
+      toast.error('Failed to download image');
+    } finally {
+      setDownloadingImageId(null);
+    }
   };
 
   return (
-    <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 p-6 lg:grid-cols-2">
-      {/* Left Panel */}
-      <Card className="bg-background border">
-        <CardContent className="p-6">
-          {/* Header */}
-          <div className="mb-6">
-            <h2 className="text-foreground mb-1 font-semibold">
-              Image to Image AI
-            </h2>
-          </div>
+    <section className="py-16 md:py-24">
+      <div className="container">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <Card>
+              <CardHeader>
+                {srOnlyTitle && <h2 className="sr-only">{srOnlyTitle}</h2>}
+                <CardTitle className="flex items-center gap-2 text-xl font-semibold">
+                  {t('title')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6 pb-8">
+                <Tabs
+                  value={activeTab}
+                  onValueChange={(value) =>
+                    setActiveTab(value as ImageGeneratorTab)
+                  }
+                >
+                  <TabsList className="bg-primary/10 grid w-full grid-cols-2">
+                    <TabsTrigger value="text-to-image">
+                      {t('tabs.text-to-image')}
+                    </TabsTrigger>
+                    <TabsTrigger value="image-to-image">
+                      {t('tabs.image-to-image')}
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
 
-          {/* Mode Selection with Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="image-to-image">Image to Image</TabsTrigger>
-              <TabsTrigger value="text-to-image">Text to Image</TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          {/* Model Section */}
-          <div className="mb-6">
-            <h3 className="text-foreground mb-3 font-medium">Model</h3>
-            <div className="bg-muted flex items-center justify-between rounded-lg p-3">
-              <div className="flex items-center gap-2">
-                <div className="bg-primary flex h-6 w-6 items-center justify-center rounded-full">
-                  <span className="text-primary-foreground text-xs font-bold">
-                    G
-                  </span>
-                </div>
-                <div>
-                  <div className="text-foreground font-medium">
-                    Google Nano Banana
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>{t('form.provider')}</Label>
+                    <Select value={provider} onValueChange={setProvider}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder={t('form.select_provider')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PROVIDER_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div className="text-muted-foreground text-sm">
-                    Ultra-high character consistency
+
+                  <div className="space-y-2">
+                    <Label>{t('form.model')}</Label>
+                    <Select value={model} onValueChange={setModel}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder={t('form.select_model')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MODEL_OPTIONS.filter((option) =>
+                          option.scenes.includes(activeTab)
+                        ).map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-              </div>
-              <Button
-                size="sm"
-                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-              >
-                Try Wan 2.1
-              </Button>
-            </div>
-          </div>
 
-          {/* Images Upload */}
-          <div className="mb-6">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-foreground font-medium">Images</h3>
-              <span className="text-muted-foreground text-sm">
-                {uploadedImages.length}/{allowMultipleImages ? maxImages : 1}
-              </span>
-            </div>
-
-            {/* Uploaded Images Preview */}
-            {uploadedImages.length > 0 && (
-              <div
-                className={`mb-4 grid gap-2 ${
-                  allowMultipleImages
-                    ? 'grid-cols-2 sm:grid-cols-3'
-                    : 'grid-cols-1'
-                }`}
-              >
-                {previewUrls.map((url, index) => (
-                  <div key={index} className="group relative">
-                    <img
-                      src={url}
-                      alt={`Upload ${index + 1}`}
-                      className="h-20 w-full rounded-lg border object-cover"
+                {!isTextToImageMode && (
+                  <div className="space-y-4">
+                    <ImageUploader
+                      title={t('form.reference_image')}
+                      allowMultiple={allowMultipleImages}
+                      maxImages={allowMultipleImages ? maxImages : 1}
+                      maxSizeMB={maxSizeMB}
+                      onChange={handleReferenceImagesChange}
+                      emptyHint={t('form.reference_image_placeholder')}
                     />
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 transition-opacity group-hover:opacity-100"
-                      onClick={() => removeImage(index)}
-                    >
-                      <IconX className="h-3 w-3" />
-                    </Button>
+
+                    {hasReferenceUploadError && (
+                      <p className="text-destructive text-xs">
+                        {t('form.some_images_failed_to_upload')}
+                      </p>
+                    )}
                   </div>
-                ))}
-              </div>
-            )}
+                )}
 
-            <label className="block">
-              <input
-                type="file"
-                multiple={allowMultipleImages}
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-                disabled={
-                  uploadedImages.length >= (allowMultipleImages ? maxImages : 1)
-                }
-              />
-              <div className="border-border hover:border-muted-foreground/50 cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors">
-                <IconUpload className="text-muted-foreground mx-auto mb-2 h-6 w-6" />
-                <div className="text-foreground font-medium">Add</div>
-              </div>
-            </label>
+                <div className="space-y-2">
+                  <Label htmlFor="image-prompt">{t('form.prompt')}</Label>
+                  <Textarea
+                    id="image-prompt"
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder={t('form.prompt_placeholder')}
+                    className="min-h-32"
+                  />
+                  <div className="text-muted-foreground flex items-center justify-between text-xs">
+                    <span>
+                      {promptLength} / {MAX_PROMPT_LENGTH}
+                    </span>
+                    {isPromptTooLong && (
+                      <span className="text-destructive">
+                        {t('form.prompt_too_long')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {!isMounted ? (
+                  <Button className="w-full" disabled size="lg">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t('loading')}
+                  </Button>
+                ) : isCheckSign ? (
+                  <Button className="w-full" disabled size="lg">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t('checking_account')}
+                  </Button>
+                ) : user ? (
+                  <Button
+                    size="lg"
+                    className="w-full"
+                    onClick={handleGenerate}
+                    disabled={
+                      isGenerating ||
+                      !prompt.trim() ||
+                      isPromptTooLong ||
+                      isReferenceUploading ||
+                      hasReferenceUploadError
+                    }
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {t('generating')}
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        {t('generate')}
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    size="lg"
+                    className="w-full"
+                    onClick={() => setIsShowSignModal(true)}
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    {t('sign_in_to_generate')}
+                  </Button>
+                )}
+
+                {!isMounted ? (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-primary">
+                      {t('credits_cost', { credits: costCredits })}
+                    </span>
+                    <span>{t('credits_remaining', { credits: 0 })}</span>
+                  </div>
+                ) : user && remainingCredits > 0 ? (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-primary">
+                      {t('credits_cost', { credits: costCredits })}
+                    </span>
+                    <span>
+                      {t('credits_remaining', { credits: remainingCredits })}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-primary">
+                        {t('credits_cost', { credits: costCredits })}
+                      </span>
+                      <span>
+                        {t('credits_remaining', { credits: remainingCredits })}
+                      </span>
+                    </div>
+                    <Link href="/pricing">
+                      <Button variant="outline" className="w-full" size="lg">
+                        <CreditCard className="mr-2 h-4 w-4" />
+                        {t('buy_credits')}
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+
+                {isGenerating && (
+                  <div className="space-y-2 rounded-lg border p-4">
+                    <div className="flex items-center justify-between text-sm">
+                      <span>{t('progress')}</span>
+                      <span>{progress}%</span>
+                    </div>
+                    <Progress value={progress} />
+                    {taskStatusLabel && (
+                      <p className="text-muted-foreground text-center text-xs">
+                        {taskStatusLabel}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl font-semibold">
+                  <ImageIcon className="h-5 w-5" />
+                  {t('generated_images')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pb-8">
+                {generatedImages.length > 0 ? (
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    {generatedImages.map((image) => (
+                      <div key={image.id} className="space-y-3">
+                        <div className="relative aspect-square overflow-hidden rounded-lg border">
+                          <LazyImage
+                            src={image.url}
+                            alt={image.prompt || 'Generated image'}
+                            className="h-full w-full object-cover"
+                          />
+
+                          <div className="absolute right-2 bottom-2 flex justify-end text-sm">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="ml-auto"
+                              onClick={() => handleDownloadImage(image)}
+                              disabled={downloadingImageId === image.id}
+                            >
+                              {downloadingImageId === image.id ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                </>
+                              ) : (
+                                <>
+                                  <Download className="h-4 w-4" />
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="bg-muted mb-4 flex h-16 w-16 items-center justify-center rounded-full">
+                      <ImageIcon className="text-muted-foreground h-10 w-10" />
+                    </div>
+                    <p className="text-muted-foreground">
+                      {isGenerating
+                        ? t('ready_to_generate')
+                        : t('no_images_generated')}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
-
-          {/* Prompt */}
-          <div className="mb-6">
-            <h3 className="text-foreground mb-3 font-medium">Prompt</h3>
-            <div className="relative">
-              <Textarea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                className="bg-background min-h-[100px] resize-none border"
-                placeholder="What do you want to create?"
-              />
-              <div className="text-muted-foreground mt-2 flex items-center justify-between text-sm">
-                <span>0 / 2000</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Credits */}
-          <div className="mb-6 flex items-center justify-between text-sm">
-            <span className="text-destructive">🎫 Credits required:</span>
-            <span className="text-foreground font-medium">4 Credits</span>
-          </div>
-
-          {/* Generate Button */}
-          <Button className="bg-background hover:bg-muted text-foreground w-full border">
-            ✨ Create
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Right Panel - Sample Images */}
-      <Card className="bg-background border">
-        <CardContent className="p-6">
-          {/* Header */}
-          <div className="mb-6">
-            <h2 className="text-foreground font-semibold">Sample Image</h2>
-          </div>
-
-          {/* Image Carousel */}
-          <div className="relative">
-            <div className="bg-muted relative mb-4 aspect-[4/3] overflow-hidden rounded-lg">
-              <img
-                src={sampleImages[currentPreviewIndex]}
-                alt="Sample"
-                className="h-full w-full object-cover"
-              />
-
-              {/* Navigation Buttons */}
-              <Button
-                size="sm"
-                variant="secondary"
-                className="bg-background/80 hover:bg-background absolute top-1/2 left-2 h-8 w-8 -translate-y-1/2 transform p-0"
-                onClick={prevPreview}
-              >
-                <IconChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                className="bg-background/80 hover:bg-background absolute top-1/2 right-2 h-8 w-8 -translate-y-1/2 transform p-0"
-                onClick={nextPreview}
-              >
-                <IconChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {/* Dots Indicator */}
-            <div className="flex justify-center gap-2">
-              {sampleImages.map((_, index) => (
-                <button
-                  key={index}
-                  className={cn(
-                    'h-2 w-2 rounded-full transition-colors',
-                    index === currentPreviewIndex
-                      ? 'bg-primary'
-                      : 'bg-muted-foreground/30'
-                  )}
-                  onClick={() => setCurrentPreviewIndex(index)}
-                />
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </div>
+    </section>
   );
 }

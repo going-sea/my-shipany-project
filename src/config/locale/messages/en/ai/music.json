@@ -8,6 +8,7 @@
     "description": "Generate amazing music with AI"
   },
   "generator": {
+    "title": "Music Generator",
     "prompt": "Prompt",
     "prompt_placeholder": "A love story of Romeo and Juliet",
     "generate": "Generate Music",

@@ -11,7 +11,8 @@
     "cost_credits": "Cost Credits",
     "result": "Result",
     "created_at": "Created At",
-    "action": "Action"
+    "action": "Action",
+    "scene": "Scene"
   },
   "list": {
     "title": "AI Tasks",

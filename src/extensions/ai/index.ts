@@ -31,6 +31,12 @@ export interface AISong {
   album?: string;
 }
 
+export interface AIImage {
+  id?: string;
+  createTime?: Date;
+  imageUrl: string;
+}
+
 /**
  * AI generate params
  */
@@ -53,6 +59,7 @@ export enum AITaskStatus {
   PROCESSING = 'processing',
   SUCCESS = 'success',
   FAILED = 'failed',
+  CANCELED = 'canceled',
 }
 
 /**
@@ -60,6 +67,7 @@ export enum AITaskStatus {
  */
 export interface AITaskInfo {
   songs?: AISong[];
+  images?: AIImage[];
   status?: string; // provider task status
   errorCode?: string;
   errorMessage?: string;
@@ -133,64 +141,10 @@ export class AIManager {
 
     return this.defaultProvider;
   }
-
-  // generate content
-  generate({
-    params,
-    provider,
-  }: {
-    params: AIGenerateParams;
-    provider?: string;
-  }): Promise<AITaskResult> {
-    if (provider) {
-      const providerInstance = this.getProvider(provider);
-      if (!providerInstance) {
-        throw new Error(`AI provider '${provider}' not found`);
-      }
-      return providerInstance.generate({ params });
-    }
-
-    const defaultProvider = this.getDefaultProvider();
-    if (!defaultProvider) {
-      throw new Error('No AI provider configured');
-    }
-
-    return defaultProvider.generate({ params });
-  }
-
-  // query content
-  query({
-    taskId,
-    provider,
-  }: {
-    taskId: string;
-    provider?: string;
-  }): Promise<AITaskResult> {
-    if (provider) {
-      const providerInstance = this.getProvider(provider);
-      if (!providerInstance) {
-        throw new Error(`AI provider '${provider}' not found`);
-      }
-      if (!providerInstance.query) {
-        throw new Error(`AI provider '${provider}' no query method`);
-      }
-      return providerInstance.query({ taskId });
-    }
-
-    const defaultProvider = this.getDefaultProvider();
-    if (!defaultProvider) {
-      throw new Error('No AI provider configured');
-    }
-
-    if (!defaultProvider.query) {
-      throw new Error(`AI provider '${defaultProvider.name}' no query method`);
-    }
-
-    return defaultProvider.query({ taskId });
-  }
 }
 
 // ai manager
 export const aiManager = new AIManager();
 
 export * from './kie';
+export * from './replicate';

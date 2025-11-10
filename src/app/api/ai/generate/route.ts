@@ -1,5 +1,5 @@
 import { envConfigs } from '@/config';
-import { AITaskStatus } from '@/extensions/ai';
+import { AIMediaType, AITaskStatus } from '@/extensions/ai';
 import { getUuid } from '@/shared/lib/hash';
 import { respData, respErr } from '@/shared/lib/resp';
 import { createAITask, NewAITask } from '@/shared/models/ai_task';
@@ -9,7 +9,8 @@ import { getAIService } from '@/shared/services/ai';
 
 export async function POST(request: Request) {
   try {
-    let { provider, mediaType, model, prompt, options } = await request.json();
+    let { provider, mediaType, model, prompt, options, scene } =
+      await request.json();
 
     if (!provider || !mediaType || !model) {
       throw new Error('invalid params');
@@ -39,7 +40,24 @@ export async function POST(request: Request) {
     }
 
     // todo: get cost credits from settings
-    const costCredits = 10;
+    let costCredits = 2;
+
+    if (mediaType === AIMediaType.IMAGE) {
+      // generate image
+      if (scene === 'image-to-image') {
+        costCredits = 4;
+      } else if (scene === 'text-to-image') {
+        costCredits = 2;
+      } else {
+        throw new Error('invalid scene');
+      }
+    } else if (mediaType === AIMediaType.MUSIC) {
+      // generate music
+      costCredits = 10;
+      scene = 'text-to-music';
+    } else {
+      throw new Error('invalid mediaType');
+    }
 
     // check credits
     const remainingCredits = await getRemainingCredits(user.id);
@@ -58,7 +76,7 @@ export async function POST(request: Request) {
     };
 
     // generate content
-    const result = await aiService.generate({ params });
+    const result = await aiProvider.generate({ params });
     if (!result?.taskId) {
       throw new Error(
         `ai generate failed, mediaType: ${mediaType}, provider: ${provider}, model: ${model}`
@@ -73,6 +91,7 @@ export async function POST(request: Request) {
       provider,
       model,
       prompt,
+      scene,
       options: options ? JSON.stringify(options) : null,
       status: AITaskStatus.PENDING,
       costCredits,

@@ -1,28 +1,36 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { ImageGenerator } from '@/shared/blocks/generator/image';
+import { PageHeader } from '@/shared/blocks/common';
+import { ImageGenerator } from '@/shared/blocks/generator';
 import { getMetadata } from '@/shared/lib/seo';
-import { CTA, FAQ, Hero, Showcases } from '@/themes/default/blocks';
+import { CTA, FAQ } from '@/themes/default/blocks';
 
 export const generateMetadata = getMetadata({
-  metadataKey: 'demo.ai-image-generator',
+  metadataKey: 'ai.image.metadata',
+  canonicalUrl: '/ai-image-generator',
 });
 
-export default async function ImageGeneratorPage() {
-  const t = await getTranslations('landing');
-  const td = await getTranslations('demo.ai-image-generator');
+export default async function AiImageGeneratorPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
 
-  const hero = {
-    title: td('title'),
-    description: td('description'),
-    tip: td('tip'),
-  };
+  const t = await getTranslations('landing');
+  const tt = await getTranslations('ai.image');
 
   return (
     <>
-      <Hero hero={hero} />
-
-      <ImageGenerator />
+      <PageHeader
+        title={tt.raw('page.title')}
+        description={tt.raw('page.description')}
+        className="mt-16 -mb-32"
+      />
+      <ImageGenerator srOnlyTitle={tt.raw('generator.title')} />
+      <FAQ faq={t.raw('faq')} />
+      <CTA cta={t.raw('cta')} className="bg-muted" />
     </>
   );
 }

@@ -8,6 +8,7 @@
     "description": "使用 AI 音乐模型生成音乐，支持音乐到音乐和文本到音乐。"
   },
   "generator": {
+    "title": "音乐生成器",
     "prompt": "提示词",
     "prompt_placeholder": "罗密欧与朱丽叶的爱情故事",
     "generate": "生成音乐",

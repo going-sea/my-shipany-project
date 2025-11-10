@@ -444,6 +444,11 @@ export function MusicGenerator({ className, srOnlyTitle }: SongGeneratorProps) {
             {/* Left side - Form */}
             <Card>
               <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  {t('generator.title')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Switch
@@ -469,7 +474,8 @@ export function MusicGenerator({ className, srOnlyTitle }: SongGeneratorProps) {
                     </Select>
                   </div>
                 </div>
-              </CardHeader>
+              </CardContent>
+
               <CardContent className="space-y-6">
                 {customMode && (
                   <div className="space-y-2">

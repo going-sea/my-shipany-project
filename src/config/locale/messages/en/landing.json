@@ -31,6 +31,12 @@
           "icon": "RiRobot2Line",
           "children": [
             {
+              "title": "AI Image Generator",
+              "description": "Use AI to generate images",
+              "url": "/ai-image-generator",
+              "icon": "RiImage2Line"
+            },
+            {
               "title": "AI Music Generator",
               "description": "Use AI to generate music",
               "url": "/ai-music-generator",

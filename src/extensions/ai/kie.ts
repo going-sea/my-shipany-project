@@ -24,13 +24,13 @@ export class KieProvider implements AIProvider {
   // provider name
   readonly name = 'kie';
   // provider configs
-  configs: AIConfigs;
+  configs: KieConfigs;
 
   // api base url
   private baseUrl = 'https://api.kie.ai/api/v1';
 
   // init provider
-  constructor(configs: AIConfigs) {
+  constructor(configs: KieConfigs) {
     this.configs = configs;
   }
 

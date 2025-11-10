@@ -31,6 +31,12 @@
           "icon": "RiRobot2Line",
           "children": [
             {
+              "title": "AI 图片生成器",
+              "description": "使用 AI 生成图片",
+              "url": "/ai-image-generator",
+              "icon": "RiImage2Line"
+            },
+            {
               "title": "AI 音乐生成器",
               "description": "使用 AI 生成美妙的音乐",
               "url": "/ai-music-generator",

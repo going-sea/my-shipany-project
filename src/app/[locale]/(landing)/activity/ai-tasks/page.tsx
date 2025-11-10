@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
 import { AITaskStatus } from '@/extensions/ai';
-import { AudioPlayer, Empty } from '@/shared/blocks/common';
+import { AudioPlayer, Empty, LazyImage } from '@/shared/blocks/common';
 import { TableCard } from '@/shared/blocks/table';
 import { AITask, getAITasks, getAITasksCount } from '@/shared/models/ai_task';
 import { getUserInfo } from '@/shared/models/user';
@@ -76,6 +76,19 @@ export default async function AiTasksPage({
                   </div>
                 );
               }
+            } else if (taskInfo.images && taskInfo.images.length > 0) {
+              return (
+                <div className="flex flex-col gap-2">
+                  {taskInfo.images.map((image: any, index: number) => (
+                    <LazyImage
+                      key={index}
+                      src={image.imageUrl}
+                      alt="Generated image"
+                      className="h-32 w-auto"
+                    />
+                  ))}
+                </div>
+              );
             } else {
               return '-';
             }

@@ -11,7 +11,8 @@
     "cost_credits": "消耗积分",
     "result": "结果",
     "created_at": "创建时间",
-    "action": "操作"
+    "action": "操作",
+    "scene": "场景"
   },
   "list": {
     "title": "AI任务",

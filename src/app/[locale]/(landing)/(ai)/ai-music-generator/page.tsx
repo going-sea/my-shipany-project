@@ -28,7 +28,7 @@ export default async function AiMusicGeneratorPage({
         description={tt.raw('page.description')}
         className="mt-16 -mb-32"
       />
-      <MusicGenerator srOnlyTitle={tt.raw('page.title')} />
+      <MusicGenerator srOnlyTitle={tt.raw('generator.title')} />
       <FAQ faq={t.raw('faq')} />
       <CTA cta={t.raw('cta')} className="bg-muted" />
     </>

@@ -478,6 +478,7 @@ export const aiTask = pgTable(
     taskInfo: text('task_info'), // provider task info
     taskResult: text('task_result'), // provider task result
     costCredits: integer('cost_credits').notNull().default(0),
+    scene: text('scene').notNull().default(''),
   },
   (table) => [
     // Composite: Query user's AI tasks by status

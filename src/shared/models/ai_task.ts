@@ -22,7 +22,7 @@ export async function createAITask(newAITask: NewAITask) {
       await consumeCredits({
         userId: newAITask.userId,
         credits: newAITask.costCredits,
-        scene: `ai-${newAITask.mediaType}-generator`,
+        scene: newAITask.scene,
         description: `generate ${newAITask.mediaType}`,
         metadata: JSON.stringify({
           type: 'ai-task',

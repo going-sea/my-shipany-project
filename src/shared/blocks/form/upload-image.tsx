@@ -1,13 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { ImageIcon, Trash, Upload, X } from 'lucide-react';
+import { useCallback, useMemo } from 'react';
 import { ControllerRenderProps } from 'react-hook-form';
-import { toast } from 'sonner';
 
-import { Button } from '@/shared/components/ui/button';
-import { cn } from '@/shared/lib/utils';
 import { FormField } from '@/shared/types/blocks/form';
+
+import { ImageUploader, ImageUploaderValue } from '../common';
 
 interface UploadImageProps {
   field: FormField;
@@ -27,239 +25,47 @@ export function UploadImage({
   onUpload,
 }: UploadImageProps) {
   const maxImages = metadata?.max || 1;
+  const maxSizeMB = metadata?.maxSizeMB || 10;
+  const allowMultiple = maxImages > 1;
 
-  const [previews, setPreviews] = useState<string[]>([]);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const initialValue = formField.value;
-    if (!initialValue) return;
+  const previews = useMemo(() => {
+    const value = formField.value;
+    if (!value) return [];
 
     let urls: string[] = [];
 
-    if (typeof initialValue === 'string') {
-      urls = initialValue.includes(',')
-        ? initialValue.split(',').filter(Boolean)
-        : [initialValue];
-    } else if (Array.isArray(initialValue)) {
-      urls = initialValue;
+    if (typeof value === 'string') {
+      urls = value.includes(',') ? value.split(',').filter(Boolean) : [value];
+    } else if (Array.isArray(value)) {
+      urls = value;
     }
 
-    if (urls.length > 0) {
-      setPreviews(urls);
-      setUploadedUrls(urls);
-    }
-  }, []);
+    return urls;
+  }, [formField.value]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
+  const handleChange = useCallback(
+    (items: ImageUploaderValue[]) => {
+      const uploadedUrls = items
+        .filter((item) => item.status === 'uploaded' && item.url)
+        .map((item) => item.url as string);
 
-    const remainingSlots = maxImages - previews.length;
-    const filesToAdd = files.slice(0, remainingSlots);
-
-    const newPreviews: string[] = [];
-    filesToAdd.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          newPreviews.push(event.target.result as string);
-          if (newPreviews.length === filesToAdd.length) {
-            setPreviews((prev) => [...prev, ...newPreviews]);
-            setSelectedFiles((prev) => [...prev, ...filesToAdd]);
-          }
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const handleRemove = (index: number) => {
-    const newPreviews = previews.filter((_, i) => i !== index);
-    const newUploadedUrls = uploadedUrls.filter((_, i) => i !== index);
-
-    setPreviews(newPreviews);
-    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
-    setUploadedUrls(newUploadedUrls);
-
-    // Update form value
-    if (newUploadedUrls.length > 0) {
-      formField.onChange(
-        maxImages === 1 ? newUploadedUrls[0] : newUploadedUrls
-      );
-    } else {
-      formField.onChange(maxImages === 1 ? '' : []);
-    }
-  };
-
-  const handleRemoveAll = () => {
-    setPreviews([]);
-    setSelectedFiles([]);
-    setUploadedUrls([]);
-    formField.onChange(maxImages === 1 ? '' : []);
-  };
-
-  const handleUpload = async () => {
-    if (selectedFiles.length === 0) return;
-
-    setUploading(true);
-    try {
-      let newUploadedUrls: string[] = [];
-
-      if (onUpload) {
-        newUploadedUrls = await onUpload(selectedFiles);
+      if (uploadedUrls.length > 0) {
+        formField.onChange(allowMultiple ? uploadedUrls : uploadedUrls[0]);
       } else {
-        const formData = new FormData();
-        selectedFiles.forEach((file) => {
-          formData.append('files', file);
-        });
-
-        const response = await fetch(uploadUrl, {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error('Upload failed');
-        }
-
-        const result = await response.json();
-
-        if (result.code !== 0) {
-          throw new Error(result.message || 'Upload failed');
-        }
-
-        newUploadedUrls = result.data.urls;
+        formField.onChange(allowMultiple ? [] : '');
       }
-
-      const allUploadedUrls = [...uploadedUrls, ...newUploadedUrls];
-
-      formField.onChange(
-        maxImages === 1 ? allUploadedUrls[0] : allUploadedUrls
-      );
-
-      setUploadedUrls(allUploadedUrls);
-      setSelectedFiles([]);
-    } catch (error) {
-      console.error('Upload failed:', error);
-      toast.error('Upload failed');
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleSelectClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const canAddMore = previews.length < maxImages;
+    },
+    [formField, allowMultiple]
+  );
 
   return (
-    <div className="space-y-4">
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        multiple={maxImages > 1}
-        onChange={handleFileSelect}
-        className="hidden"
-      />
-
-      {previews.length > 0 && (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {previews.map((preview, index) => {
-            const isUploaded = index < uploadedUrls.length;
-            return (
-              <div
-                key={index}
-                className="group border-border bg-muted relative aspect-square overflow-hidden rounded-lg border"
-              >
-                <img
-                  src={preview}
-                  alt={`Preview ${index + 1}`}
-                  className="h-full w-full object-cover"
-                />
-                {/* {isUploaded && (
-                  <div className="absolute top-2 left-2 px-2 py-1 bg-green-500 text-white text-xs rounded">
-                    uploaded
-                  </div>
-                )} */}
-                <button
-                  type="button"
-                  onClick={() => handleRemove(index)}
-                  className="bg-destructive hover:bg-destructive/90 absolute top-2 right-2 rounded-full p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
-                >
-                  <X className="size-4" />
-                </button>
-              </div>
-            );
-          })}
-
-          {canAddMore && (
-            <button
-              type="button"
-              onClick={handleSelectClick}
-              className="border-border bg-muted/50 hover:bg-muted flex aspect-square flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed transition-colors"
-            >
-              <ImageIcon className="text-muted-foreground size-8" />
-              <span className="text-muted-foreground text-sm">
-                {previews.length}/{maxImages}
-              </span>
-            </button>
-          )}
-        </div>
-      )}
-
-      {previews.length === 0 && (
-        <button
-          type="button"
-          onClick={handleSelectClick}
-          className="border-border bg-muted/50 hover:bg-muted flex aspect-video h-40 w-40 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed transition-colors"
-        >
-          <ImageIcon className="text-muted-foreground size-8" />
-          <p className="text-muted-foreground text-sm">
-            {field.placeholder || 'upload image'}
-          </p>
-          {maxImages > 1 && (
-            <p className="text-muted-foreground text-xs">{maxImages} images</p>
-          )}
-        </button>
-      )}
-
-      {previews.length > 0 && (
-        <div className="flex items-center gap-2">
-          {maxImages > 1 && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleRemoveAll}
-              className="w-32 text-sm"
-            >
-              <X className="size-4" />
-              Remove
-            </Button>
-          )}
-          {selectedFiles.length > 0 && (
-            <Button
-              type="button"
-              onClick={handleUpload}
-              disabled={uploading}
-              size="sm"
-              className="w-32 text-xs"
-            >
-              <Upload className="size-4" />
-              {uploading ? 'Uploading...' : 'Upload'}
-            </Button>
-          )}
-        </div>
-      )}
-    </div>
+    <ImageUploader
+      allowMultiple={allowMultiple}
+      maxImages={maxImages}
+      maxSizeMB={maxSizeMB}
+      emptyHint={field.placeholder}
+      defaultPreviews={previews}
+      onChange={handleChange}
+    />
   );
 }
