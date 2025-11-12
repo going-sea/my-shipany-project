@@ -1,11 +1,15 @@
 # ShipAny Template Two
 
+## Doc
+
+[https://www.shipany.ai/zh/docs](https://www.shipany.ai/zh/docs)
+
 ## Getting Started
 
 1. Clone code and install
 
 ```shell
-git clone git@github.com:shipanyai/shipany-template-two -b dev my-shipany-project
+git clone git@github.com:boomer1678/shipany-template.git -b dev my-shipany-project
 cd my-shipany-project
 pnpm install
 ```
