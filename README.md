@@ -2,6 +2,7 @@
 
 ## Preview
 
+![preview](preview.png)
 [https://cf-two.shipany.site/](https://cf-two.shipany.site/)
 
 ## Doc
