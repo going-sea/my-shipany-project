@@ -8,28 +8,41 @@ export interface PricingGroup {
   is_featured?: boolean;
 }
 
+export interface PricingCurrency {
+  currency: string; // currency code
+  amount: number; // price amount
+  price: string; // price text
+  original_price: string; // original price text
+  payment_product_id?: string;
+  payment_providers?: string[];
+}
+
 export interface PricingItem {
   title?: string;
   description?: string;
   label?: string;
-  price?: string;
-  original_price?: string;
-  currency?: string;
+
+  currency: string; // default currency
+  amount: number; // default price amount
+  price?: string; // default price text
+  original_price?: string; // default original price text
+  currencies?: PricingCurrency[]; // alternative currencies with different prices
+
   unit?: string;
   features_title?: string;
   features?: string[];
   button?: Button;
   tip?: string;
   is_featured?: boolean;
-  interval: 'month' | 'year' | 'one-time';
+  interval: 'one-time' | 'day' | 'week' | 'month' | 'year';
   product_id: string;
   payment_product_id?: string;
+  payment_providers?: string[];
   product_name?: string;
-  amount: number;
-  cn_amount?: number;
-  currency: string;
+  plan_name?: string;
+
   credits?: number;
-  valid_months?: number;
+  valid_days?: number;
   group?: string;
 }
 

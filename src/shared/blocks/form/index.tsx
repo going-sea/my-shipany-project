@@ -211,7 +211,6 @@ export function Form({
     if (field.name) {
       if (field.type === 'switch') {
         const val = data?.[field.name] ?? field.value;
-        console.log('switch value', val, field.name);
         defaultValues[field.name] =
           val === true || val === 'true' || val === 1 || val === '1';
       } else if (
@@ -246,18 +245,18 @@ export function Form({
   });
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    console.log('=== Form Submit Start ===');
-    console.log('[Form Submit] Raw form data:', data);
+    // console.log('=== Form Submit Start ===');
+    // console.log('[Form Submit] Raw form data:', data);
 
     // Check upload_image field
     fields?.forEach((field) => {
       if (field.type === 'upload_image' && field.name) {
-        console.log(`[Form Submit] Upload field "${field.name}":`, {
-          value: data[field.name],
-          type: typeof data[field.name],
-          isArray: Array.isArray(data[field.name]),
-          metadata: field.metadata,
-        });
+        // console.log(`[Form Submit] Upload field "${field.name}":`, {
+        //   value: data[field.name],
+        //   type: typeof data[field.name],
+        //   isArray: Array.isArray(data[field.name]),
+        //   metadata: field.metadata,
+        // });
       }
     });
 

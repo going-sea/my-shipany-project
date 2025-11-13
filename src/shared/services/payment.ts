@@ -45,11 +45,21 @@ export function getPaymentServiceWithConfigs(configs: Configs) {
 
   // add stripe provider
   if (configs.stripe_enabled === 'true') {
+    let allowedPaymentMethods = configs.stripe_payment_methods || [];
+    if (typeof allowedPaymentMethods === 'string') {
+      try {
+        allowedPaymentMethods = JSON.parse(allowedPaymentMethods);
+      } catch (e) {
+        console.error('parse stripe payment methods error', e);
+        allowedPaymentMethods = [];
+      }
+    }
     paymentManager.addProvider(
       new StripeProvider({
         secretKey: configs.stripe_secret_key,
         publishableKey: configs.stripe_publishable_key,
         signingSecret: configs.stripe_signing_secret,
+        allowedPaymentMethods: allowedPaymentMethods as string[],
       }),
       defaultProvider === 'stripe'
     );
@@ -95,7 +105,7 @@ let paymentService: PaymentManager | null = null;
  * get payment service instance
  */
 export async function getPaymentService(): Promise<PaymentManager> {
-  if (!paymentService) {
+  if (true) {
     const configs = await getAllConfigs();
     paymentService = getPaymentServiceWithConfigs(configs);
   }

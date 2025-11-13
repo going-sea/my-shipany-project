@@ -17,6 +17,7 @@ import {
 } from '@/shared/models/order';
 import { getUserInfo } from '@/shared/models/user';
 import { getPaymentService } from '@/shared/services/payment';
+import { PricingCurrency } from '@/shared/types/blocks/pricing';
 
 export async function POST(req: Request) {
   try {
@@ -26,7 +27,10 @@ export async function POST(req: Request) {
       return respErr('product_id is required');
     }
 
-    const t = await getTranslations('pricing');
+    const t = await getTranslations({
+      locale: locale || 'en',
+      namespace: 'pricing',
+    });
     const pricing = t.raw('pricing');
 
     const pricingItem = pricing.items.find(
@@ -59,6 +63,35 @@ export async function POST(req: Request) {
       return respErr('no payment provider configured');
     }
 
+    // Validate payment provider against allowed providers
+    // First check currency-specific payment_providers if currency is provided
+    let allowedProviders: string[] | undefined;
+
+    if (
+      currency &&
+      currency.toLowerCase() !== (pricingItem.currency || 'usd').toLowerCase()
+    ) {
+      const selectedCurrencyData = pricingItem.currencies?.find(
+        (c: PricingCurrency) =>
+          c.currency.toLowerCase() === currency.toLowerCase()
+      );
+      allowedProviders = selectedCurrencyData?.payment_providers;
+    }
+
+    // Fallback to default payment_providers if not found in currency config
+    if (!allowedProviders || allowedProviders.length === 0) {
+      allowedProviders = pricingItem.payment_providers;
+    }
+
+    // If payment_providers is configured, validate the selected provider
+    if (allowedProviders && allowedProviders.length > 0) {
+      if (!allowedProviders.includes(paymentProviderName)) {
+        return respErr(
+          `payment provider ${paymentProviderName} is not supported for this currency`
+        );
+      }
+    }
+
     // get default payment provider
     const paymentService = await getPaymentService();
 
@@ -67,9 +100,34 @@ export async function POST(req: Request) {
       return respErr('no payment provider configured');
     }
 
-    // checkout currency
-    let checkoutCurrency = currency || pricingItem.currency || '';
-    checkoutCurrency = checkoutCurrency.toLowerCase();
+    // checkout currency and amount - calculate from server-side data only (never trust client input)
+    // Security: currency can be provided by frontend, but amount must be calculated server-side
+    const defaultCurrency = (pricingItem.currency || 'usd').toLowerCase();
+    let checkoutCurrency = defaultCurrency;
+    let checkoutAmount = pricingItem.amount;
+
+    // If currency is provided, validate it and find corresponding amount from server-side data
+    if (currency) {
+      const requestedCurrency = currency.toLowerCase();
+
+      // Check if requested currency is the default currency
+      if (requestedCurrency === defaultCurrency) {
+        checkoutCurrency = defaultCurrency;
+        checkoutAmount = pricingItem.amount;
+      } else if (pricingItem.currencies && pricingItem.currencies.length > 0) {
+        // Find amount for the requested currency in currencies list
+        const selectedCurrencyData = pricingItem.currencies.find(
+          (c: PricingCurrency) => c.currency.toLowerCase() === requestedCurrency
+        );
+        if (selectedCurrencyData) {
+          // Valid currency found, use it
+          checkoutCurrency = requestedCurrency;
+          checkoutAmount = selectedCurrencyData.amount;
+        }
+        // If currency not found in list, fallback to default (already set above)
+      }
+      // If no currencies list exists, fallback to default (already set above)
+    }
 
     // get payment interval
     const paymentInterval: PaymentInterval =
@@ -84,19 +142,37 @@ export async function POST(req: Request) {
     const orderNo = getSnowId();
 
     // get payment product id from pricing table in local file
-    let paymentProductId = pricingItem.payment_product_id || '';
+    // First try to get currency-specific payment_product_id
+    let paymentProductId = '';
 
+    // If currency is provided and different from default, check currency-specific payment_product_id
+    if (currency && currency.toLowerCase() !== defaultCurrency) {
+      const selectedCurrencyData = pricingItem.currencies?.find(
+        (c: PricingCurrency) =>
+          c.currency.toLowerCase() === currency.toLowerCase()
+      );
+      if (selectedCurrencyData?.payment_product_id) {
+        paymentProductId = selectedCurrencyData.payment_product_id;
+      }
+    }
+
+    // Fallback to default payment_product_id if not found in currency config
     if (!paymentProductId) {
-      // get payment product id from payment provider's config
+      paymentProductId = pricingItem.payment_product_id || '';
+    }
+
+    // If still not found, get from payment provider's config
+    if (!paymentProductId) {
       paymentProductId = await getPaymentProductId(
         pricingItem.product_id,
-        paymentProviderName
+        paymentProviderName,
+        checkoutCurrency
       );
     }
 
-    // build checkout price
+    // build checkout price with correct amount for selected currency
     const checkoutPrice: PaymentPrice = {
-      amount: pricingItem.amount,
+      amount: checkoutAmount,
       currency: checkoutCurrency,
     };
 
@@ -163,7 +239,7 @@ export async function POST(req: Request) {
       userId: user.id,
       userEmail: user.email,
       status: OrderStatus.PENDING,
-      amount: pricingItem.amount,
+      amount: checkoutAmount, // use the amount for selected currency
       currency: checkoutCurrency,
       productId: pricingItem.product_id,
       paymentType: paymentType,
@@ -216,7 +292,11 @@ export async function POST(req: Request) {
 }
 
 // get payemt product id from payment provider's config
-async function getPaymentProductId(productId: string, provider: string) {
+async function getPaymentProductId(
+  productId: string,
+  provider: string,
+  checkoutCurrency: string
+) {
   if (provider !== 'creem') {
     // currently only creem supports payment product id mapping
     return;
@@ -227,7 +307,9 @@ async function getPaymentProductId(productId: string, provider: string) {
     const creemProductIds = configs.creem_product_ids;
     if (creemProductIds) {
       const productIds = JSON.parse(creemProductIds);
-      return productIds[productId];
+      return (
+        productIds[`${productId}_${checkoutCurrency}`] || productIds[productId]
+      );
     }
   } catch (e: any) {
     console.log('get payment product id failed:', e);

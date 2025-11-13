@@ -12,7 +12,7 @@ export interface Setting {
     value: string;
   }[];
   tip?: string;
-  value?: string;
+  value?: string | string[] | boolean | number;
   group?: string;
   tab?: string;
   attributes?: Record<string, any>;
@@ -374,6 +374,20 @@ export async function getSettings() {
       type: 'password',
       placeholder: 'whsec_xxx',
       tip: 'Stripe Signing Secret is used to verify the webhook notification from Stripe',
+      group: 'stripe',
+      tab: 'payment',
+    },
+    {
+      name: 'stripe_payment_methods',
+      title: 'Stripe Payment Methods',
+      type: 'checkbox',
+      tip: 'If not set, only card payment method will be enabled.',
+      options: [
+        { title: 'Card', value: 'card' },
+        { title: 'Wechat Pay', value: 'wechat_pay' },
+        { title: 'Alipay', value: 'alipay' },
+      ],
+      value: ['card'],
       group: 'stripe',
       tab: 'payment',
     },

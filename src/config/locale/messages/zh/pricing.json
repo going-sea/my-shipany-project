@@ -40,10 +40,18 @@
         ],
         "interval": "one-time",
         "amount": 9900,
-        "cn_amount": 69900,
         "currency": "USD",
         "price": "$99",
         "original_price": "$199",
+        "currencies": [
+          {
+            "currency": "CNY",
+            "amount": 69900,
+            "price": "¥699",
+            "original_price": "¥1399",
+            "payment_providers": ["stripe"]
+          }
+        ],
         "unit": "",
         "is_featured": false,
         "tip": "一次付费，畅享无限项目部署！",
@@ -53,7 +61,6 @@
           "icon": "RiFlashlightFill"
         },
         "product_id": "starter",
-        "payment_product_id": "prod_7ehwYVBKhykl9mAFBcPibQ",
         "product_name": "ShipAny 模板入门版",
         "credits": 100,
         "valid_days": 30,
@@ -76,10 +83,18 @@
         ],
         "interval": "one-time",
         "amount": 19900,
-        "cn_amount": 139900,
         "currency": "USD",
         "price": "$199",
         "original_price": "$299",
+        "currencies": [
+          {
+            "currency": "CNY",
+            "amount": 139900,
+            "price": "¥1399",
+            "original_price": "¥1999",
+            "payment_providers": ["stripe"]
+          }
+        ],
         "unit": "",
         "is_featured": true,
         "tip": "一次付费，畅享无限项目部署！",
@@ -89,7 +104,6 @@
           "icon": "RiFlashlightFill"
         },
         "product_id": "standard",
-        "payment_product_id": "prod_7hILT78TgVnHTOmHHcMZgv",
         "product_name": "ShipAny 模板标准版",
         "credits": 200,
         "valid_days": 90,
@@ -110,10 +124,18 @@
         ],
         "interval": "one-time",
         "amount": 29900,
-        "cn_amount": 199900,
         "currency": "USD",
         "price": "$299",
         "original_price": "$399",
+        "currencies": [
+          {
+            "currency": "CNY",
+            "amount": 199900,
+            "price": "¥1999",
+            "original_price": "¥2799",
+            "payment_providers": ["stripe", "creem"]
+          }
+        ],
         "unit": "",
         "is_featured": false,
         "tip": "一次付费，畅享无限项目部署！",
@@ -123,7 +145,6 @@
           "icon": "RiFlashlightFill"
         },
         "product_id": "premium",
-        "payment_product_id": "prod_6kfJtbWBnnqVdzEbjPaoTR",
         "product_name": "ShipAny 模板高级版",
         "credits": 300,
         "valid_days": 365,
@@ -191,7 +212,6 @@
           "icon": "RiFlashlightFill"
         },
         "product_id": "standard-monthly",
-        "payment_product_id": "prod_1r0U95BfJ5LTIo4DdxDmC2",
         "product_name": "ShipAny 模板标准版包月",
         "credits": 200,
         "valid_days": 30,
@@ -326,7 +346,6 @@
           "icon": "RiFlashlightFill"
         },
         "product_id": "premium-yearly",
-        "payment_product_id": "prod_7JiQhXqON6JayHXjtx5rXJ",
         "product_name": "ShipAny 模板高级版包年",
         "credits": 3600,
         "valid_days": 365,

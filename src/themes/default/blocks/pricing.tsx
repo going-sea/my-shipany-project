@@ -16,15 +16,65 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { useAppContext } from '@/shared/contexts/app';
 import { getCookie } from '@/shared/lib/cookie';
 import { cn } from '@/shared/lib/utils';
 import { Subscription } from '@/shared/models/subscription';
 import {
+  PricingCurrency,
   PricingItem,
   Pricing as PricingType,
 } from '@/shared/types/blocks/pricing';
+
+// Helper function to get all available currencies from a pricing item
+function getCurrenciesFromItem(item: PricingItem | null): PricingCurrency[] {
+  if (!item) return [];
+
+  // Always include the default currency first
+  const defaultCurrency: PricingCurrency = {
+    currency: item.currency,
+    amount: item.amount,
+    price: item.price || '',
+    original_price: item.original_price || '',
+  };
+
+  // Add additional currencies if available
+  if (item.currencies && item.currencies.length > 0) {
+    return [defaultCurrency, ...item.currencies];
+  }
+
+  return [defaultCurrency];
+}
+
+// Helper function to select initial currency based on locale
+function getInitialCurrency(
+  currencies: PricingCurrency[],
+  locale: string,
+  defaultCurrency: string
+): string {
+  if (currencies.length === 0) return defaultCurrency;
+
+  // If locale is 'zh', prefer CNY
+  if (locale === 'zh') {
+    const cnyCurrency = currencies.find(
+      (c) => c.currency.toLowerCase() === 'cny'
+    );
+    if (cnyCurrency) {
+      return cnyCurrency.currency;
+    }
+  }
+
+  // Otherwise return default currency
+  return defaultCurrency;
+}
 
 export function Pricing({
   pricing,
@@ -65,16 +115,107 @@ export function Pricing({
   const [isLoading, setIsLoading] = useState(false);
   const [productId, setProductId] = useState<string | null>(null);
 
+  // Currency state management for each item
+  // Store selected currency and displayed item for each product_id
+  const [itemCurrencies, setItemCurrencies] = useState<
+    Record<string, { selectedCurrency: string; displayedItem: PricingItem }>
+  >({});
+
+  // Initialize currency states for all items
+  useEffect(() => {
+    if (pricing.items && pricing.items.length > 0) {
+      const initialCurrencyStates: Record<
+        string,
+        { selectedCurrency: string; displayedItem: PricingItem }
+      > = {};
+
+      pricing.items.forEach((item) => {
+        const currencies = getCurrenciesFromItem(item);
+        const selectedCurrency = getInitialCurrency(
+          currencies,
+          locale,
+          item.currency
+        );
+
+        // Create displayed item with selected currency
+        const currencyData = currencies.find(
+          (c) => c.currency.toLowerCase() === selectedCurrency.toLowerCase()
+        );
+
+        const displayedItem = currencyData
+          ? {
+              ...item,
+              currency: currencyData.currency,
+              amount: currencyData.amount,
+              price: currencyData.price,
+              original_price: currencyData.original_price,
+              // Override with currency-specific payment settings if available
+              payment_product_id:
+                currencyData.payment_product_id || item.payment_product_id,
+              payment_providers:
+                currencyData.payment_providers || item.payment_providers,
+            }
+          : item;
+
+        initialCurrencyStates[item.product_id] = {
+          selectedCurrency,
+          displayedItem,
+        };
+      });
+
+      setItemCurrencies(initialCurrencyStates);
+    }
+  }, [pricing.items, locale]);
+
+  // Handler for currency change
+  const handleCurrencyChange = (productId: string, currency: string) => {
+    const item = pricing.items?.find((i) => i.product_id === productId);
+    if (!item) return;
+
+    const currencies = getCurrenciesFromItem(item);
+    const currencyData = currencies.find(
+      (c) => c.currency.toLowerCase() === currency.toLowerCase()
+    );
+
+    if (currencyData) {
+      const displayedItem = {
+        ...item,
+        currency: currencyData.currency,
+        amount: currencyData.amount,
+        price: currencyData.price,
+        original_price: currencyData.original_price,
+        // Override with currency-specific payment settings if available
+        payment_product_id:
+          currencyData.payment_product_id || item.payment_product_id,
+        payment_providers:
+          currencyData.payment_providers || item.payment_providers,
+      };
+
+      setItemCurrencies((prev) => ({
+        ...prev,
+        [productId]: {
+          selectedCurrency: currency,
+          displayedItem,
+        },
+      }));
+    }
+  };
+
   const handlePayment = async (item: PricingItem) => {
     if (!user) {
       setIsShowSignModal(true);
       return;
     }
+
+    // Use displayed item with selected currency
+    const displayedItem =
+      itemCurrencies[item.product_id]?.displayedItem || item;
+
     if (configs.select_payment_enabled === 'true') {
-      setPricingItem(item);
+      setPricingItem(displayedItem);
       setIsShowPaymentModal(true);
     } else {
-      handleCheckout(item, configs.default_payment_provider);
+      handleCheckout(displayedItem, configs.default_payment_provider);
     }
   };
 
@@ -238,6 +379,13 @@ export function Pricing({
               isCurrentPlan = true;
             }
 
+            // Get currency state for this item
+            const currencyState = itemCurrencies[item.product_id];
+            const displayedItem = currencyState?.displayedItem || item;
+            const selectedCurrency =
+              currencyState?.selectedCurrency || item.currency;
+            const currencies = getCurrenciesFromItem(item);
+
             return (
               <Card key={idx} className="relative">
                 {item.label && (
@@ -251,9 +399,53 @@ export function Pricing({
                     <h3 className="text-sm font-medium">{item.title}</h3>
                   </CardTitle>
 
-                  <span className="my-3 block text-2xl font-semibold">
-                    {item.price} {item.unit ? `${item.unit}` : ''}
-                  </span>
+                  <div className="my-3 flex items-baseline gap-2">
+                    {displayedItem.original_price && (
+                      <span className="text-muted-foreground text-sm line-through">
+                        {displayedItem.original_price}
+                      </span>
+                    )}
+
+                    <div className="my-3 block text-2xl font-semibold">
+                      <span className="text-primary">
+                        {displayedItem.price}
+                      </span>{' '}
+                      {displayedItem.unit ? (
+                        <span className="text-muted-foreground text-sm font-normal">
+                          {displayedItem.unit}
+                        </span>
+                      ) : (
+                        ''
+                      )}
+                    </div>
+
+                    {currencies.length > 1 && (
+                      <Select
+                        value={selectedCurrency}
+                        onValueChange={(currency) =>
+                          handleCurrencyChange(item.product_id, currency)
+                        }
+                      >
+                        <SelectTrigger
+                          size="sm"
+                          className="border-muted-foreground/30 bg-background/50 h-6 min-w-[60px] px-2 text-xs"
+                        >
+                          <SelectValue placeholder="Currency" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {currencies.map((currency) => (
+                            <SelectItem
+                              key={currency.currency}
+                              value={currency.currency}
+                              className="text-xs"
+                            >
+                              {currency.currency.toUpperCase()}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
 
                   <CardDescription className="text-sm">
                     {item.description}

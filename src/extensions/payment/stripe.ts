@@ -27,6 +27,7 @@ export interface StripeConfigs extends PaymentConfigs {
   publishableKey: string;
   signingSecret?: string;
   apiVersion?: string;
+  allowedPaymentMethods?: string[];
 }
 
 /**
@@ -117,6 +118,37 @@ export class StripeProvider implements PaymentProvider {
           },
         ],
       };
+
+      // If currency is CNY, enable WeChat Pay and Alipay (only for one-time payments)
+      // Note: WeChat Pay and Alipay through Stripe only supports one-time payments, not subscriptions
+      const currency = order.price.currency.toLowerCase();
+      if (currency === 'cny' && order.type === PaymentType.ONE_TIME) {
+        // Enable WeChat Pay and Alipay for CNY one-time payments
+        sessionParams.payment_method_types = [];
+        sessionParams.payment_method_options = {};
+
+        // get allowed payment methods
+        const allowedPaymentMethods = this.configs.allowedPaymentMethods || [];
+
+        if (allowedPaymentMethods.includes('card')) {
+          sessionParams.payment_method_types.push('card');
+        }
+        if (allowedPaymentMethods.includes('wechat_pay')) {
+          sessionParams.payment_method_types.push('wechat_pay');
+          sessionParams.payment_method_options.wechat_pay = {
+            client: 'web',
+          };
+        }
+        if (allowedPaymentMethods.includes('alipay')) {
+          sessionParams.payment_method_types.push('alipay');
+          sessionParams.payment_method_options.alipay = {};
+        }
+
+        if (allowedPaymentMethods.length === 0) {
+          // not set allowed payment methods, use default payment methods
+          sessionParams.payment_method_types = ['card'];
+        }
+      }
 
       if (order.type === PaymentType.ONE_TIME) {
         sessionParams.invoice_creation = {

@@ -13,7 +13,19 @@ export function Checkbox({
   formField: ControllerRenderProps<Record<string, unknown>, string>;
   data?: any;
 }) {
-  const value = (formField.value as string[]) || [];
+  // initial value
+  let value = (formField.value as string[]) || [];
+
+  if (typeof value === 'string') {
+    try {
+      const jsonValue = JSON.parse(value);
+      if (Array.isArray(jsonValue)) {
+        value = jsonValue;
+      }
+    } catch (error) {
+      console.error('checkbox initial value parse error', error);
+    }
+  }
 
   const handleCheckboxChange = (optionValue: string, checked: boolean) => {
     let newValue: string[];

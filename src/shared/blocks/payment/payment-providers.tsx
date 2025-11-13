@@ -64,9 +64,23 @@ export function PaymentProviders({
     onCheckout(pricingItem, provider);
   };
 
+  // Get allowed payment providers from pricing item
+  // If payment_providers is set, use it; otherwise show all enabled providers
+  const allowedProviders = pricingItem?.payment_providers;
+  
+  // Helper function to check if a provider is allowed
+  const isProviderAllowed = (providerName: string): boolean => {
+    // If no payment_providers specified, allow all
+    if (!allowedProviders || allowedProviders.length === 0) {
+      return true;
+    }
+    // Check if provider is in the allowed list
+    return allowedProviders.includes(providerName);
+  };
+
   const providers: ButtonType[] = [];
 
-  if (configs.stripe_enabled === 'true') {
+  if (configs.stripe_enabled === 'true' && isProviderAllowed('stripe')) {
     providers.push({
       name: 'stripe',
       title: 'Stripe',
@@ -75,7 +89,7 @@ export function PaymentProviders({
     });
   }
 
-  if (configs.creem_enabled === 'true') {
+  if (configs.creem_enabled === 'true' && isProviderAllowed('creem')) {
     providers.push({
       name: 'creem',
       title: 'Creem',
@@ -84,7 +98,7 @@ export function PaymentProviders({
     });
   }
 
-  if (configs.paypal_enabled === 'true') {
+  if (configs.paypal_enabled === 'true' && isProviderAllowed('paypal')) {
     providers.push({
       name: 'paypal',
       title: 'Paypal',
