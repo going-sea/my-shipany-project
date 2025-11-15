@@ -2,47 +2,12 @@
 
 ## Getting Started
 
-1. Clone code and install
+read [ShipAny Document](https://shipany.ai/docs/quick-start) to start your AI SaaS project.
 
-```shell
-git clone git@github.com:shipanyai/shipany-template-two -b dev my-shipany-project
-cd my-shipany-project
-pnpm install
-```
+## Buy Templates
 
-2. Set local development env
+check [ShipAny Templates](https://shipany.ai/templates) to buy Business Templates.
 
-create `.env` file under root dir
+## Feedback
 
-```shell
-cp .env.example .env
-```
-
-update env with DATABASE_URL and AUTH_SECRET
-
-`DATABASE_URL` may like:
-
-```shell
-postgresql://user:password@host:port/db
-```
-
-`AUTH_SECRET` can be generated:
-
-- [Generate Auth Secret](https://www.better-auth.com/docs/installation)
-
-3. Create database tables with orm migrate
-
-```shell
-pnpm db:generate
-pnpm db:migrate
-```
-
-4. Start dev server
-
-```shell
-pnpm dev
-```
-
-5. Deploy to vercel
-
-push code to github and deploy to Vercel.
+submit your feedbacks on [Github Issues](https://github.com/shipanyai/shipany-template-two/issues)

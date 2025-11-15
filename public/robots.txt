@@ -2,3 +2,6 @@ User-agent: *
 Disallow: /*?*q=
 Disallow: /privacy-policy
 Disallow: /terms-of-service
+Disallow: /settings/*
+Disallow: /activity/*
+Disallow: /admin/*
