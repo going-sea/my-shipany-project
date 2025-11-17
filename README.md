@@ -12,9 +12,16 @@
 ## Branch
 
 - `main`: two main branch
+- `cloudfare`: two cloudfare branch
 - `one/main`: one main branch
 - `one/cloudfare`: one cloudfare branch
 - `one/nanobanana`: one nanobanana branch [coming soon]
+
+## 注意： 
+
+如果你需要部署在 Cloudflare Workers，请拉取 cloudfare 分支的代码，此分支基于 Next.js 15.5.5，暂不支持 Next.js 16。【拉取后一定要重新pnpm install, 要不然启动必报错！】
+
+![preview](cmd.png)
 
 ## 常见问题
 
@@ -44,49 +51,21 @@
 
 [-> Two 架构要点总结](https://github.com/boomer1678/shipany-template/issues/1)
 
+
 ## Getting Started
 
-1. Clone code and install
+read [ShipAny Document](https://shipany.ai/docs/quick-start) to start your AI SaaS project.
 
-```shell
-git clone git@github.com:boomer1678/shipany-template.git -b dev my-shipany-project
-cd my-shipany-project
-pnpm install
-```
+## Buy Templates
 
-2. Set local development env
+check [ShipAny Templates](https://shipany.ai/templates) to buy Business Templates.
 
-create `.env` file under root dir
+## Feedback
 
-```shell
-cp .env.example .env
-```
+submit your feedbacks on [Github Issues](https://github.com/shipanyai/shipany-template-two/issues)
 
-update env with DATABASE_URL and AUTH_SECRET
+## LICENSE
 
-`DATABASE_URL` may like:
+!!! Please do not publicly release ShipAny's Code. Illegal use will be prosecuted
 
-```shell
-postgresql://user:password@host:port/db
-```
-
-`AUTH_SECRET` can be generated:
-
-- [Generate Auth Secret](https://www.better-auth.com/docs/installation)
-
-3. Create database tables with orm migrate
-
-```shell
-pnpm db:generate
-pnpm db:migrate
-```
-
-4. Start dev server
-
-```shell
-pnpm dev
-```
-
-5. Deploy to vercel
-
-push code to github and deploy to Vercel.
+[ShipAny LICENSE](./LICENSE)

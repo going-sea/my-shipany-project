@@ -106,7 +106,7 @@
       {
         "title": "阅读文档",
         "icon": "BookOpenText",
-        "url": "https://docs.shipany.ai",
+        "url": "/docs",
         "target": "_blank",
         "variant": "outline"
       }
@@ -453,7 +453,7 @@
       },
       {
         "title": "阅读文档",
-        "url": "https://docs.shipany.ai",
+        "url": "/docs",
         "target": "_blank",
         "variant": "outline",
         "icon": "BookOpenText"
@@ -512,17 +512,17 @@
           "children": [
             {
               "title": "文档",
-              "url": "https://docs.shipany.ai",
-              "target": "_blank"
+              "url": "/docs",
+              "target": "_self"
             },
             {
-              "title": "组件库",
-              "url": "https://shipany.ai/blocks",
-              "target": "_blank"
+              "title": "博客",
+              "url": "/blog",
+              "target": "_self"
             },
             {
-              "title": "模板",
-              "url": "https://shipany.ai/templates",
+              "title": "对话",
+              "url": "/chat",
               "target": "_blank"
             }
           ]
@@ -531,6 +531,11 @@
           "title": "合作伙伴",
           "children": [
             {
+              "title": "ShipAny",
+              "url": "https://shipany.ai",
+              "target": "_blank"
+            },
+            {
               "title": "ThinkAny",
               "url": "https://thinkany.ai",
               "target": "_blank"
@@ -538,11 +543,6 @@
             {
               "title": "MCP.so",
               "url": "https://mcp.so",
-              "target": "_blank"
-            },
-            {
-              "title": "CopyWeb",
-              "url": "https://copyweb.ai",
               "target": "_blank"
             }
           ]
@@ -554,25 +554,25 @@
         {
           "title": "X",
           "icon": "RiTwitterXFill",
-          "url": "https://x.com/shipanyai",
+          "url": "https://x.com/your-app-name",
           "target": "_blank"
         },
         {
           "title": "Github",
           "icon": "Github",
-          "url": "https://github.com/shipanyai/shipany-template-two",
+          "url": "https://github.com/your-app-name",
           "target": "_blank"
         },
         {
           "title": "Discord",
           "icon": "RiDiscordFill",
-          "url": "https://discord.gg/HQNnrzjZQS",
+          "url": "https://discord.gg/your-app-name",
           "target": "_blank"
         },
         {
           "title": "邮箱",
           "icon": "Mail",
-          "url": "mailto:support@xxx.ai",
+          "url": "mailto:support@your-domain.com",
           "target": "_self"
         }
       ]
@@ -589,7 +589,6 @@
         }
       ]
     },
-    "show_built_with": true,
     "show_theme": true,
     "show_locale": true
   }

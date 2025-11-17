@@ -60,25 +60,25 @@
           },
           {
             "title": "GitHub",
-            "url": "https://github.com/shipanyai/shipany-template-two",
+            "url": "https://github.com/your-app-name",
             "icon": "Github",
             "target": "_blank"
           },
           {
             "title": "推特",
-            "url": "https://twitter.com/shipanyai",
+            "url": "https://twitter.com/your-app-name",
             "icon": "RiTwitterXFill",
             "target": "_blank"
           },
           {
             "title": "Discord",
-            "url": "https://discord.gg/HQNnrzjZQS",
+            "url": "https://discord.gg/your-app-name",
             "icon": "RiDiscordFill",
             "target": "_blank"
           },
           {
             "title": "邮箱",
-            "url": "mailto:support@xxx.ai",
+            "url": "mailto:support@your-domain.com",
             "icon": "Mail",
             "target": "_blank"
           }
