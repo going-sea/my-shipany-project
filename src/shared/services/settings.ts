@@ -202,6 +202,12 @@ export async function getSettingGroups() {
       tab: 'ai',
     },
     {
+      name: 'gemini',
+      title: 'Gemini',
+      description: `Custom <a href="https://aistudio.google.com/api-keys" class="text-primary" target="_blank">Gemini</a> settings`,
+      tab: 'ai',
+    },
+    {
       name: 'kie',
       title: 'Kie',
       description: `Custom <a href="https://kie.ai" class="text-primary" target="_blank">Kie</a> settings`,
@@ -608,6 +614,15 @@ export async function getSettings() {
       placeholder: 'fal_xxx',
       group: 'fal',
       tip: 'Fal API Key is used to access the Fal API',
+      tab: 'ai',
+    },
+    {
+      name: 'gemini_api_key',
+      title: 'Gemini API Key',
+      type: 'password',
+      placeholder: 'AIza...',
+      group: 'gemini',
+      tip: 'Google Gemini API Key',
       tab: 'ai',
     },
     {

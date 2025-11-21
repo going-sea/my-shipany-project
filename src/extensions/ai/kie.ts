@@ -6,7 +6,7 @@ import {
   AISong,
   AITaskResult,
   AITaskStatus,
-} from '.';
+} from './types';
 
 /**
  * Kie configs

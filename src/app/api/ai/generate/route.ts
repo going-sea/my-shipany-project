@@ -1,9 +1,9 @@
 import { envConfigs } from '@/config';
-import { AIMediaType, AITaskStatus } from '@/extensions/ai';
+import { AIMediaType } from '@/extensions/ai';
 import { getUuid } from '@/shared/lib/hash';
 import { respData, respErr } from '@/shared/lib/resp';
 import { createAITask, NewAITask } from '@/shared/models/ai_task';
-import { consumeCredits, getRemainingCredits } from '@/shared/models/credit';
+import { getRemainingCredits } from '@/shared/models/credit';
 import { getUserInfo } from '@/shared/models/user';
 import { getAIService } from '@/shared/services/ai';
 
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
       prompt,
       scene,
       options: options ? JSON.stringify(options) : null,
-      status: AITaskStatus.PENDING,
+      status: result.taskStatus,
       costCredits,
       taskId: result.taskId,
       taskInfo: result.taskInfo ? JSON.stringify(result.taskInfo) : null,

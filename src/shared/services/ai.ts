@@ -1,4 +1,4 @@
-import { AIManager, KieProvider, ReplicateProvider } from '@/extensions/ai';
+import { AIManager, GeminiProvider, KieProvider, ReplicateProvider } from '@/extensions/ai';
 import { Configs, getAllConfigs } from '@/shared/models/config';
 
 /**
@@ -19,6 +19,14 @@ export function getAIManagerWithConfigs(configs: Configs) {
     aiManager.addProvider(
       new ReplicateProvider({
         apiToken: configs.replicate_api_token,
+      })
+    );
+  }
+
+  if (configs.gemini_api_key) {
+    aiManager.addProvider(
+      new GeminiProvider({
+        apiKey: configs.gemini_api_key,
       })
     );
   }

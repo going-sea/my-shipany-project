@@ -13,7 +13,7 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { Link } from '@/core/i18n/navigation';
-import { AIMediaType, AITaskStatus } from '@/extensions/ai';
+import { AIMediaType, AITaskStatus } from '@/extensions/ai/types';
 import {
   ImageUploader,
   ImageUploaderValue,
@@ -73,16 +73,25 @@ const MODEL_OPTIONS = [
   {
     value: 'black-forest-labs/flux-schnell',
     label: 'FLUX Schnell',
+    provider: 'replicate',
     scenes: ['text-to-image'],
   },
   {
     value: 'google/nano-banana',
     label: 'Nano Banana',
+    provider: 'replicate',
     scenes: ['text-to-image', 'image-to-image'],
   },
   {
     value: 'bytedance/seedream-4',
     label: 'Seedream 4',
+    provider: 'replicate',
+    scenes: ['text-to-image', 'image-to-image'],
+  },
+  {
+    value: 'gemini-3-pro-image-preview',
+    label: 'Gemini 3 Pro Image Preview',
+    provider: 'gemini',
     scenes: ['text-to-image', 'image-to-image'],
   },
 ];
@@ -91,6 +100,10 @@ const PROVIDER_OPTIONS = [
   {
     value: 'replicate',
     label: 'Replicate',
+  },
+  {
+    value: 'gemini',
+    label: 'Gemini',
   },
 ];
 
@@ -128,7 +141,8 @@ function extractImageUrls(result: any): string[] {
         if (!item) return [];
         if (typeof item === 'string') return [item];
         if (typeof item === 'object') {
-          const candidate = item.url ?? item.uri ?? item.image ?? item.src;
+          const candidate =
+            item.url ?? item.uri ?? item.image ?? item.src ?? item.imageUrl;
           return typeof candidate === 'string' ? [candidate] : [];
         }
         return [];
@@ -137,7 +151,8 @@ function extractImageUrls(result: any): string[] {
   }
 
   if (typeof output === 'object') {
-    const candidate = output.url ?? output.uri ?? output.image ?? output.src;
+    const candidate =
+      output.url ?? output.uri ?? output.image ?? output.src ?? output.imageUrl;
     if (typeof candidate === 'string') {
       return [candidate];
     }
@@ -190,15 +205,40 @@ export function ImageGenerator({
   const isPromptTooLong = promptLength > MAX_PROMPT_LENGTH;
   const isTextToImageMode = activeTab === 'text-to-image';
 
-  useEffect(() => {
-    if (activeTab === 'text-to-image') {
-      setModel('black-forest-labs/flux-schnell');
+  const handleTabChange = (value: string) => {
+    const tab = value as ImageGeneratorTab;
+    setActiveTab(tab);
+
+    const availableModels = MODEL_OPTIONS.filter(
+      (option) => option.scenes.includes(tab) && option.provider === provider
+    );
+
+    if (availableModels.length > 0) {
+      setModel(availableModels[0].value);
+    } else {
+      setModel('');
+    }
+
+    if (tab === 'text-to-image') {
       setCostCredits(2);
     } else {
-      setModel('google/nano-banana');
       setCostCredits(4);
     }
-  }, [activeTab]);
+  };
+
+  const handleProviderChange = (value: string) => {
+    setProvider(value);
+
+    const availableModels = MODEL_OPTIONS.filter(
+      (option) => option.scenes.includes(activeTab) && option.provider === value
+    );
+
+    if (availableModels.length > 0) {
+      setModel(availableModels[0].value);
+    } else {
+      setModel('');
+    }
+  };
 
   const taskStatusLabel = useMemo(() => {
     if (!taskStatus) {
@@ -461,6 +501,28 @@ export function ImageGenerator({
         throw new Error('Task id missing in response');
       }
 
+      if (data.status === AITaskStatus.SUCCESS && data.taskInfo) {
+        const parsedResult = parseTaskResult(data.taskInfo);
+        const imageUrls = extractImageUrls(parsedResult);
+
+        if (imageUrls.length > 0) {
+          setGeneratedImages(
+            imageUrls.map((url, index) => ({
+              id: `${newTaskId}-${index}`,
+              url,
+              provider,
+              model,
+              prompt: trimmedPrompt,
+            }))
+          );
+          toast.success('Image generated successfully');
+          setProgress(100);
+          resetTaskState();
+          await fetchUserCredits();
+          return;
+        }
+      }
+
       setTaskId(newTaskId);
       setProgress(25);
 
@@ -517,9 +579,7 @@ export function ImageGenerator({
               <CardContent className="space-y-6 pb-8">
                 <Tabs
                   value={activeTab}
-                  onValueChange={(value) =>
-                    setActiveTab(value as ImageGeneratorTab)
-                  }
+                  onValueChange={handleTabChange}
                 >
                   <TabsList className="bg-primary/10 grid w-full grid-cols-2">
                     <TabsTrigger value="text-to-image">
@@ -534,7 +594,7 @@ export function ImageGenerator({
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>{t('form.provider')}</Label>
-                    <Select value={provider} onValueChange={setProvider}>
+                    <Select value={provider} onValueChange={handleProviderChange}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder={t('form.select_provider')} />
                       </SelectTrigger>
@@ -555,8 +615,10 @@ export function ImageGenerator({
                         <SelectValue placeholder={t('form.select_model')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {MODEL_OPTIONS.filter((option) =>
-                          option.scenes.includes(activeTab)
+                        {MODEL_OPTIONS.filter(
+                          (option) =>
+                            option.scenes.includes(activeTab) &&
+                            option.provider === provider
                         ).map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
@@ -714,14 +776,30 @@ export function ImageGenerator({
               </CardHeader>
               <CardContent className="pb-8">
                 {generatedImages.length > 0 ? (
-                  <div className="grid gap-6 sm:grid-cols-2">
+                  <div
+                    className={
+                      generatedImages.length === 1
+                        ? 'grid gap-6 grid-cols-1'
+                        : 'grid gap-6 sm:grid-cols-2'
+                    }
+                  >
                     {generatedImages.map((image) => (
                       <div key={image.id} className="space-y-3">
-                        <div className="relative aspect-square overflow-hidden rounded-lg border">
+                        <div
+                          className={
+                            generatedImages.length === 1
+                              ? 'relative overflow-hidden rounded-lg border'
+                              : 'relative aspect-square overflow-hidden rounded-lg border'
+                          }
+                        >
                           <LazyImage
                             src={image.url}
                             alt={image.prompt || 'Generated image'}
-                            className="h-full w-full object-cover"
+                            className={
+                              generatedImages.length === 1
+                                ? 'w-full h-auto'
+                                : 'h-full w-full object-cover'
+                            }
                           />
 
                           <div className="absolute right-2 bottom-2 flex justify-end text-sm">

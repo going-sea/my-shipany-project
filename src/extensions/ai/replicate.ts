@@ -9,7 +9,7 @@ import {
   AISong,
   AITaskResult,
   AITaskStatus,
-} from '.';
+} from './types';
 
 /**
  * Replicate configs
