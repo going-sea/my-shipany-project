@@ -7,7 +7,13 @@
 
 ## Doc
 
-[https://www.shipany.ai/zh/docs](https://www.shipany.ai/zh/docs)
+[✨Shipany官方文档 作者已更新完](https://www.shipany.ai/zh/docs)
+
+[✨Shipany按照官方文档一步步走过程记录](https://github.com/boomer1678/shipany-template/issues/2)
+
+[✨Shipany更新日志](https://github.com/boomer1678/shipany-template/issues/3)
+
+[✨ShipAnyTwo架构要点总结](https://github.com/boomer1678/shipany-template/issues/1)
 
 ## Branch
 
@@ -16,12 +22,6 @@
 - `one/main`: one main branch
 - `one/cloudfare`: one cloudfare branch
 - `one/nanobanana`: one nanobanana branch [coming soon]
-
-## 注意： 
-
-如果你需要部署在 Cloudflare Workers，请拉取 cloudfare 分支的代码，此分支基于 Next.js 15.5.5，暂不支持 Next.js 16。【拉取后一定要重新pnpm install, 要不然启动必报错！】
-
-![preview](cmd.png)
 
 ## 常见问题
 
@@ -36,9 +36,7 @@
 
 ### 官方文档为什么内容那么少？
 
-<img width="300"  alt="Image" src="https://cdn.jsdelivr.net/gh/ai-boomer/PicCDN/2025-11-15/1763177744414-image.png" />
-
-答：作者在发版Two后发推告知：文档正在努力更新中（目录点击后大多都是占位），再等等。
+答：[官方文档](https://www.shipany.ai/zh/docs) 作者2025-11-24已补全所有文档，各位在开发时可以参阅，注意各位出海发财！
 
 ### Two 与 One 有什么区别？
 答：<br/> 
@@ -46,10 +44,6 @@
 - Two内置Al图片生成器、AI 聊天机器人、Al 音乐生成器；<br/>
 - Two基础功能：后台管理系统（CMS、RBAC等）、用户中心User Console、配置话Landing Page;<br/>
 - Two支付功能：支持Stripe、Creem、Paypal三种收款渠道（Stripe已支持支付宝、微信收款方式）；
-
-### ShipAny Two 架构要点总结 
-
-[-> Two 架构要点总结](https://github.com/boomer1678/shipany-template/issues/1)
 
 
 ## Getting Started
