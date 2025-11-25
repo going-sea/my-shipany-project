@@ -13,7 +13,7 @@ import {
   SubscriptionCycleType,
   SubscriptionInfo,
   SubscriptionStatus,
-} from '.';
+} from './types';
 
 /**
  * Creem payment provider configs

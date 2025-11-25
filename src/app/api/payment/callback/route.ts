@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { envConfigs } from '@/config';
-import { PaymentType } from '@/extensions/payment';
+import { PaymentType } from '@/extensions/payment/types';
 import { findOrderByOrderNo } from '@/shared/models/order';
 import { getUserInfo } from '@/shared/models/user';
 import {

@@ -1,4 +1,7 @@
-import { PaymentEventType, SubscriptionCycleType } from '@/extensions/payment';
+import {
+  PaymentEventType,
+  SubscriptionCycleType,
+} from '@/extensions/payment/types';
 import { findOrderByOrderNo } from '@/shared/models/order';
 import { findSubscriptionByProviderSubscriptionId } from '@/shared/models/subscription';
 import {

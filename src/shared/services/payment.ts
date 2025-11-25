@@ -1,12 +1,14 @@
 import {
   CreemProvider,
   PaymentManager,
-  PaymentSession,
-  PaymentStatus,
-  PaymentType,
   PayPalProvider,
   StripeProvider,
 } from '@/extensions/payment';
+import {
+  PaymentSession,
+  PaymentStatus,
+  PaymentType,
+} from '@/extensions/payment/types';
 import { Configs, getAllConfigs } from '@/shared/models/config';
 
 import { getSnowId, getUuid } from '../lib/hash';
@@ -60,6 +62,7 @@ export function getPaymentServiceWithConfigs(configs: Configs) {
         publishableKey: configs.stripe_publishable_key,
         signingSecret: configs.stripe_signing_secret,
         allowedPaymentMethods: allowedPaymentMethods as string[],
+        allowPromotionCodes: configs.stripe_allow_promotion_codes === 'true',
       }),
       defaultProvider === 'stripe'
     );

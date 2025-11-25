@@ -446,6 +446,31 @@ export async function getSettings() {
       tab: 'payment',
     },
     {
+      name: 'stripe_promotion_codes',
+      title: 'Stripe Promotion Codes',
+      type: 'textarea',
+      attributes: {
+        rows: 6,
+      },
+      placeholder: `{
+  "starter": "promo_xxx",
+  "standard-monthly": "promo_xxx",
+  "premium-yearly": "promo_xxx"
+}`,
+      group: 'stripe',
+      tab: 'payment',
+      tip: 'Map the product_id in pricing table to <a href="https://dashboard.stripe.com/coupons" class="text-primary" target="_blank">promotion_code</a> created in Stripe. Must be a valid JSON object.',
+    },
+    {
+      name: 'stripe_allow_promotion_codes',
+      title: 'Stripe Allow Promotion Codes',
+      type: 'switch',
+      value: 'false',
+      group: 'stripe',
+      tab: 'payment',
+      tip: 'Whether allow users to input custom promotion code, only works when no pre-set promotion code is provided',
+    },
+    {
       name: 'creem_enabled',
       title: 'Creem Enabled',
       type: 'switch',
