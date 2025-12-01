@@ -8,6 +8,7 @@ export interface Dashboard {
 
 export interface SidebarHeader {
   brand?: Brand;
+  version?: string;
   show_trigger?: boolean;
 }
 

@@ -23,6 +23,7 @@ export function getStorageServiceWithConfigs(configs: Configs) {
         accessKeyId: configs.r2_access_key,
         secretAccessKey: configs.r2_secret_key,
         bucket: configs.r2_bucket_name,
+        uploadPath: configs.r2_upload_path,
         region: 'auto', // R2 uses "auto" as region
         endpoint: configs.r2_endpoint, // Optional custom endpoint
         publicDomain: configs.r2_domain,

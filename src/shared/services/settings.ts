@@ -99,6 +99,12 @@ export async function getSettingGroups() {
   const t = await getTranslations('admin.settings');
   const settingGroups: SettingGroup[] = [
     {
+      name: 'appinfo',
+      title: t('groups.appinfo'),
+      description: 'custom your app info',
+      tab: 'general',
+    },
+    {
       name: 'credit',
       title: t('groups.credit'),
       description: 'custom credit settings',
@@ -265,6 +271,37 @@ export async function getSettingGroups() {
 
 export async function getSettings() {
   const settings: Setting[] = [
+    {
+      name: 'app_name',
+      title: 'App Name',
+      placeholder: 'ShipAny',
+      type: 'text',
+      group: 'appinfo',
+      tab: 'general',
+    },
+    {
+      name: 'app_description',
+      title: 'App Description',
+      placeholder:
+        'ShipAny is a NextJS boilerplate for building AI SaaS startups. ',
+      type: 'textarea',
+      group: 'appinfo',
+      tab: 'general',
+    },
+    {
+      name: 'app_logo',
+      title: 'App Logo',
+      type: 'upload_image',
+      group: 'appinfo',
+      tab: 'general',
+    },
+    {
+      name: 'app_preview_image',
+      title: 'App Preview Image',
+      type: 'upload_image',
+      group: 'appinfo',
+      tab: 'general',
+    },
     {
       name: 'initial_credits_enabled',
       title: 'Initial Credits Enabled',
@@ -648,6 +685,15 @@ export async function getSettings() {
       tab: 'storage',
     },
     {
+      name: 'r2_upload_path',
+      title: 'Upload Path',
+      type: 'text',
+      placeholder: 'uploads',
+      tip: 'The path to upload files to, leave empty to use the default upload path. Example: uploads/foo/bar',
+      group: 'r2',
+      tab: 'storage',
+    },
+    {
       name: 'r2_endpoint',
       title: 'Endpoint',
       type: 'url',
@@ -669,6 +715,15 @@ export async function getSettings() {
       title: 'OpenRouter API Key',
       type: 'password',
       placeholder: 'sk-or-xxx',
+      group: 'openrouter',
+      tab: 'ai',
+    },
+    {
+      name: 'openrouter_base_url',
+      title: 'OpenRouter Base URL',
+      type: 'url',
+      placeholder: 'https://openrouter.ai/api/v1',
+      tip: 'Set any OpenAI compatible API URL, leave empty to use the default OpenRouter API URL',
       group: 'openrouter',
       tab: 'ai',
     },
@@ -821,3 +876,14 @@ export const publicSettingNames = [
   'crisp_enabled',
   'tawk_enabled',
 ];
+
+export async function getAllSettingNames() {
+  const settings = await getSettings();
+  const settingNames: string[] = [];
+
+  settings.forEach((setting: Setting) => {
+    settingNames.push(setting.name);
+  });
+
+  return settingNames;
+}

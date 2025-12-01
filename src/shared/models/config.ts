@@ -3,7 +3,10 @@ import { revalidateTag, unstable_cache } from 'next/cache';
 import { db } from '@/core/db';
 import { envConfigs } from '@/config';
 import { config } from '@/config/db/schema';
-import { publicSettingNames } from '@/shared/services/settings';
+import {
+  getAllSettingNames,
+  publicSettingNames,
+} from '@/shared/services/settings';
 
 export type Config = typeof config.$inferSelect;
 export type NewConfig = typeof config.$inferInsert;
@@ -16,7 +19,7 @@ export const CACHE_TAG_CONFIGS = 'configs';
 export async function saveConfigs(configs: Record<string, string>) {
   const result = await db().transaction(async (tx) => {
     const configEntries = Object.entries(configs);
-    const results = [];
+    const results: any[] = [];
 
     for (const [name, configValue] of configEntries) {
       const [upsertResult] = await tx
@@ -76,7 +79,7 @@ export async function getAllConfigs(): Promise<Configs> {
   let dbConfigs: Configs = {};
 
   // only get configs from db in server side
-  if (envConfigs.database_url) {
+  if (typeof window === 'undefined' && envConfigs.database_url) {
     try {
       dbConfigs = await getConfigs();
     } catch (e) {
@@ -84,6 +87,17 @@ export async function getAllConfigs(): Promise<Configs> {
       dbConfigs = {};
     }
   }
+
+  const settingNames = await getAllSettingNames();
+  settingNames.forEach((key) => {
+    const upperKey = key.toUpperCase();
+    // use env configs if available
+    if (process.env[upperKey]) {
+      dbConfigs[key] = process.env[upperKey] ?? '';
+    } else if (process.env[key]) {
+      dbConfigs[key] = process.env[key] ?? '';
+    }
+  });
 
   const configs = {
     ...envConfigs,
@@ -94,24 +108,14 @@ export async function getAllConfigs(): Promise<Configs> {
 }
 
 export async function getPublicConfigs(): Promise<Configs> {
-  let dbConfigs: Configs = {};
-
-  // only get configs from db in server side
-  if (typeof window === 'undefined' && envConfigs.database_url) {
-    try {
-      dbConfigs = await getConfigs();
-    } catch (e) {
-      console.log('get configs from db failed:', e);
-      dbConfigs = {};
-    }
-  }
+  let allConfigs = await getAllConfigs();
 
   const publicConfigs: Record<string, string> = {};
 
-  // get public configs from db
-  for (const key in dbConfigs) {
+  // get public configs
+  for (const key in allConfigs) {
     if (publicSettingNames.includes(key)) {
-      publicConfigs[key] = String(dbConfigs[key]);
+      publicConfigs[key] = String(allConfigs[key]);
     }
   }
 
