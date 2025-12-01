@@ -5,6 +5,11 @@
 ![preview](preview.png)
 [https://cf-two.shipany.site/](https://cf-two.shipany.site/)
 
+# 不要提交自己的代码到本仓库！
+# 不要提交自己的代码到本仓库！
+# 不要提交自己的代码到本仓库！
+# 重要的事情说三遍！
+
 ## Doc
 
 [✨Shipany官方文档 作者已更新完](https://www.shipany.ai/zh/docs)
