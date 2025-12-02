@@ -1,4 +1,10 @@
-import { AIManager, GeminiProvider, KieProvider, ReplicateProvider } from '@/extensions/ai';
+import {
+  AIManager,
+  FalProvider,
+  GeminiProvider,
+  KieProvider,
+  ReplicateProvider,
+} from '@/extensions/ai';
 import { Configs, getAllConfigs } from '@/shared/models/config';
 
 /**
@@ -11,6 +17,7 @@ export function getAIManagerWithConfigs(configs: Configs) {
     aiManager.addProvider(
       new KieProvider({
         apiKey: configs.kie_api_key,
+        customStorage: configs.kie_custom_storage === 'true',
       })
     );
   }
@@ -19,6 +26,16 @@ export function getAIManagerWithConfigs(configs: Configs) {
     aiManager.addProvider(
       new ReplicateProvider({
         apiToken: configs.replicate_api_token,
+        customStorage: configs.replicate_custom_storage === 'true',
+      })
+    );
+  }
+
+  if (configs.fal_api_key) {
+    aiManager.addProvider(
+      new FalProvider({
+        apiKey: configs.fal_api_key,
+        customStorage: configs.fal_custom_storage === 'true',
       })
     );
   }

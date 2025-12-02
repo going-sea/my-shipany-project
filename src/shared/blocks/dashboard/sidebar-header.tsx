@@ -25,7 +25,7 @@ export function SidebarHeader({ header }: { header: SidebarHeaderType }) {
               {header.brand && (
                 <Link href={header.brand.url || ''}>
                   {header.brand.logo && (
-                    <LazyImage
+                    <img
                       src={header.brand.logo.src}
                       alt={header.brand.logo.alt || ''}
                       className="h-auto w-8 shrink-0 rounded-md"

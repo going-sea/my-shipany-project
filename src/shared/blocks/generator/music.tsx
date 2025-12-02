@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
 import {
   CheckCircle,
   Clock,
@@ -18,6 +17,7 @@ import { toast } from 'sonner';
 
 import { Link } from '@/core/i18n/navigation';
 import { AISong, AITaskStatus } from '@/extensions/ai/types';
+import { LazyImage } from '@/shared/blocks/common/lazy-image';
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import {
@@ -411,8 +411,10 @@ export function MusicGenerator({ className, srOnlyTitle }: SongGeneratorProps) {
     try {
       toast.info(t('generator.downloading'));
 
-      // Fetch the audio file
-      const response = await fetch(song.audioUrl);
+      // Fetch the audio file via proxy
+      const response = await fetch(
+        `/api/proxy/file?url=${encodeURIComponent(song.audioUrl)}`
+      );
       if (!response.ok) {
         throw new Error('Failed to fetch audio file');
       }
@@ -666,7 +668,7 @@ export function MusicGenerator({ className, srOnlyTitle }: SongGeneratorProps) {
                             <div className="relative flex-shrink-0">
                               <div className="bg-muted relative h-20 w-20 overflow-hidden rounded-lg">
                                 {song.imageUrl ? (
-                                  <Image
+                                  <LazyImage
                                     src={song.imageUrl}
                                     alt={song.title}
                                     fill

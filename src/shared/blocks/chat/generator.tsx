@@ -57,8 +57,8 @@ export function ChatGenerator() {
       router.push(path, {
         locale,
       });
-      setStatus(undefined);
-      setError(null);
+      // setStatus(undefined);
+      // setError(null);
     } catch (e: any) {
       const message =
         e instanceof Error ? e.message : 'request failed, please try again';

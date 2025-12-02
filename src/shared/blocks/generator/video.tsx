@@ -4,21 +4,17 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   CreditCard,
   Download,
-  ImageIcon,
   Loader2,
   Sparkles,
   User,
+  Video,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 import { Link } from '@/core/i18n/navigation';
 import { AIMediaType, AITaskStatus } from '@/extensions/ai/types';
-import {
-  ImageUploader,
-  ImageUploaderValue,
-  LazyImage,
-} from '@/shared/blocks/common';
+import { ImageUploader, ImageUploaderValue } from '@/shared/blocks/common';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
@@ -39,14 +35,12 @@ import { Tabs, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { useAppContext } from '@/shared/contexts/app';
 
-interface ImageGeneratorProps {
-  allowMultipleImages?: boolean;
-  maxImages?: number;
+interface VideoGeneratorProps {
   maxSizeMB?: number;
   srOnlyTitle?: string;
 }
 
-interface GeneratedImage {
+interface GeneratedVideo {
   id: string;
   url: string;
   provider?: string;
@@ -64,66 +58,61 @@ interface BackendTask {
   taskResult: string | null;
 }
 
-type ImageGeneratorTab = 'text-to-image' | 'image-to-image';
+type VideoGeneratorTab = 'text-to-video' | 'image-to-video' | 'video-to-video';
 
-const POLL_INTERVAL = 5000;
-const GENERATION_TIMEOUT = 180000;
+const POLL_INTERVAL = 15000;
+const GENERATION_TIMEOUT = 600000; // 10 minutes for video
 const MAX_PROMPT_LENGTH = 2000;
 
+const textToVideoCredits = 6;
+const imageToVideoCredits = 8;
+const videoToVideoCredits = 10;
+
 const MODEL_OPTIONS = [
+  // Replicate models
   {
-    value: 'google/nano-banana-pro',
-    label: 'Nano Banana Pro',
+    value: 'google/veo-3.1',
+    label: 'Veo 3.1',
     provider: 'replicate',
-    scenes: ['text-to-image', 'image-to-image'],
+    scenes: ['text-to-video', 'image-to-video'],
   },
   {
-    value: 'bytedance/seedream-4',
-    label: 'Seedream 4',
+    value: 'openai/sora-2',
+    label: 'Sora 2',
     provider: 'replicate',
-    scenes: ['text-to-image', 'image-to-image'],
+    scenes: ['text-to-video', 'image-to-video'],
   },
+  // Fal models
   {
-    value: 'fal-ai/nano-banana-pro',
-    label: 'Nano Banana Pro',
+    value: 'fal-ai/veo3',
+    label: 'Veo 3',
     provider: 'fal',
-    scenes: ['text-to-image'],
+    scenes: ['text-to-video'],
   },
   {
-    value: 'fal-ai/nano-banana-pro/edit',
-    label: 'Nano Banana Pro',
+    value: 'fal-ai/wan-pro/image-to-video',
+    label: 'Wan Pro',
     provider: 'fal',
-    scenes: ['image-to-image'],
+    scenes: ['image-to-video'],
   },
   {
-    value: 'fal-ai/bytedance/seedream/v4/edit',
-    label: 'Seedream 4',
+    value: 'fal-ai/kling-video/o1/video-to-video/edit',
+    label: 'Kling Video O1',
     provider: 'fal',
-    scenes: ['image-to-image'],
+    scenes: ['video-to-video'],
   },
+  // Kie models
   {
-    value: 'fal-ai/z-image/turbo',
-    label: 'Z-Image Turbo',
-    provider: 'fal',
-    scenes: ['text-to-image'],
-  },
-  {
-    value: 'fal-ai/flux-2-flex',
-    label: 'Flux 2 Flex',
-    provider: 'fal',
-    scenes: ['text-to-image'],
-  },
-  {
-    value: 'gemini-3-pro-image-preview',
-    label: 'Gemini 3 Pro Image Preview',
-    provider: 'gemini',
-    scenes: ['text-to-image', 'image-to-image'],
-  },
-  {
-    value: 'nano-banana-pro',
-    label: 'Nano Banana Pro',
+    value: 'sora-2-pro-image-to-video',
+    label: 'Sora 2 Pro',
     provider: 'kie',
-    scenes: ['text-to-image', 'image-to-image'],
+    scenes: ['image-to-video'],
+  },
+  {
+    value: 'sora-2-pro-text-to-video',
+    label: 'Sora 2 Pro',
+    provider: 'kie',
+    scenes: ['text-to-video'],
   },
 ];
 
@@ -135,10 +124,6 @@ const PROVIDER_OPTIONS = [
   {
     value: 'fal',
     label: 'Fal',
-  },
-  {
-    value: 'gemini',
-    label: 'Gemini',
   },
   {
     value: 'kie',
@@ -159,12 +144,30 @@ function parseTaskResult(taskResult: string | null): any {
   }
 }
 
-function extractImageUrls(result: any): string[] {
+function extractVideoUrls(result: any): string[] {
   if (!result) {
     return [];
   }
 
-  const output = result.output ?? result.images ?? result.data;
+  // check videos array first
+  const videos = result.videos;
+  if (videos && Array.isArray(videos)) {
+    return videos
+      .map((item: any) => {
+        if (!item) return null;
+        if (typeof item === 'string') return item;
+        if (typeof item === 'object') {
+          return (
+            item.url ?? item.uri ?? item.video ?? item.src ?? item.videoUrl
+          );
+        }
+        return null;
+      })
+      .filter(Boolean);
+  }
+
+  // check output
+  const output = result.output ?? result.video ?? result.data;
 
   if (!output) {
     return [];
@@ -181,7 +184,7 @@ function extractImageUrls(result: any): string[] {
         if (typeof item === 'string') return [item];
         if (typeof item === 'object') {
           const candidate =
-            item.url ?? item.uri ?? item.image ?? item.src ?? item.imageUrl;
+            item.url ?? item.uri ?? item.video ?? item.src ?? item.videoUrl;
           return typeof candidate === 'string' ? [candidate] : [];
         }
         return [];
@@ -191,7 +194,7 @@ function extractImageUrls(result: any): string[] {
 
   if (typeof output === 'object') {
     const candidate =
-      output.url ?? output.uri ?? output.image ?? output.src ?? output.imageUrl;
+      output.url ?? output.uri ?? output.video ?? output.src ?? output.videoUrl;
     if (typeof candidate === 'string') {
       return [candidate];
     }
@@ -200,18 +203,16 @@ function extractImageUrls(result: any): string[] {
   return [];
 }
 
-export function ImageGenerator({
-  allowMultipleImages = true,
-  maxImages = 9,
-  maxSizeMB = 5,
+export function VideoGenerator({
+  maxSizeMB = 50,
   srOnlyTitle,
-}: ImageGeneratorProps) {
-  const t = useTranslations('ai.image.generator');
+}: VideoGeneratorProps) {
+  const t = useTranslations('ai.video.generator');
 
   const [activeTab, setActiveTab] =
-    useState<ImageGeneratorTab>('text-to-image');
+    useState<VideoGeneratorTab>('text-to-video');
 
-  const [costCredits, setCostCredits] = useState<number>(2);
+  const [costCredits, setCostCredits] = useState<number>(textToVideoCredits);
   const [provider, setProvider] = useState(PROVIDER_OPTIONS[0]?.value ?? '');
   const [model, setModel] = useState(MODEL_OPTIONS[0]?.value ?? '');
   const [prompt, setPrompt] = useState('');
@@ -219,7 +220,8 @@ export function ImageGenerator({
     ImageUploaderValue[]
   >([]);
   const [referenceImageUrls, setReferenceImageUrls] = useState<string[]>([]);
-  const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
+  const [referenceVideoUrl, setReferenceVideoUrl] = useState<string>('');
+  const [generatedVideos, setGeneratedVideos] = useState<GeneratedVideo[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [taskId, setTaskId] = useState<string | null>(null);
@@ -227,7 +229,7 @@ export function ImageGenerator({
     null
   );
   const [taskStatus, setTaskStatus] = useState<AITaskStatus | null>(null);
-  const [downloadingImageId, setDownloadingImageId] = useState<string | null>(
+  const [downloadingVideoId, setDownloadingVideoId] = useState<string | null>(
     null
   );
   const [isMounted, setIsMounted] = useState(false);
@@ -242,10 +244,12 @@ export function ImageGenerator({
   const promptLength = prompt.trim().length;
   const remainingCredits = user?.credits?.remainingCredits ?? 0;
   const isPromptTooLong = promptLength > MAX_PROMPT_LENGTH;
-  const isTextToImageMode = activeTab === 'text-to-image';
+  const isTextToVideoMode = activeTab === 'text-to-video';
+  const isImageToVideoMode = activeTab === 'image-to-video';
+  const isVideoToVideoMode = activeTab === 'video-to-video';
 
   const handleTabChange = (value: string) => {
-    const tab = value as ImageGeneratorTab;
+    const tab = value as VideoGeneratorTab;
     setActiveTab(tab);
 
     const availableModels = MODEL_OPTIONS.filter(
@@ -258,10 +262,12 @@ export function ImageGenerator({
       setModel('');
     }
 
-    if (tab === 'text-to-image') {
-      setCostCredits(2);
-    } else {
-      setCostCredits(4);
+    if (tab === 'text-to-video') {
+      setCostCredits(textToVideoCredits);
+    } else if (tab === 'image-to-video') {
+      setCostCredits(imageToVideoCredits);
+    } else if (tab === 'video-to-video') {
+      setCostCredits(videoToVideoCredits);
     }
   };
 
@@ -288,9 +294,9 @@ export function ImageGenerator({
       case AITaskStatus.PENDING:
         return 'Waiting for the model to start';
       case AITaskStatus.PROCESSING:
-        return 'Generating your image...';
+        return 'Generating your video...';
       case AITaskStatus.SUCCESS:
-        return 'Image generation completed';
+        return 'Video generation completed';
       case AITaskStatus.FAILED:
         return 'Generation failed';
       default:
@@ -335,7 +341,7 @@ export function ImageGenerator({
           Date.now() - generationStartTime > GENERATION_TIMEOUT
         ) {
           resetTaskState();
-          toast.error('Image generation timed out. Please try again.');
+          toast.error('Video generation timed out. Please try again.');
           return true;
         }
 
@@ -361,7 +367,7 @@ export function ImageGenerator({
         setTaskStatus(currentStatus);
 
         const parsedResult = parseTaskResult(task.taskInfo);
-        const imageUrls = extractImageUrls(parsedResult);
+        const videoUrls = extractVideoUrls(parsedResult);
 
         if (currentStatus === AITaskStatus.PENDING) {
           setProgress((prev) => Math.max(prev, 20));
@@ -369,9 +375,9 @@ export function ImageGenerator({
         }
 
         if (currentStatus === AITaskStatus.PROCESSING) {
-          if (imageUrls.length > 0) {
-            setGeneratedImages(
-              imageUrls.map((url, index) => ({
+          if (videoUrls.length > 0) {
+            setGeneratedVideos(
+              videoUrls.map((url, index) => ({
                 id: `${task.id}-${index}`,
                 url,
                 provider: task.provider,
@@ -381,17 +387,17 @@ export function ImageGenerator({
             );
             setProgress((prev) => Math.max(prev, 85));
           } else {
-            setProgress((prev) => Math.min(prev + 10, 80));
+            setProgress((prev) => Math.min(prev + 5, 80));
           }
           return false;
         }
 
         if (currentStatus === AITaskStatus.SUCCESS) {
-          if (imageUrls.length === 0) {
-            toast.error('The provider returned no images. Please retry.');
+          if (videoUrls.length === 0) {
+            toast.error('The provider returned no videos. Please retry.');
           } else {
-            setGeneratedImages(
-              imageUrls.map((url, index) => ({
+            setGeneratedVideos(
+              videoUrls.map((url, index) => ({
                 id: `${task.id}-${index}`,
                 url,
                 provider: task.provider,
@@ -399,7 +405,7 @@ export function ImageGenerator({
                 prompt: task.prompt ?? undefined,
               }))
             );
-            toast.success('Image generated successfully');
+            toast.success('Video generated successfully');
           }
 
           setProgress(100);
@@ -409,7 +415,7 @@ export function ImageGenerator({
 
         if (currentStatus === AITaskStatus.FAILED) {
           const errorMessage =
-            parsedResult?.errorMessage || 'Generate image failed';
+            parsedResult?.errorMessage || 'Generate video failed';
           toast.error(errorMessage);
           resetTaskState();
 
@@ -418,10 +424,10 @@ export function ImageGenerator({
           return true;
         }
 
-        setProgress((prev) => Math.min(prev + 5, 95));
+        setProgress((prev) => Math.min(prev + 3, 95));
         return false;
       } catch (error: any) {
-        console.error('Error polling image task:', error);
+        console.error('Error polling video task:', error);
         toast.error(`Query task failed: ${error.message}`);
         resetTaskState();
 
@@ -481,7 +487,7 @@ export function ImageGenerator({
     }
 
     const trimmedPrompt = prompt.trim();
-    if (!trimmedPrompt) {
+    if (!trimmedPrompt && isTextToVideoMode) {
       toast.error('Please enter a prompt before generating.');
       return;
     }
@@ -491,22 +497,31 @@ export function ImageGenerator({
       return;
     }
 
-    if (!isTextToImageMode && referenceImageUrls.length === 0) {
-      toast.error('Please upload reference images before generating.');
+    if (isImageToVideoMode && referenceImageUrls.length === 0) {
+      toast.error('Please upload a reference image before generating.');
+      return;
+    }
+
+    if (isVideoToVideoMode && !referenceVideoUrl) {
+      toast.error('Please provide a reference video URL before generating.');
       return;
     }
 
     setIsGenerating(true);
     setProgress(15);
     setTaskStatus(AITaskStatus.PENDING);
-    setGeneratedImages([]);
+    setGeneratedVideos([]);
     setGenerationStartTime(Date.now());
 
     try {
       const options: any = {};
 
-      if (!isTextToImageMode) {
+      if (isImageToVideoMode) {
         options.image_input = referenceImageUrls;
+      }
+
+      if (isVideoToVideoMode) {
+        options.video_input = [referenceVideoUrl];
       }
 
       const resp = await fetch('/api/ai/generate', {
@@ -515,8 +530,8 @@ export function ImageGenerator({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          mediaType: AIMediaType.IMAGE,
-          scene: isTextToImageMode ? 'text-to-image' : 'image-to-image',
+          mediaType: AIMediaType.VIDEO,
+          scene: activeTab,
           provider,
           model,
           prompt: trimmedPrompt,
@@ -530,7 +545,7 @@ export function ImageGenerator({
 
       const { code, message, data } = await resp.json();
       if (code !== 0) {
-        throw new Error(message || 'Failed to create an image task');
+        throw new Error(message || 'Failed to create a video task');
       }
 
       const newTaskId = data?.id;
@@ -540,11 +555,11 @@ export function ImageGenerator({
 
       if (data.status === AITaskStatus.SUCCESS && data.taskInfo) {
         const parsedResult = parseTaskResult(data.taskInfo);
-        const imageUrls = extractImageUrls(parsedResult);
+        const videoUrls = extractVideoUrls(parsedResult);
 
-        if (imageUrls.length > 0) {
-          setGeneratedImages(
-            imageUrls.map((url, index) => ({
+        if (videoUrls.length > 0) {
+          setGeneratedVideos(
+            videoUrls.map((url, index) => ({
               id: `${newTaskId}-${index}`,
               url,
               provider,
@@ -552,7 +567,7 @@ export function ImageGenerator({
               prompt: trimmedPrompt,
             }))
           );
-          toast.success('Image generated successfully');
+          toast.success('Video generated successfully');
           setProgress(100);
           resetTaskState();
           await fetchUserCredits();
@@ -565,42 +580,42 @@ export function ImageGenerator({
 
       await fetchUserCredits();
     } catch (error: any) {
-      console.error('Failed to generate image:', error);
-      toast.error(`Failed to generate image: ${error.message}`);
+      console.error('Failed to generate video:', error);
+      toast.error(`Failed to generate video: ${error.message}`);
       resetTaskState();
     }
   };
 
-  const handleDownloadImage = async (image: GeneratedImage) => {
-    if (!image.url) {
+  const handleDownloadVideo = async (video: GeneratedVideo) => {
+    if (!video.url) {
       return;
     }
 
     try {
-      setDownloadingImageId(image.id);
-      // fetch image via proxy
+      setDownloadingVideoId(video.id);
+      // fetch video via proxy
       const resp = await fetch(
-        `/api/proxy/file?url=${encodeURIComponent(image.url)}`
+        `/api/proxy/file?url=${encodeURIComponent(video.url)}`
       );
       if (!resp.ok) {
-        throw new Error('Failed to fetch image');
+        throw new Error('Failed to fetch video');
       }
 
       const blob = await resp.blob();
       const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = blobUrl;
-      link.download = `${image.id}.png`;
+      link.download = `${video.id}.mp4`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       setTimeout(() => URL.revokeObjectURL(blobUrl), 200);
-      toast.success('Image downloaded');
+      toast.success('Video downloaded');
     } catch (error) {
-      console.error('Failed to download image:', error);
-      toast.error('Failed to download image');
+      console.error('Failed to download video:', error);
+      toast.error('Failed to download video');
     } finally {
-      setDownloadingImageId(null);
+      setDownloadingVideoId(null);
     }
   };
 
@@ -618,12 +633,15 @@ export function ImageGenerator({
               </CardHeader>
               <CardContent className="space-y-6 pb-8">
                 <Tabs value={activeTab} onValueChange={handleTabChange}>
-                  <TabsList className="bg-primary/10 grid w-full grid-cols-2">
-                    <TabsTrigger value="text-to-image">
-                      {t('tabs.text-to-image')}
+                  <TabsList className="bg-primary/10 grid w-full grid-cols-3">
+                    <TabsTrigger value="text-to-video">
+                      {t('tabs.text-to-video')}
                     </TabsTrigger>
-                    <TabsTrigger value="image-to-image">
-                      {t('tabs.image-to-image')}
+                    <TabsTrigger value="image-to-video">
+                      {t('tabs.image-to-video')}
+                    </TabsTrigger>
+                    <TabsTrigger value="video-to-video">
+                      {t('tabs.video-to-video')}
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
@@ -669,12 +687,12 @@ export function ImageGenerator({
                   </div>
                 </div>
 
-                {!isTextToImageMode && (
+                {isImageToVideoMode && (
                   <div className="space-y-4">
                     <ImageUploader
                       title={t('form.reference_image')}
-                      allowMultiple={allowMultipleImages}
-                      maxImages={allowMultipleImages ? maxImages : 1}
+                      allowMultiple={true}
+                      maxImages={3}
                       maxSizeMB={maxSizeMB}
                       onChange={handleReferenceImagesChange}
                       emptyHint={t('form.reference_image_placeholder')}
@@ -688,10 +706,25 @@ export function ImageGenerator({
                   </div>
                 )}
 
+                {isVideoToVideoMode && (
+                  <div className="space-y-2">
+                    <Label htmlFor="video-url">
+                      {t('form.reference_video')}
+                    </Label>
+                    <Textarea
+                      id="video-url"
+                      value={referenceVideoUrl}
+                      onChange={(e) => setReferenceVideoUrl(e.target.value)}
+                      placeholder={t('form.reference_video_placeholder')}
+                      className="min-h-20"
+                    />
+                  </div>
+                )}
+
                 <div className="space-y-2">
-                  <Label htmlFor="image-prompt">{t('form.prompt')}</Label>
+                  <Label htmlFor="video-prompt">{t('form.prompt')}</Label>
                   <Textarea
-                    id="image-prompt"
+                    id="video-prompt"
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                     placeholder={t('form.prompt_placeholder')}
@@ -726,10 +759,12 @@ export function ImageGenerator({
                     onClick={handleGenerate}
                     disabled={
                       isGenerating ||
-                      !prompt.trim() ||
+                      (isTextToVideoMode && !prompt.trim()) ||
                       isPromptTooLong ||
                       isReferenceUploading ||
-                      hasReferenceUploadError
+                      hasReferenceUploadError ||
+                      (isImageToVideoMode && referenceImageUrls.length === 0) ||
+                      (isVideoToVideoMode && !referenceVideoUrl)
                     }
                   >
                     {isGenerating ? (
@@ -810,36 +845,21 @@ export function ImageGenerator({
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-xl font-semibold">
-                  <ImageIcon className="h-5 w-5" />
-                  {t('generated_images')}
+                  <Video className="h-5 w-5" />
+                  {t('generated_videos')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="pb-8">
-                {generatedImages.length > 0 ? (
-                  <div
-                    className={
-                      generatedImages.length === 1
-                        ? 'grid grid-cols-1 gap-6'
-                        : 'grid gap-6 sm:grid-cols-2'
-                    }
-                  >
-                    {generatedImages.map((image) => (
-                      <div key={image.id} className="space-y-3">
-                        <div
-                          className={
-                            generatedImages.length === 1
-                              ? 'relative overflow-hidden rounded-lg border'
-                              : 'relative aspect-square overflow-hidden rounded-lg border'
-                          }
-                        >
-                          <LazyImage
-                            src={image.url}
-                            alt={image.prompt || 'Generated image'}
-                            className={
-                              generatedImages.length === 1
-                                ? 'h-auto w-full'
-                                : 'h-full w-full object-cover'
-                            }
+                {generatedVideos.length > 0 ? (
+                  <div className="space-y-6">
+                    {generatedVideos.map((video) => (
+                      <div key={video.id} className="space-y-3">
+                        <div className="relative overflow-hidden rounded-lg border">
+                          <video
+                            src={video.url}
+                            controls
+                            className="h-auto w-full"
+                            preload="metadata"
                           />
 
                           <div className="absolute right-2 bottom-2 flex justify-end text-sm">
@@ -847,10 +867,10 @@ export function ImageGenerator({
                               size="sm"
                               variant="ghost"
                               className="ml-auto"
-                              onClick={() => handleDownloadImage(image)}
-                              disabled={downloadingImageId === image.id}
+                              onClick={() => handleDownloadVideo(video)}
+                              disabled={downloadingVideoId === video.id}
                             >
-                              {downloadingImageId === image.id ? (
+                              {downloadingVideoId === video.id ? (
                                 <>
                                   <Loader2 className="h-4 w-4 animate-spin" />
                                 </>
@@ -868,12 +888,12 @@ export function ImageGenerator({
                 ) : (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
                     <div className="bg-muted mb-4 flex h-16 w-16 items-center justify-center rounded-full">
-                      <ImageIcon className="text-muted-foreground h-10 w-10" />
+                      <Video className="text-muted-foreground h-10 w-10" />
                     </div>
                     <p className="text-muted-foreground">
                       {isGenerating
                         ? t('ready_to_generate')
-                        : t('no_images_generated')}
+                        : t('no_videos_generated')}
                     </p>
                   </div>
                 )}
