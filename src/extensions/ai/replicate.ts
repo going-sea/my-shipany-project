@@ -1,7 +1,11 @@
 import Replicate from 'replicate';
 
+import { getUuid } from '@/shared/lib/hash';
+
+import { saveFiles } from '.';
 import {
   AIConfigs,
+  AIFile,
   AIGenerateParams,
   AIImage,
   AIMediaType,
@@ -18,6 +22,7 @@ import {
 export interface ReplicateConfigs extends AIConfigs {
   baseUrl?: string;
   apiToken: string;
+  customStorage?: boolean; // use custom storage to save files
 }
 
 /**
@@ -113,9 +118,46 @@ export class ReplicateProvider implements AIProvider {
       }
     }
 
+    const taskStatus = this.mapStatus(data.status);
+
+    // save files to custom storage
+    if (
+      taskStatus === AITaskStatus.SUCCESS &&
+      images &&
+      images.length > 0 &&
+      this.configs.customStorage
+    ) {
+      const filesToSave: AIFile[] = [];
+      images.forEach((image, index) => {
+        if (image.imageUrl) {
+          filesToSave.push({
+            url: image.imageUrl,
+            contentType: 'image/png',
+            key: `replicate/image/${getUuid()}.png`,
+            index: index,
+            type: 'image',
+          });
+        }
+      });
+
+      if (filesToSave.length > 0) {
+        const uploadedFiles = await saveFiles(filesToSave);
+        if (uploadedFiles) {
+          uploadedFiles.forEach((file: AIFile) => {
+            if (file && file.url && images && file.index !== undefined) {
+              const image = images[file.index];
+              if (image) {
+                image.imageUrl = file.url;
+              }
+            }
+          });
+        }
+      }
+    }
+
     return {
       taskId,
-      taskStatus: this.mapStatus(data.status),
+      taskStatus,
       taskInfo: {
         images,
         status: data.status,

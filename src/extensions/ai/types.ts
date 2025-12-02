@@ -34,7 +34,7 @@ export interface AISong {
 export interface AIImage {
   id?: string;
   createTime?: Date;
-  imageType?: string
+  imageType?: string;
   imageUrl?: string;
 }
 
@@ -85,6 +85,14 @@ export interface AITaskResult {
   taskResult?: any; // raw result from provider
 }
 
+export interface AIFile {
+  url: string;
+  contentType: string;
+  key: string;
+  index?: number;
+  type?: string;
+}
+
 /**
  * AI Provider provide AI functions
  */
@@ -99,5 +107,11 @@ export interface AIProvider {
   generate({ params }: { params: AIGenerateParams }): Promise<AITaskResult>;
 
   // query task
-  query?({ taskId }: { taskId: string }): Promise<AITaskResult>;
+  query?({
+    taskId,
+    mediaType,
+  }: {
+    taskId: string;
+    mediaType?: string;
+  }): Promise<AITaskResult>;
 }

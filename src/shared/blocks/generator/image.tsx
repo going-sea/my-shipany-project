@@ -60,6 +60,7 @@ interface BackendTask {
   provider: string;
   model: string;
   prompt: string | null;
+  taskInfo: string | null;
   taskResult: string | null;
 }
 
@@ -94,6 +95,12 @@ const MODEL_OPTIONS = [
     provider: 'gemini',
     scenes: ['text-to-image', 'image-to-image'],
   },
+  {
+    value: 'nano-banana-pro',
+    label: 'Nano Banana Pro',
+    provider: 'kie',
+    scenes: ['text-to-image', 'image-to-image'],
+  },
 ];
 
 const PROVIDER_OPTIONS = [
@@ -104,6 +111,10 @@ const PROVIDER_OPTIONS = [
   {
     value: 'gemini',
     label: 'Gemini',
+  },
+  {
+    value: 'kie',
+    label: 'Kie',
   },
 ];
 
@@ -321,7 +332,7 @@ export function ImageGenerator({
         const currentStatus = task.status as AITaskStatus;
         setTaskStatus(currentStatus);
 
-        const parsedResult = parseTaskResult(task.taskResult);
+        const parsedResult = parseTaskResult(task.taskInfo);
         const imageUrls = extractImageUrls(parsedResult);
 
         if (currentStatus === AITaskStatus.PENDING) {
@@ -370,9 +381,7 @@ export function ImageGenerator({
 
         if (currentStatus === AITaskStatus.FAILED) {
           const errorMessage =
-            parsedResult?.error ||
-            parsedResult?.failure_reason ||
-            'Generate image failed';
+            parsedResult?.errorMessage || 'Generate image failed';
           toast.error(errorMessage);
           resetTaskState();
 
@@ -541,7 +550,10 @@ export function ImageGenerator({
 
     try {
       setDownloadingImageId(image.id);
-      const resp = await fetch(image.url);
+      // fetch image via proxy
+      const resp = await fetch(
+        `/api/proxy/file?url=${encodeURIComponent(image.url)}`
+      );
       if (!resp.ok) {
         throw new Error('Failed to fetch image');
       }
@@ -577,10 +589,7 @@ export function ImageGenerator({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6 pb-8">
-                <Tabs
-                  value={activeTab}
-                  onValueChange={handleTabChange}
-                >
+                <Tabs value={activeTab} onValueChange={handleTabChange}>
                   <TabsList className="bg-primary/10 grid w-full grid-cols-2">
                     <TabsTrigger value="text-to-image">
                       {t('tabs.text-to-image')}
@@ -594,7 +603,10 @@ export function ImageGenerator({
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>{t('form.provider')}</Label>
-                    <Select value={provider} onValueChange={handleProviderChange}>
+                    <Select
+                      value={provider}
+                      onValueChange={handleProviderChange}
+                    >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder={t('form.select_provider')} />
                       </SelectTrigger>
@@ -779,7 +791,7 @@ export function ImageGenerator({
                   <div
                     className={
                       generatedImages.length === 1
-                        ? 'grid gap-6 grid-cols-1'
+                        ? 'grid grid-cols-1 gap-6'
                         : 'grid gap-6 sm:grid-cols-2'
                     }
                   >
@@ -797,7 +809,7 @@ export function ImageGenerator({
                             alt={image.prompt || 'Generated image'}
                             className={
                               generatedImages.length === 1
-                                ? 'w-full h-auto'
+                                ? 'h-auto w-full'
                                 : 'h-full w-full object-cover'
                             }
                           />

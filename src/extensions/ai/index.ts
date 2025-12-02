@@ -1,4 +1,4 @@
-import { AIMediaType, AIProvider } from './types';
+import { AIFile, AIMediaType, AIProvider } from './types';
 
 export * from './types';
 
@@ -41,6 +41,33 @@ export class AIManager {
     }
 
     return this.defaultProvider;
+  }
+}
+
+// save files to custom storage
+export async function saveFiles(files: AIFile[]) {
+  try {
+    const { getStorageService } = await import('@/shared/services/storage');
+    const storageService = await getStorageService();
+
+    const uploadedFiles = await Promise.all(
+      files.map(async (file) => {
+        const result = await storageService.downloadAndUpload({
+          url: file.url,
+          contentType: file.contentType,
+          key: file.key,
+        });
+        return {
+          ...file,
+          url: result.url,
+        } as AIFile;
+      })
+    );
+
+    return uploadedFiles;
+  } catch (error) {
+    console.error('save files failed:', error);
+    return undefined;
   }
 }
 
