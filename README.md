@@ -2,7 +2,6 @@
 
 ## Preview
 
-![preview](preview.png)
 [https://cf-two.shipany.site/](https://cf-two.shipany.site/)
 
 # 不要提交自己的代码到本仓库！
@@ -26,7 +25,6 @@
 - `cloudfare`: two cloudfare branch
 - `one/main`: one main branch (2025-08-06(v2.6.0))
 - `one/cloudfare`: one cloudfare branch 
-- `one/nanobanana`: one nanobanana branch [coming soon]
 
 ## 常见问题
 
@@ -42,6 +40,10 @@
 ### 官方文档为什么内容那么少？
 
 答：[官方文档](https://www.shipany.ai/zh/docs) 作者2025-11-24已补全所有文档，各位在开发时可以参阅，预祝各位出海发大财！
+
+### Cloudflare分支须知
+
+Cloudflare分支代码可以部署到Cloudflare，但是需要购买Cloudflare每月$5的套餐才能使用，否则会因为文件打包大小超过3MB而导致线上构建失败。
 
 ### Two 与 One 有什么区别？
 答：<br/> 
