@@ -140,7 +140,7 @@ export class GeminiProvider implements AIProvider {
     const buffer = Buffer.from(base64Data, 'base64');
     const ext = mimeType.split('/')[1] || 'png';
     const filename = `${nanoid()}.${ext}`;
-    const key = `ai/gemini/${filename}`;
+    const key = `gemini/${filename}`;
 
     const uploadResult = await storageService.uploadFile({
       body: buffer,

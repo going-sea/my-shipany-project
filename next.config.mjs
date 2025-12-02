@@ -30,6 +30,7 @@ const nextConfig = {
     return [];
   },
   turbopack: {
+    root: process.cwd(),
     resolveAlias: {
       // fs: {
       //   browser: './empty.ts', // We recommend to fix code imports before using this method

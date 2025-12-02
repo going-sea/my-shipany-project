@@ -28,6 +28,7 @@ export interface StorageUploadResult {
   success: boolean;
   location?: string;
   bucket?: string;
+  uploadPath?: string;
   key?: string;
   filename?: string;
   url?: string;
