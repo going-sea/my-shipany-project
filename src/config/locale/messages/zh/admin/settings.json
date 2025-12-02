@@ -22,7 +22,9 @@
     "affonso": "Affonso",
     "promotekit": "PromoteKit",
     "tawk": "Tawk",
-    "crisp": "Crisp"
+    "crisp": "Crisp",
+    "credit": "积分",
+    "appinfo": "应用信息"
   },
   "edit": {
     "title": "设置",
@@ -31,8 +33,10 @@
       "settings": "设置"
     },
     "tabs": {
+      "general": "通用",
       "auth": "认证",
       "payment": "支付",
+      "credit": "积分",
       "email": "邮箱",
       "storage": "存储",
       "ai": "AI",

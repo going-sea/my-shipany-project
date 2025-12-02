@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { PERMISSIONS, requirePermission } from '@/core/rbac';
-import { PaymentType } from '@/extensions/payment';
+import { PaymentType } from '@/extensions/payment/types';
 import { Header, Main, MainHeader } from '@/shared/blocks/dashboard';
 import { TableCard } from '@/shared/blocks/table';
 import { getOrders, getOrdersCount, OrderStatus } from '@/shared/models/order';

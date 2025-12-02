@@ -1,11 +1,15 @@
 import { betterAuth } from 'better-auth';
 
+import { getAllConfigs } from '@/shared/models/config';
+
 import { getAuthOptions } from './config';
 
-// Dynamic auth - with full database configuration
-// Always use this in API routes that need database access
-export async function getAuth(): Promise<
-  Awaited<ReturnType<typeof betterAuth>>
-> {
-  return betterAuth(await getAuthOptions());
+// get auth instance in server side
+export async function getAuth() {
+  // get configs from db and env
+  const configs = await getAllConfigs();
+
+  const authOptions = await getAuthOptions(configs);
+
+  return betterAuth(authOptions);
 }

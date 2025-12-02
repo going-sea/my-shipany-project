@@ -1,4 +1,5 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 import { Link } from '@/core/i18n/navigation';
 import { Form } from '@/shared/blocks/form';
@@ -10,8 +11,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/shared/components/ui/breadcrumb';
+import { Button } from '@/shared/components/ui/button';
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -28,13 +31,19 @@ export function FormCard({
   crumbs,
   form,
   className,
+  collapsible = false,
+  defaultCollapsed = false,
 }: {
   title?: string;
   description?: string;
   crumbs?: Crumb[];
   form: FormType;
   className?: string;
+  collapsible?: boolean;
+  defaultCollapsed?: boolean;
 }) {
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+
   return (
     <Card className={cn(className)}>
       {crumbs && crumbs.length > 0 && (
@@ -58,7 +67,7 @@ export function FormCard({
         </Breadcrumb>
       )}
 
-      {(title || description) && (
+      {(title || description || collapsible) && (
         <CardHeader>
           {title && <CardTitle>{title}</CardTitle>}
           {description && (
@@ -66,11 +75,26 @@ export function FormCard({
               dangerouslySetInnerHTML={{ __html: description }}
             />
           )}
+          {collapsible && (
+            <CardAction>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+              >
+                {isCollapsed ? (
+                  <ChevronDown className="size-4" />
+                ) : (
+                  <ChevronUp className="size-4" />
+                )}
+              </Button>
+            </CardAction>
+          )}
         </CardHeader>
       )}
 
       {form && (
-        <CardContent>
+        <CardContent className={cn(collapsible && isCollapsed && 'hidden')}>
           <Form {...form} />
         </CardContent>
       )}

@@ -228,6 +228,20 @@ export function Form({
         } else {
           defaultValues[field.name] = [];
         }
+      } else if (field.type === 'checkbox') {
+        const val = data?.[field.name] ?? field.value;
+        if (typeof val === 'string' && val) {
+          try {
+            const parsed = JSON.parse(val);
+            defaultValues[field.name] = Array.isArray(parsed) ? parsed : [];
+          } catch {
+            defaultValues[field.name] = [];
+          }
+        } else if (Array.isArray(val)) {
+          defaultValues[field.name] = val;
+        } else {
+          defaultValues[field.name] = [];
+        }
       } else if (field.type === 'number') {
         // Convert number to string for input fields (HTML inputs always return strings)
         const val = data?.[field.name] ?? field.value;
@@ -266,6 +280,7 @@ export function Form({
       const formData = new FormData();
 
       Object.entries(data).forEach(([key, value]) => {
+        console.log('checkbox value', key, typeof value);
         // If it's an array, join with commas
         if (Array.isArray(value)) {
           // const joinedValue = value.join(",");

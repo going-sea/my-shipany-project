@@ -2,7 +2,7 @@ import { and, count, desc, eq } from 'drizzle-orm';
 
 import { db } from '@/core/db';
 import { credit, order, subscription } from '@/config/db/schema';
-import { PaymentType } from '@/extensions/payment';
+import { PaymentType } from '@/extensions/payment/types';
 
 import { NewCredit } from './credit';
 import {

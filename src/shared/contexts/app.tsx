@@ -5,6 +5,7 @@ import {
   ReactNode,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 
@@ -145,14 +146,19 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [session]);
 
+  // one tap initialized
+  const oneTapInitialized = useRef(false);
+
   useEffect(() => {
     if (
       configs &&
       configs.google_client_id &&
       configs.google_one_tap_enabled === 'true' &&
       !session &&
-      !isPending
+      !isPending &&
+      !oneTapInitialized.current
     ) {
+      oneTapInitialized.current = true;
       showOneTap(configs);
     }
   }, [configs, session, isPending]);

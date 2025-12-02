@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { PaymentType } from '@/extensions/payment';
+import { PaymentType } from '@/extensions/payment/types';
 import { Empty } from '@/shared/blocks/common';
 import { TableCard } from '@/shared/blocks/table';
 import {

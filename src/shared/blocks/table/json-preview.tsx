@@ -9,7 +9,6 @@ export function JsonPreview({
   metadata?: Record<string, any>;
   className?: string;
 }) {
-  console.log('xxx', value, typeof value);
   if (!value) {
     if (placeholder) {
       return <div className={className}>{placeholder}</div>;

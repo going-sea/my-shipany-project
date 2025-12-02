@@ -112,6 +112,8 @@ export default async function SettingsPage({
             description={form.description}
             form={form}
             className="mb-8 md:max-w-xl"
+            defaultCollapsed={false}
+            collapsible={true}
           />
         ))}
       </Main>

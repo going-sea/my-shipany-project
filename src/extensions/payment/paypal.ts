@@ -7,7 +7,7 @@ import {
   PaymentSession,
   PaymentStatus,
   PaymentType,
-} from '.';
+} from './types';
 
 /**
  * PayPal payment provider configs

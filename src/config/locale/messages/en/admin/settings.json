@@ -22,7 +22,9 @@
     "affonso": "Affonso",
     "promotekit": "PromoteKit",
     "tawk": "Tawk",
-    "crisp": "Crisp"
+    "crisp": "Crisp",
+    "credit": "Credit",
+    "appinfo": "App Info"
   },
   "edit": {
     "title": "Settings",
@@ -31,8 +33,10 @@
       "settings": "Settings"
     },
     "tabs": {
+      "general": "General",
       "auth": "Auth",
       "payment": "Payment",
+      "credit": "Credit",
       "email": "Email",
       "storage": "Storage",
       "ai": "AI",

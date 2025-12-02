@@ -30,6 +30,7 @@ export async function createAITask(newAITask: NewAITask) {
           mediaType: taskResult.mediaType,
           taskId: taskResult.id,
         }),
+        tx,
       });
 
       // 3. update task record with consumed credit id
@@ -92,7 +93,7 @@ export async function updateAITaskById(id: string, updateAITask: UpdateAITask) {
     }
 
     // update task
-    const [result] = await db()
+    const [result] = await tx
       .update(aiTask)
       .set(updateAITask)
       .where(eq(aiTask.id, id))

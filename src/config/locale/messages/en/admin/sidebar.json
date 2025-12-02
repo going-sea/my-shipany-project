@@ -95,7 +95,7 @@
     "items": [
       {
         "title": "Settings",
-        "url": "/admin/settings/auth",
+        "url": "/admin/settings/general",
         "icon": "Settings"
       },
       {

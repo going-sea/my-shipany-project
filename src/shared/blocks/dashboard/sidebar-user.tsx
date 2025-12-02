@@ -4,7 +4,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { ChevronsUpDown, Loader2, LogOut, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { signOut, useSession } from '@/core/auth/client';
+import { signOut } from '@/core/auth/client';
 import { Link, useRouter } from '@/core/i18n/navigation';
 import { SmartIcon } from '@/shared/blocks/common';
 import { SignModal } from '@/shared/blocks/sign/sign-modal';
@@ -36,7 +36,7 @@ import { SidebarUser as SidebarUserType } from '@/shared/types/blocks/dashboard'
 // SSR/CSR hydration bug fix: Avoid rendering session-dependent UI until mounted on client
 export function SidebarUser({ user }: { user: SidebarUserType }) {
   const t = useTranslations('common.sign');
-  const { data: session, isPending } = useSession();
+  const { user: authUser, isCheckSign } = useAppContext();
   const { isMobile, open } = useSidebar();
   const router = useRouter();
 
@@ -62,7 +62,7 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
     );
   }
 
-  if (session?.user) {
+  if (authUser) {
     return (
       <SidebarMenu className="gap-4 px-3">
         <SidebarMenuItem>
@@ -73,22 +73,17 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage
-                    src={session?.user?.image || ''}
-                    alt={session?.user?.name}
-                  />
+                  <AvatarImage src={authUser.image || ''} alt={authUser.name} />
                   <AvatarFallback className="rounded-lg">
-                    {session?.user?.name?.charAt(0)}
+                    {authUser.name?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
-                    {session?.user?.name}
+                    {authUser.name}
                   </span>
                   {user.show_email && (
-                    <span className="truncate text-xs">
-                      {session?.user?.email}
-                    </span>
+                    <span className="truncate text-xs">{authUser.email}</span>
                   )}
                 </div>
                 <ChevronsUpDown className="ml-auto size-4" />
@@ -104,21 +99,19 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                   <Avatar className="h-8 w-8 rounded-lg">
                     <AvatarImage
-                      src={session?.user?.image || ''}
-                      alt={session?.user?.name}
+                      src={authUser.image || ''}
+                      alt={authUser.name}
                     />
                     <AvatarFallback className="rounded-lg">
-                      {session?.user?.name?.charAt(0) || 'U'}
+                      {authUser.name?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">
-                      {session?.user?.name}
+                      {authUser.name}
                     </span>
                     {user.show_email && (
-                      <span className="truncate text-xs">
-                        {session?.user?.email}
-                      </span>
+                      <span className="truncate text-xs">{authUser.email}</span>
                     )}
                   </div>
                 </div>
@@ -160,7 +153,7 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
     <>
       {open ? (
         <div className="flex h-full items-center justify-center px-4 py-4">
-          {isPending ? (
+          {isCheckSign ? (
             <div className="flex w-full items-center justify-center">
               <Loader2 className="animate-spin" />
             </div>

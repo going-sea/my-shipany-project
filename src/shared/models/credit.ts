@@ -2,11 +2,10 @@ import { and, asc, count, desc, eq, gt, isNull, or, sum } from 'drizzle-orm';
 
 import { db } from '@/core/db';
 import { credit } from '@/config/db/schema';
-import { PaymentType } from '@/extensions/payment';
 import { getSnowId, getUuid } from '@/shared/lib/hash';
 
-import { Order } from './order';
-import { appendUserToResult, getUserByUserIds, User } from './user';
+import { getAllConfigs } from './config';
+import { appendUserToResult, User } from './user';
 
 export type Credit = typeof credit.$inferSelect & {
   user?: User;
@@ -32,7 +31,7 @@ export enum CreditTransactionScene {
   SUBSCRIPTION = 'subscription', // subscription
   RENEWAL = 'renewal', // renewal
   GIFT = 'gift', // gift
-  AWARD = 'award', // award
+  REWARD = 'reward', // reward
 }
 
 // Calculate credit expiration time based on order and subscription info
@@ -149,17 +148,19 @@ export async function consumeCredits({
   scene,
   description,
   metadata,
+  tx,
 }: {
   userId: string;
   credits: number; // credits to consume
   scene?: string;
   description?: string;
   metadata?: string;
+  tx?: any;
 }) {
   const currentTime = new Date();
 
   // consume credits
-  const result = await db().transaction(async (tx) => {
+  const execute = async (tx: any) => {
     // 1. check credits balance
     const [creditsBalance] = await tx
       .select({
@@ -283,9 +284,15 @@ export async function consumeCredits({
     await tx.insert(credit).values(consumedCredit);
 
     return consumedCredit;
-  });
+  };
 
-  return result;
+  // use provided transaction
+  if (tx) {
+    return await execute(tx);
+  }
+
+  // use default transaction
+  return await db().transaction(execute);
 }
 
 // get remaining credits
@@ -311,4 +318,50 @@ export async function getRemainingCredits(userId: string): Promise<number> {
     );
 
   return parseInt(result?.total || '0');
+}
+
+// grant credits for new user
+export async function grantCreditsForNewUser(user: User) {
+  // get configs from db
+  const configs = await getAllConfigs();
+
+  // if initial credits enabled
+  if (configs.initial_credits_enabled !== 'true') {
+    return;
+  }
+
+  // get initial credits amount and valid days
+  const credits = parseInt(configs.initial_credits_amount as string) || 0;
+  if (credits <= 0) {
+    return;
+  }
+
+  const creditsValidDays =
+    parseInt(configs.initial_credits_valid_days as string) || 0;
+
+  const expiresAt = calculateCreditExpirationTime({
+    creditsValidDays: creditsValidDays,
+  });
+
+  const description = configs.initial_credits_description || 'initial credits';
+
+  const newCredit: NewCredit = {
+    id: getUuid(),
+    userId: user.id,
+    userEmail: user.email,
+    orderNo: '',
+    subscriptionNo: '',
+    transactionNo: getSnowId(),
+    transactionType: CreditTransactionType.GRANT,
+    transactionScene: CreditTransactionScene.GIFT,
+    credits: credits,
+    remainingCredits: credits,
+    description: description,
+    expiresAt: expiresAt,
+    status: CreditStatus.ACTIVE,
+  };
+
+  await createCredit(newCredit);
+
+  return newCredit;
 }

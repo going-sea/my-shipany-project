@@ -30,6 +30,7 @@ NEXT_PUBLIC_APPEARANCE = "system"
 DATABASE_URL = ""
 DATABASE_PROVIDER = "postgresql"
 DB_SINGLETON_ENABLED = "true"
+DB_MAX_CONNECTIONS = "1"
 
 # auth secret
 # openssl rand -base64 32

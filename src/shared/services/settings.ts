@@ -30,6 +30,12 @@ export async function getSettingTabs(tab: string) {
 
   const tabs: Tab[] = [
     {
+      name: 'general',
+      title: t('edit.tabs.general'),
+      url: '/admin/settings/general',
+      is_active: tab === 'general',
+    },
+    {
       name: 'auth',
       title: t('edit.tabs.auth'),
       url: '/admin/settings/auth',
@@ -92,6 +98,18 @@ export async function getSettingTabs(tab: string) {
 export async function getSettingGroups() {
   const t = await getTranslations('admin.settings');
   const settingGroups: SettingGroup[] = [
+    {
+      name: 'appinfo',
+      title: t('groups.appinfo'),
+      description: 'custom your app info',
+      tab: 'general',
+    },
+    {
+      name: 'credit',
+      title: t('groups.credit'),
+      description: 'custom credit settings',
+      tab: 'general',
+    },
     {
       name: 'email_auth',
       title: t('groups.email_auth'),
@@ -254,6 +272,73 @@ export async function getSettingGroups() {
 export async function getSettings() {
   const settings: Setting[] = [
     {
+      name: 'app_name',
+      title: 'App Name',
+      placeholder: 'ShipAny',
+      type: 'text',
+      group: 'appinfo',
+      tab: 'general',
+    },
+    {
+      name: 'app_description',
+      title: 'App Description',
+      placeholder:
+        'ShipAny is a NextJS boilerplate for building AI SaaS startups. ',
+      type: 'textarea',
+      group: 'appinfo',
+      tab: 'general',
+    },
+    {
+      name: 'app_logo',
+      title: 'App Logo',
+      type: 'upload_image',
+      group: 'appinfo',
+      tab: 'general',
+    },
+    {
+      name: 'app_preview_image',
+      title: 'App Preview Image',
+      type: 'upload_image',
+      group: 'appinfo',
+      tab: 'general',
+    },
+    {
+      name: 'initial_credits_enabled',
+      title: 'Initial Credits Enabled',
+      type: 'switch',
+      value: 'false',
+      group: 'credit',
+      tab: 'general',
+      tip: 'whether grant initial credits for new user',
+    },
+    {
+      name: 'initial_credits_amount',
+      title: 'Initial Credits Amount',
+      type: 'number',
+      placeholder: '0',
+      group: 'credit',
+      tab: 'general',
+      tip: 'initial credits amount for new user',
+    },
+    {
+      name: 'initial_credits_valid_days',
+      title: 'Initial Credits Valid Days',
+      type: 'number',
+      placeholder: '30',
+      group: 'credit',
+      tab: 'general',
+      tip: 'initial credits will expire after this days',
+    },
+    {
+      name: 'initial_credits_description',
+      title: 'Initial Credits Description',
+      type: 'text',
+      placeholder: 'initial credits for free trial',
+      group: 'credit',
+      tab: 'general',
+      tip: 'description for initial credits',
+    },
+    {
       name: 'email_auth_enabled',
       title: 'Enabled',
       type: 'switch',
@@ -396,6 +481,31 @@ export async function getSettings() {
       value: ['card'],
       group: 'stripe',
       tab: 'payment',
+    },
+    {
+      name: 'stripe_promotion_codes',
+      title: 'Stripe Promotion Codes',
+      type: 'textarea',
+      attributes: {
+        rows: 6,
+      },
+      placeholder: `{
+  "starter": "promo_xxx",
+  "standard-monthly": "promo_xxx",
+  "premium-yearly": "promo_xxx"
+}`,
+      group: 'stripe',
+      tab: 'payment',
+      tip: 'Map the product_id in pricing table to <a href="https://dashboard.stripe.com/coupons" class="text-primary" target="_blank">promotion_code</a> created in Stripe. Must be a valid JSON object.',
+    },
+    {
+      name: 'stripe_allow_promotion_codes',
+      title: 'Stripe Allow Promotion Codes',
+      type: 'switch',
+      value: 'false',
+      group: 'stripe',
+      tab: 'payment',
+      tip: 'Whether allow users to input custom promotion code, only works when no pre-set promotion code is provided',
     },
     {
       name: 'creem_enabled',
@@ -575,6 +685,15 @@ export async function getSettings() {
       tab: 'storage',
     },
     {
+      name: 'r2_upload_path',
+      title: 'Upload Path',
+      type: 'text',
+      placeholder: 'uploads',
+      tip: 'The path to upload files to, leave empty to use the default upload path. Example: uploads/foo/bar',
+      group: 'r2',
+      tab: 'storage',
+    },
+    {
       name: 'r2_endpoint',
       title: 'Endpoint',
       type: 'url',
@@ -596,6 +715,15 @@ export async function getSettings() {
       title: 'OpenRouter API Key',
       type: 'password',
       placeholder: 'sk-or-xxx',
+      group: 'openrouter',
+      tab: 'ai',
+    },
+    {
+      name: 'openrouter_base_url',
+      title: 'OpenRouter Base URL',
+      type: 'url',
+      placeholder: 'https://openrouter.ai/api/v1',
+      tip: 'Set any OpenAI compatible API URL, leave empty to use the default OpenRouter API URL',
       group: 'openrouter',
       tab: 'ai',
     },
@@ -748,3 +876,14 @@ export const publicSettingNames = [
   'crisp_enabled',
   'tawk_enabled',
 ];
+
+export async function getAllSettingNames() {
+  const settings = await getSettings();
+  const settingNames: string[] = [];
+
+  settings.forEach((setting: Setting) => {
+    settingNames.push(setting.name);
+  });
+
+  return settingNames;
+}

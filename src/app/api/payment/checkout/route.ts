@@ -5,7 +5,7 @@ import {
   PaymentOrder,
   PaymentPrice,
   PaymentType,
-} from '@/extensions/payment';
+} from '@/extensions/payment/types';
 import { getSnowId, getUuid } from '@/shared/lib/hash';
 import { respData, respErr } from '@/shared/lib/resp';
 import { getAllConfigs } from '@/shared/models/config';
@@ -170,6 +170,13 @@ export async function POST(req: Request) {
       );
     }
 
+    // get preset promotion code for product_id
+    const promotionCode = await getPromotionCode(
+      product_id,
+      paymentProviderName,
+      checkoutCurrency
+    );
+
     // build checkout price with correct amount for selected currency
     const checkoutPrice: PaymentPrice = {
       amount: checkoutAmount,
@@ -230,6 +237,12 @@ export async function POST(req: Request) {
       // one-time mode
     }
 
+    if (promotionCode) {
+      checkoutOrder.discount = {
+        code: promotionCode,
+      };
+    }
+
     const currentTime = new Date();
 
     // build order info
@@ -254,6 +267,7 @@ export async function POST(req: Request) {
       creditsValidDays: pricingItem.valid_days,
       planName: pricingItem.plan_name || '',
       paymentProductId: paymentProductId,
+      discountCode: promotionCode,
     };
 
     // create order
@@ -313,6 +327,33 @@ async function getPaymentProductId(
     }
   } catch (e: any) {
     console.log('get payment product id failed:', e);
+    return;
+  }
+}
+
+// get promotion code from payment provider's config
+async function getPromotionCode(
+  productId: string,
+  provider: string,
+  checkoutCurrency: string
+) {
+  if (provider !== 'stripe') {
+    // currently only stripe supports promotion code mapping
+    return;
+  }
+
+  try {
+    const configs = await getAllConfigs();
+    const stripePromotionCodes = configs.stripe_promotion_codes;
+    if (stripePromotionCodes) {
+      const promotionCodes = JSON.parse(stripePromotionCodes);
+      return (
+        promotionCodes[`${productId}_${checkoutCurrency}`] ||
+        promotionCodes[productId]
+      );
+    }
+  } catch (e: any) {
+    console.log('get promotion code failed:', e);
     return;
   }
 }

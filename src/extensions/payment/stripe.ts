@@ -16,7 +16,7 @@ import {
   type PaymentOrder,
   type PaymentProvider,
   type PaymentSession,
-} from '.';
+} from './types';
 
 /**
  * Stripe payment provider configs
@@ -28,6 +28,7 @@ export interface StripeConfigs extends PaymentConfigs {
   signingSecret?: string;
   apiVersion?: string;
   allowedPaymentMethods?: string[];
+  allowPromotionCodes?: boolean;
 }
 
 /**
@@ -118,6 +119,20 @@ export class StripeProvider implements PaymentProvider {
           },
         ],
       };
+
+      // pre-set promotion code
+      if (order.discount && order.discount.code) {
+        sessionParams.discounts = [
+          {
+            promotion_code: order.discount.code,
+          },
+        ];
+      }
+
+      // allow user input promotion code
+      if (this.configs.allowPromotionCodes && !sessionParams.discounts) {
+        sessionParams.allow_promotion_codes = true;
+      }
 
       // If currency is CNY, enable WeChat Pay and Alipay (only for one-time payments)
       // Note: WeChat Pay and Alipay through Stripe only supports one-time payments, not subscriptions
@@ -408,9 +423,11 @@ export class StripeProvider implements PaymentProvider {
       paymentStatus: this.mapStripeStatus(session),
       paymentInfo: {
         transactionId: session.id,
-        discountCode: '',
-        discountAmount: undefined,
-        discountCurrency: undefined,
+        discountCode: session.discounts?.find(
+          (discount) => discount.promotion_code
+        )?.promotion_code as string,
+        discountAmount: session.total_details?.amount_discount || 0,
+        discountCurrency: session.currency || '',
         paymentAmount: session.amount_total || 0,
         paymentCurrency: session.currency || '',
         paymentEmail:
@@ -474,8 +491,10 @@ export class StripeProvider implements PaymentProvider {
       paymentInfo: {
         transactionId: invoice.id,
         discountCode: '',
-        discountAmount: undefined,
-        discountCurrency: undefined,
+        discountAmount: invoice.total_discount_amounts
+          ? invoice.total_discount_amounts[0].amount
+          : 0,
+        discountCurrency: invoice.currency || '',
         paymentAmount: invoice.amount_paid,
         paymentCurrency: invoice.currency,
         paymentEmail: invoice.customer_email || '',
