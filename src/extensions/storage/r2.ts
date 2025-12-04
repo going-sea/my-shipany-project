@@ -15,6 +15,7 @@ export interface R2Configs extends StorageConfigs {
   accessKeyId: string;
   secretAccessKey: string;
   bucket: string;
+  uploadPath?: string;
   region?: string;
   endpoint?: string;
   publicDomain?: string;
@@ -50,12 +51,20 @@ export class R2Provider implements StorageProvider {
           ? new Uint8Array(options.body)
           : options.body;
 
+      let uploadPath = this.configs.uploadPath || 'uploads';
+      if (uploadPath.startsWith('/')) {
+        uploadPath = uploadPath.slice(1);
+      }
+      if (uploadPath.endsWith('/')) {
+        uploadPath = uploadPath.slice(0, -1);
+      }
+
       // R2 endpoint format: https://<accountId>.r2.cloudflarestorage.com
       // Use custom endpoint if provided, otherwise use default
       const endpoint =
         this.configs.endpoint ||
         `https://${this.configs.accountId}.r2.cloudflarestorage.com`;
-      const url = `${endpoint}/${uploadBucket}/${options.key}`;
+      const url = `${endpoint}/${uploadBucket}/${uploadPath}/${options.key}`;
 
       const { AwsClient } = await import('aws4fetch');
 
@@ -89,13 +98,14 @@ export class R2Provider implements StorageProvider {
       }
 
       const publicUrl = this.configs.publicDomain
-        ? `${this.configs.publicDomain}/${options.key}`
+        ? `${this.configs.publicDomain}/${uploadPath}/${options.key}`
         : url;
 
       return {
         success: true,
         location: url,
         bucket: uploadBucket,
+        uploadPath: uploadPath,
         key: options.key,
         filename: options.key.split('/').pop(),
         url: publicUrl,

@@ -4,6 +4,7 @@ import { getThemePage } from '@/core/theme';
 import { envConfigs } from '@/config';
 import { Empty } from '@/shared/blocks/common';
 import { getPost } from '@/shared/models/post';
+import { DynamicPage } from '@/shared/types/blocks/landing';
 
 export async function generateMetadata({
   params,
@@ -46,16 +47,25 @@ export default async function BlogDetailPage({
   const { locale, slug } = await params;
   setRequestLocale(locale);
 
-  // load blog data
-  const t = await getTranslations('blog');
-
   const post = await getPost({ slug, locale });
 
   if (!post) {
     return <Empty message={`Post not found`} />;
   }
 
-  const Page = await getThemePage('blog-detail');
+  // build page sections
+  const page: DynamicPage = {
+    sections: {
+      blogDetail: {
+        block: 'blog-detail',
+        data: {
+          post,
+        },
+      },
+    },
+  };
 
-  return <Page locale={locale} post={post} />;
+  const Page = await getThemePage('dynamic-page');
+
+  return <Page locale={locale} page={page} />;
 }

@@ -51,6 +51,17 @@ export async function POST(request: Request) {
       } else {
         throw new Error('invalid scene');
       }
+    } else if (mediaType === AIMediaType.VIDEO) {
+      // generate video
+      if (scene === 'text-to-video') {
+        costCredits = 6;
+      } else if (scene === 'image-to-video') {
+        costCredits = 8;
+      } else if (scene === 'video-to-video') {
+        costCredits = 10;
+      } else {
+        throw new Error('invalid scene');
+      }
     } else if (mediaType === AIMediaType.MUSIC) {
       // generate music
       costCredits = 10;

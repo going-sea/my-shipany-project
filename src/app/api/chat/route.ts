@@ -68,6 +68,8 @@ export async function POST(req: Request) {
       throw new Error('openrouter_api_key is not set');
     }
 
+    const openrouterBaseUrl = configs.openrouter_base_url;
+
     const currentTime = new Date();
 
     const metadata = {
@@ -96,6 +98,7 @@ export async function POST(req: Request) {
 
     const openrouter = createOpenRouter({
       apiKey: openrouterApiKey,
+      baseURL: openrouterBaseUrl ? openrouterBaseUrl : undefined,
     });
 
     // load previous messages from database

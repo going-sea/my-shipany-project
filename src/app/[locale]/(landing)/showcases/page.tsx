@@ -2,10 +2,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { getThemePage } from '@/core/theme';
 import { getMetadata } from '@/shared/lib/seo';
-import {
-  CTA as CTAType,
-  Showcases as ShowcasesType,
-} from '@/shared/types/blocks/landing';
+import { DynamicPage } from '@/shared/types/blocks/landing';
 
 export const generateMetadata = getMetadata({
   metadataKey: 'showcases.metadata',
@@ -26,12 +23,15 @@ export default async function ShowcasesPage({
   // load showcases data
   const t = await getTranslations('showcases');
 
+  const page: DynamicPage = {
+    sections: {
+      showcases: t.raw('showcases'),
+      cta: tl.raw('cta'),
+    },
+  };
+
   // load page component
-  const Page = await getThemePage('showcases');
+  const Page = await getThemePage('dynamic-page');
 
-  // build sections
-  const showcases: ShowcasesType = t.raw('showcases');
-  const cta: CTAType = tl.raw('cta');
-
-  return <Page locale={locale} showcases={showcases} cta={cta} />;
+  return <Page locale={locale} page={page} />;
 }

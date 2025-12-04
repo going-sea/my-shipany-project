@@ -1,3 +1,5 @@
+import packageJson from '../../package.json';
+
 // Load .env files for scripts (tsx/ts-node) - but NOT in Edge Runtime or browser
 // This ensures scripts can read DATABASE_URL and other env vars
 // Check for real Node.js environment by looking at global 'process' properties
@@ -29,4 +31,5 @@ export const envConfigs = {
   db_max_connections: process.env.DB_MAX_CONNECTIONS || '1',
   auth_url: process.env.AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || '',
   auth_secret: process.env.AUTH_SECRET ?? '', // openssl rand -base64 32
+  version: packageJson.version,
 };

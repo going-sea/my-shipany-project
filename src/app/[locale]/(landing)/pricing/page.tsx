@@ -4,11 +4,7 @@ import { getThemePage } from '@/core/theme';
 import { getMetadata } from '@/shared/lib/seo';
 import { getCurrentSubscription } from '@/shared/models/subscription';
 import { getUserInfo } from '@/shared/models/user';
-import {
-  FAQ as FAQType,
-  Testimonials as TestimonialsType,
-} from '@/shared/types/blocks/landing';
-import { Pricing as PricingType } from '@/shared/types/blocks/pricing';
+import { DynamicPage } from '@/shared/types/blocks/landing';
 
 export const generateMetadata = getMetadata({
   metadataKey: 'pricing.metadata',
@@ -23,11 +19,6 @@ export default async function PricingPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  // load landing data
-  const tl = await getTranslations('landing');
-  // loading pricing data
-  const t = await getTranslations('pricing');
-
   // get current subscription
   let currentSubscription;
   try {
@@ -39,21 +30,29 @@ export default async function PricingPage({
     console.log('getting current subscription failed:', error);
   }
 
+  // get pricing data
+  const t = await getTranslations('pricing');
+
+  // get landing data
+  const tl = await getTranslations('landing');
+
+  // build page sections
+  const page: DynamicPage = {
+    sections: {
+      pricing: {
+        block: 'pricing',
+        data: {
+          pricing: t.raw('pricing'),
+          currentSubscription,
+        },
+      },
+      faq: tl.raw('faq'),
+      testimonials: tl.raw('testimonials'),
+    },
+  };
+
   // load page component
-  const Page = await getThemePage('pricing');
+  const Page = await getThemePage('dynamic-page');
 
-  // build sections
-  const pricing: PricingType = t.raw('pricing');
-  const faq: FAQType = tl.raw('faq');
-  const testimonials: TestimonialsType = tl.raw('testimonials');
-
-  return (
-    <Page
-      locale={locale}
-      pricing={pricing}
-      currentSubscription={currentSubscription}
-      faq={faq}
-      testimonials={testimonials}
-    />
-  );
+  return <Page locale={locale} page={page} />;
 }

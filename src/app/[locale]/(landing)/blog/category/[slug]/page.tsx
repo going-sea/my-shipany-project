@@ -20,6 +20,7 @@ import {
   Category as CategoryType,
   Post as PostType,
 } from '@/shared/types/blocks/blog';
+import { DynamicPage } from '@/shared/types/blocks/landing';
 
 export async function generateMetadata({
   params,
@@ -124,8 +125,20 @@ export default async function CategoryBlogPage({
     posts,
   };
 
-  // load page component
-  const Page = await getThemePage('blog');
+  // build page sections
+  const _page: DynamicPage = {
+    sections: {
+      blog: {
+        block: 'blog',
+        data: {
+          blog,
+        },
+      },
+    },
+  };
 
-  return <Page locale={locale} blog={blog} />;
+  // load page component
+  const Page = await getThemePage('dynamic-page');
+
+  return <Page locale={locale} page={_page} />;
 }

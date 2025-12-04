@@ -1,6 +1,6 @@
-import Image from 'next/image';
-
 import { Link } from '@/core/i18n/navigation';
+import { LazyImage } from '@/shared/blocks/common';
+import { Badge } from '@/shared/components/ui/badge';
 import {
   SidebarHeader as SidebarHeaderComponent,
   SidebarMenu,
@@ -25,17 +25,23 @@ export function SidebarHeader({ header }: { header: SidebarHeaderType }) {
               {header.brand && (
                 <Link href={header.brand.url || ''}>
                   {header.brand.logo && (
-                    <Image
+                    <img
                       src={header.brand.logo.src}
                       alt={header.brand.logo.alt || ''}
-                      width={80}
-                      height={80}
-                      className="h-auto w-8 shrink-0"
+                      className="h-auto w-8 shrink-0 rounded-md"
                     />
                   )}
-                  <span className="text-base font-semibold">
+                  <div className="relative text-base font-semibold">
                     {header.brand.title}
-                  </span>
+                    {header.version && (
+                      <Badge
+                        variant="secondary"
+                        className="absolute -top-0 -right-16 scale-100 px-1 py-0"
+                      >
+                        v{header.version}
+                      </Badge>
+                    )}
+                  </div>
                 </Link>
               )}
             </SidebarMenuButton>

@@ -4,7 +4,41 @@
     "description": "Awesome projects built with ShipAny"
   },
   "showcases": {
-    "id": "showcase",
+    "id": "showcases",
+    "groups": [
+      {
+        "name": "all",
+        "title": "All"
+      },
+      {
+        "name": "ai-chatbot",
+        "title": "AI Chatbot"
+      },
+      {
+        "name": "ai-image",
+        "title": "AI Image"
+      },
+      {
+        "name": "ai-video",
+        "title": "AI Video"
+      },
+      {
+        "name": "ai-audio",
+        "title": "AI Audio"
+      },
+      {
+        "name": "ai-music",
+        "title": "AI Music"
+      },
+      {
+        "name": "ai-coding",
+        "title": "AI Coding"
+      },
+      {
+        "name": "other",
+        "title": "Other"
+      }
+    ],
     "sr_only_title": "Showcases",
     "title": "AI SaaS Startups built with ShipAny",
     "description": "Easy to use and fast to ship.",
@@ -17,7 +51,8 @@
         "image": {
           "src": "/imgs/cases/7.png",
           "alt": "showcases"
-        }
+        },
+        "group": "ai-chatbot"
       },
       {
         "title": "HeyBeauty",
@@ -27,7 +62,8 @@
         "image": {
           "src": "/imgs/cases/5.png",
           "alt": "showcases"
-        }
+        },
+        "group": "ai-image"
       },
       {
         "title": "AI Wallpaper",
@@ -37,7 +73,8 @@
         "image": {
           "src": "/imgs/cases/1.png",
           "alt": "showcases"
-        }
+        },
+        "group": "ai-image"
       },
       {
         "title": "AI Cover",
@@ -47,7 +84,8 @@
         "image": {
           "src": "/imgs/cases/2.png",
           "alt": "showcases"
-        }
+        },
+        "group": "ai-image"
       },
       {
         "title": "GPTs Works",
@@ -57,7 +95,8 @@
         "image": {
           "src": "/imgs/cases/3.png",
           "alt": "showcases"
-        }
+        },
+        "group": "other"
       },
       {
         "title": "Melodisco",
@@ -67,7 +106,8 @@
         "image": {
           "src": "/imgs/cases/4.png",
           "alt": "showcases"
-        }
+        },
+        "group": "ai-music"
       },
       {
         "title": "Pagen",
@@ -77,7 +117,8 @@
         "image": {
           "src": "/imgs/cases/6.png",
           "alt": "showcases"
-        }
+        },
+        "group": "ai-coding"
       },
       {
         "title": "SoraFM",
@@ -87,7 +128,8 @@
         "image": {
           "src": "/imgs/cases/8.png",
           "alt": "showcases"
-        }
+        },
+        "group": "ai-video"
       },
       {
         "title": "PodLM",
@@ -97,7 +139,8 @@
         "image": {
           "src": "/imgs/cases/9.png",
           "alt": "showcases"
-        }
+        },
+        "group": "ai-audio"
       }
     ]
   }

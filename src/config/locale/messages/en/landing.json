@@ -43,6 +43,12 @@
               "icon": "RiMusic2Line"
             },
             {
+              "title": "AI Video Generator",
+              "description": "Use AI to generate videos",
+              "url": "/ai-video-generator",
+              "icon": "RiVideoLine"
+            },
+            {
               "title": "AI Chatbot",
               "description": "Chat with AI chatbot",
               "url": "/chat",
@@ -121,6 +127,10 @@
     "image_invert": {
       "src": "/imgs/features/admin-dark.png",
       "alt": "hero"
+    },
+    "background_image": {
+      "src": "/imgs/bg/tree.jpg",
+      "alt": "hero"
     }
   },
   "logos": {
@@ -164,6 +174,7 @@
     ]
   },
   "introduce": {
+    "block": "features-list",
     "id": "introduce",
     "title": "What is ShipAny",
     "label": "Introduce",
@@ -209,9 +220,11 @@
           "alt": "introduce"
         }
       }
-    ]
+    ],
+    "className": "bg-muted"
   },
   "benefits": {
+    "block": "features-accordion",
     "id": "benefits",
     "title": "Why Choose ShipAny",
     "label": "Benefits",
@@ -247,6 +260,7 @@
     ]
   },
   "usage": {
+    "block": "features-step",
     "id": "usage",
     "title": "How to Launch with ShipAny",
     "description": "Get your AI SaaS startup running in three simple steps:",
@@ -289,7 +303,8 @@
           "alt": "usage"
         }
       }
-    ]
+    ],
+    "className": "bg-muted"
   },
   "features": {
     "id": "features",
@@ -345,7 +360,8 @@
         "title": "50+",
         "description": "Templates"
       }
-    ]
+    ],
+    "className": "bg-muted"
   },
   "testimonials": {
     "id": "testimonials",
@@ -458,7 +474,8 @@
         "variant": "outline",
         "icon": "BookOpenText"
       }
-    ]
+    ],
+    "className": "bg-muted"
   },
   "subscribe": {
     "id": "subscribe",
@@ -472,7 +489,8 @@
         "title": "Subscribe"
       },
       "action": "/api/subscribe"
-    }
+    },
+    "className": "bg-muted"
   },
   "footer": {
     "id": "footer",

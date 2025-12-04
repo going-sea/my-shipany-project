@@ -1,5 +1,7 @@
 import { nanoid } from 'nanoid';
 
+import { getUuid } from '@/shared/lib/hash';
+
 import {
   AIConfigs,
   AIGenerateParams,
@@ -139,8 +141,7 @@ export class GeminiProvider implements AIProvider {
     const storageService = await getStorageService();
     const buffer = Buffer.from(base64Data, 'base64');
     const ext = mimeType.split('/')[1] || 'png';
-    const filename = `${nanoid()}.${ext}`;
-    const key = `ai/gemini/${filename}`;
+    const key = `gemini/image/${getUuid()}.${ext}`;
 
     const uploadResult = await storageService.uploadFile({
       body: buffer,
@@ -162,7 +163,7 @@ export class GeminiProvider implements AIProvider {
         data.candidates[0].content.parts[partIndex].inlineData.data =
           uploadResult.url;
         // unset thoughtSignature
-        data.candidates[0].content.parts[partIndex].thoughtSignature = ''
+        data.candidates[0].content.parts[partIndex].thoughtSignature = '';
       }
     }
 
