@@ -1,3 +1,5 @@
+import { ReactNode } from 'react';
+
 import {
   AgreementNav,
   Brand,
@@ -9,7 +11,9 @@ import {
 } from './common';
 import { FormSubmit } from './form';
 
-export interface SectionItem extends NavItem {}
+export interface SectionItem extends NavItem {
+  [key: string]: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+}
 
 export interface Section {
   id?: string;
@@ -27,6 +31,8 @@ export interface Section {
   image_position?: 'left' | 'right' | 'top' | 'bottom' | 'center';
   text_align?: 'left' | 'center' | 'right';
   className?: string;
+  component?: ReactNode;
+  [key: string]: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 // header props for header component
@@ -117,4 +123,10 @@ export interface Landing {
   testimonials?: Testimonials;
   footer?: Footer;
   sections?: Section[];
+}
+
+export interface DynamicPage {
+  title?: string;
+  description?: string;
+  sections?: Record<string, Section>;
 }

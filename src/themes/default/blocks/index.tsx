@@ -8,8 +8,12 @@ export * from './features';
 export * from './features-list';
 export * from './features-accordion';
 export * from './features-step';
+export * from './features-flow';
+export * from './features-media';
 
 export * from './showcases';
+export * from './showcases-flow';
+
 export * from './logos';
 export * from './stats';
 export * from './testimonials';

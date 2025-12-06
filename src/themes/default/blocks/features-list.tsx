@@ -1,56 +1,55 @@
 'use client';
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
-
-import { SmartIcon } from '@/shared/blocks/common';
+import { Link } from '@/core/i18n/navigation';
+import { LazyImage, SmartIcon } from '@/shared/blocks/common';
 import { Button } from '@/shared/components/ui/button';
 import { ScrollAnimation } from '@/shared/components/ui/scroll-animation';
 import { cn } from '@/shared/lib/utils';
-import { Features as FeaturesType } from '@/shared/types/blocks/landing';
+import { Section } from '@/shared/types/blocks/landing';
 
 export function FeaturesList({
-  features,
+  section,
   className,
 }: {
-  features: FeaturesType;
+  section: Section;
   className?: string;
 }) {
   return (
     // Prevent horizontal scrolling
-    <section className={`overflow-x-hidden py-16 md:py-24 ${className}`}>
+    <section
+      className={cn(
+        'overflow-x-hidden py-16 md:py-24',
+        section.className,
+        className
+      )}
+    >
       <div className="container overflow-x-hidden">
         <div className="flex flex-wrap items-center gap-8 pb-12 md:gap-24">
           <ScrollAnimation direction="left">
             <div className="mx-auto w-full max-w-[500px] flex-shrink-0 md:mx-0">
-              <Image
-                src={features.image?.src ?? ''}
-                alt={features.image?.alt ?? ''}
-                width={500}
-                height={300}
+              <LazyImage
+                src={section.image?.src ?? ''}
+                alt={section.image?.alt ?? ''}
                 className="h-auto w-full rounded-lg object-cover"
-                // Limit max image width & responsive width
-                style={{ maxWidth: '100%', height: 'auto', display: 'block' }}
               />
             </div>
           </ScrollAnimation>
           <div className="w-full min-w-0 flex-1">
             <ScrollAnimation delay={0.1}>
               <h2 className="text-foreground text-4xl font-semibold text-balance break-words">
-                {features.title}
+                {section.title}
               </h2>
             </ScrollAnimation>
             <ScrollAnimation delay={0.2}>
               <p className="text-md text-muted-foreground my-6 text-balance break-words">
-                {features.description}
+                {section.description}
               </p>
             </ScrollAnimation>
 
-            {features.buttons && features.buttons.length > 0 && (
+            {section.buttons && section.buttons.length > 0 && (
               <ScrollAnimation delay={0.3}>
                 <div className="flex flex-wrap items-center justify-start gap-2">
-                  {features.buttons?.map((button, idx) => (
+                  {section.buttons?.map((button, idx) => (
                     <Button
                       asChild
                       key={idx}
@@ -58,7 +57,6 @@ export function FeaturesList({
                       size={button.size || 'default'}
                     >
                       <Link
-                        key={idx}
                         href={button.url ?? ''}
                         target={button.target ?? '_self'}
                         className={cn(
@@ -83,7 +81,7 @@ export function FeaturesList({
         <ScrollAnimation delay={0.1}>
           {/* Prevent horizontal scrolling, min-w-0 and break-words */}
           <div className="relative grid min-w-0 grid-cols-1 gap-x-3 gap-y-6 border-t pt-12 break-words sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
-            {features.items?.map((item, idx) => (
+            {section.items?.map((item, idx) => (
               <div className="min-w-0 space-y-3 break-words" key={idx}>
                 <div className="flex min-w-0 items-center gap-2">
                   {item.icon && (

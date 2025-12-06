@@ -4,28 +4,38 @@ import { Link } from '@/core/i18n/navigation';
 import { SmartIcon } from '@/shared/blocks/common/smart-icon';
 import { Button } from '@/shared/components/ui/button';
 import { ScrollAnimation } from '@/shared/components/ui/scroll-animation';
-import { CTA as CTAType } from '@/shared/types/blocks/landing';
+import { cn } from '@/shared/lib/utils';
+import { Section } from '@/shared/types/blocks/landing';
 
-export function CTA({ cta, className }: { cta: CTAType; className?: string }) {
+export function CTA({
+  section,
+  className,
+}: {
+  section: Section;
+  className?: string;
+}) {
   return (
-    <section id={cta.id} className={`py-16 md:py-24 ${className}`}>
+    <section
+      id={section.id}
+      className={cn('py-16 md:py-24', section.className, className)}
+    >
       <div className="container">
         <div className="text-center">
           <ScrollAnimation>
             <h2 className="text-4xl font-semibold text-balance lg:text-5xl">
-              {cta.title}
+              {section.title}
             </h2>
           </ScrollAnimation>
           <ScrollAnimation delay={0.15}>
             <p
               className="mt-4"
-              dangerouslySetInnerHTML={{ __html: cta.description ?? '' }}
+              dangerouslySetInnerHTML={{ __html: section.description ?? '' }}
             />
           </ScrollAnimation>
 
           <ScrollAnimation delay={0.3}>
             <div className="mt-12 flex flex-wrap justify-center gap-4">
-              {cta.buttons?.map((button, idx) => (
+              {section.buttons?.map((button, idx) => (
                 <Button
                   asChild
                   size={button.size || 'default'}

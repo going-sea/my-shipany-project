@@ -22,19 +22,19 @@ export default async function LandingPage({
 }) {
   return (
     <>
-      {page.hero && <Hero hero={page.hero} />}
-      {page.logos && <Logos logos={page.logos} />}
-      {page.introduce && <FeaturesList features={page.introduce} />}
-      {page.benefits && <FeaturesAccordion features={page.benefits} />}
-      {page.usage && <FeaturesStep features={page.usage} />}
-      {page.features && <Features features={page.features} />}
-      {page.stats && <Stats stats={page.stats} className="bg-muted" />}
-      {page.testimonials && <Testimonials testimonials={page.testimonials} />}
+      {page.hero && <Hero section={page.hero} />}
+      {page.logos && <Logos section={page.logos} />}
+      {page.introduce && <FeaturesList section={page.introduce} />}
+      {page.benefits && <FeaturesAccordion section={page.benefits} />}
+      {page.usage && <FeaturesStep section={page.usage} />}
+      {page.features && <Features section={page.features} />}
+      {page.stats && <Stats section={page.stats} className="bg-muted" />}
+      {page.testimonials && <Testimonials section={page.testimonials} />}
       {page.subscribe && (
-        <Subscribe subscribe={page.subscribe} className="bg-muted" />
+        <Subscribe section={page.subscribe} className="bg-muted" />
       )}
-      {page.faq && <FAQ faq={page.faq} />}
-      {page.cta && <CTA cta={page.cta} className="bg-muted" />}
+      {page.faq && <FAQ section={page.faq} />}
+      {page.cta && <CTA section={page.cta} className="bg-muted" />}
     </>
   );
 }

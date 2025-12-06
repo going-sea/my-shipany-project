@@ -361,7 +361,7 @@ export function Pricing({
         )}
 
         <div
-          className={`mt-0 grid w-full gap-6 md:grid-cols-${
+          className={`mx-auto mt-0 grid w-full gap-6 md:grid-cols-${
             pricing.items?.filter((item) => !item.group || item.group === group)
               ?.length
           }`}

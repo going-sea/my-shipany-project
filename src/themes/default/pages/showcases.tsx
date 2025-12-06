@@ -15,8 +15,8 @@ export default async function ShowcasesPage({
 }) {
   return (
     <>
-      <Showcases showcases={showcases} />
-      {cta && <CTA cta={cta} className="bg-muted" />}
+      <Showcases section={showcases} />
+      {cta && <CTA section={cta} className="bg-muted" />}
     </>
   );
 }

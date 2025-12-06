@@ -9,7 +9,7 @@ import { AnimatedGridPattern } from '@/shared/components/ui/animated-grid-patter
 import { Button } from '@/shared/components/ui/button';
 import { Highlighter } from '@/shared/components/ui/highlighter';
 import { cn } from '@/shared/lib/utils';
-import { Hero as HeroType } from '@/shared/types/blocks/landing';
+import { Section } from '@/shared/types/blocks/landing';
 
 import { SocialAvatars } from './social-avatars';
 
@@ -32,33 +32,37 @@ const createFadeInVariant = (delay: number) => ({
 });
 
 export function Hero({
-  hero,
+  section,
   className,
 }: {
-  hero: HeroType;
+  section: Section;
   className?: string;
 }) {
-  const highlightText = hero.highlight_text ?? '';
+  const highlightText = section.highlight_text ?? '';
   let texts = null;
   if (highlightText) {
-    texts = hero.title?.split(highlightText, 2);
+    texts = section.title?.split(highlightText, 2);
   }
 
   return (
     <>
       <section
-        id={hero.id}
-        className={`pt-24 pb-8 md:pt-36 md:pb-8 ${hero.className} ${className}`}
+        id={section.id}
+        className={cn(
+          `pt-24 pb-8 md:pt-36 md:pb-8`,
+          section.className,
+          className
+        )}
       >
-        {hero.announcement && (
+        {section.announcement && (
           <motion.div {...createFadeInVariant(0)}>
             <Link
-              href={hero.announcement.url || ''}
-              target={hero.announcement.target || '_self'}
+              href={section.announcement.url || ''}
+              target={section.announcement.target || '_self'}
               className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto mb-8 flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-zinc-950/5 transition-colors duration-300 dark:border-t-white/5 dark:shadow-zinc-950"
             >
               <span className="text-foreground text-sm">
-                {hero.announcement.title}
+                {section.announcement.title}
               </span>
               <span className="dark:border-background block h-4 w-0.5 border-l bg-white dark:bg-zinc-700"></span>
 
@@ -79,7 +83,7 @@ export function Hero({
         <div className="relative mx-auto max-w-5xl px-4 text-center">
           <motion.div {...createFadeInVariant(0.15)}>
             {texts && texts.length > 0 ? (
-              <h1 className="text-foreground text-5xl font-semibold text-balance sm:mt-12 sm:text-7xl">
+              <h1 className="text-foreground text-5xl font-semibold text-balance sm:mt-12 sm:text-6xl">
                 {texts[0]}
                 <Highlighter action="underline" color="#FF9800">
                   {highlightText}
@@ -87,8 +91,8 @@ export function Hero({
                 {texts[1]}
               </h1>
             ) : (
-              <h1 className="text-foreground text-5xl font-semibold text-balance sm:mt-12 sm:text-7xl">
-                {hero.title}
+              <h1 className="text-foreground text-5xl font-semibold text-balance sm:mt-12 sm:text-6xl">
+                {section.title}
               </h1>
             )}
           </motion.div>
@@ -96,15 +100,15 @@ export function Hero({
           <motion.p
             {...createFadeInVariant(0.3)}
             className="text-muted-foreground mt-8 mb-8 text-lg text-balance"
-            dangerouslySetInnerHTML={{ __html: hero.description ?? '' }}
+            dangerouslySetInnerHTML={{ __html: section.description ?? '' }}
           />
 
-          {hero.buttons && (
+          {section.buttons && (
             <motion.div
               {...createFadeInVariant(0.45)}
               className="flex items-center justify-center gap-4"
             >
-              {hero.buttons.map((button, idx) => (
+              {section.buttons.map((button, idx) => (
                 <Button
                   asChild
                   size={button.size || 'default'}
@@ -124,22 +128,22 @@ export function Hero({
             </motion.div>
           )}
 
-          {hero.tip && (
+          {section.tip && (
             <motion.p
               {...createFadeInVariant(0.6)}
               className="text-muted-foreground mt-6 block text-center text-sm"
-              dangerouslySetInnerHTML={{ __html: hero.tip ?? '' }}
+              dangerouslySetInnerHTML={{ __html: section.tip ?? '' }}
             />
           )}
 
-          {hero.show_avatars && (
+          {section.show_avatars && (
             <motion.div {...createFadeInVariant(0.75)}>
-              <SocialAvatars tip={hero.avatars_tip || ''} />
+              <SocialAvatars tip={section.avatars_tip || ''} />
             </motion.div>
           )}
         </div>
       </section>
-      {hero.image && (
+      {section.image && (
         <motion.section
           className="border-foreground/10 relative mt-8 border-y sm:mt-16"
           initial={{ opacity: 0, y: 20, scale: 0.98 }}
@@ -158,29 +162,40 @@ export function Hero({
               />
               <LazyImage
                 className="border-border/25 relative z-2 hidden border dark:block"
-                src={hero.image_invert?.src || hero.image?.src || ''}
-                alt={hero.image_invert?.alt || hero.image?.alt || ''}
+                src={section.image_invert?.src || section.image?.src || ''}
+                alt={section.image_invert?.alt || section.image?.alt || ''}
               />
               <LazyImage
                 className="border-border/25 relative z-2 border dark:hidden"
-                src={hero.image?.src || hero.image_invert?.src || ''}
-                alt={hero.image?.alt || hero.image_invert?.alt || ''}
+                src={section.image?.src || section.image_invert?.src || ''}
+                alt={section.image?.alt || section.image_invert?.alt || ''}
               />
             </div>
           </div>
         </motion.section>
       )}
 
-      <AnimatedGridPattern
-        numSquares={30}
-        maxOpacity={0.1}
-        duration={3}
-        repeatDelay={1}
-        className={cn(
-          '[mask-image:radial-gradient(600px_circle_at_center,white,transparent)]',
-          'inset-x-0 inset-y-[-30%] h-[200%] skew-y-12'
-        )}
-      />
+      {section.background_image ? (
+        <div className="absolute inset-0 -z-10 h-full w-full overflow-hidden">
+          <div className="from-background/80 via-background/80 to-background absolute inset-0 z-10 bg-gradient-to-b" />
+          <LazyImage
+            src={section.background_image?.src || ''}
+            alt={section.background_image?.alt || ''}
+            className="h-full w-full object-cover opacity-20 blur-[0px]"
+          />
+        </div>
+      ) : section.show_bg !== false ? (
+        <AnimatedGridPattern
+          numSquares={30}
+          maxOpacity={0.1}
+          duration={3}
+          repeatDelay={1}
+          className={cn(
+            '[mask-image:radial-gradient(600px_circle_at_center,white,transparent)]',
+            'inset-x-0 inset-y-[-30%] h-[200%] skew-y-12'
+          )}
+        />
+      ) : null}
     </>
   );
 }

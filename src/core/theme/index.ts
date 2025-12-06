@@ -81,15 +81,31 @@ export async function getThemeLayout(layoutName: string, theme?: string) {
 }
 
 /**
+ * convert kebab-case to PascalCase
+ */
+function kebabToPascalCase(str: string): string {
+  return str
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('');
+}
+
+/**
  * load theme block
  */
 export async function getThemeBlock(blockName: string, theme?: string) {
   const loadTheme = theme || getActiveTheme();
+  const pascalCaseName = kebabToPascalCase(blockName);
 
   try {
     // load theme block
     const module = await import(`@/themes/${loadTheme}/blocks/${blockName}`);
-    return module.default || module[blockName] || module;
+    // Try PascalCase named export first, then original blockName
+    const component = module[pascalCaseName] || module[blockName];
+    if (!component) {
+      throw new Error(`No valid export found in block "${blockName}"`);
+    }
+    return component;
   } catch (error) {
     console.error(
       `Failed to load block "${blockName}" from theme "${loadTheme}":`,
@@ -102,9 +118,14 @@ export async function getThemeBlock(blockName: string, theme?: string) {
         const fallbackModule = await import(
           `@/themes/${defaultTheme}/blocks/${blockName}`
         );
-        return (
-          fallbackModule.default || fallbackModule[blockName] || fallbackModule
-        );
+        const fallbackComponent =
+          fallbackModule[pascalCaseName] || fallbackModule[blockName];
+        if (!fallbackComponent) {
+          throw new Error(
+            `No valid export found in fallback block "${blockName}"`
+          );
+        }
+        return fallbackComponent;
       } catch (fallbackError) {
         console.error(`Failed to load fallback block:`, fallbackError);
         throw fallbackError;

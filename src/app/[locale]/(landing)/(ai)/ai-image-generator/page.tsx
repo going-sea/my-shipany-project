@@ -1,9 +1,9 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { PageHeader } from '@/shared/blocks/common';
+import { getThemePage } from '@/core/theme';
 import { ImageGenerator } from '@/shared/blocks/generator';
 import { getMetadata } from '@/shared/lib/seo';
-import { CTA, FAQ } from '@/themes/default/blocks';
+import { DynamicPage } from '@/shared/types/blocks/landing';
 
 export const generateMetadata = getMetadata({
   metadataKey: 'ai.image.metadata',
@@ -18,19 +18,33 @@ export default async function AiImageGeneratorPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const t = await getTranslations('landing');
-  const tt = await getTranslations('ai.image');
+  // get ai image data
+  const t = await getTranslations('ai.image');
 
-  return (
-    <>
-      <PageHeader
-        title={tt.raw('page.title')}
-        description={tt.raw('page.description')}
-        className="mt-16 -mb-32"
-      />
-      <ImageGenerator srOnlyTitle={tt.raw('generator.title')} />
-      <FAQ faq={t.raw('faq')} />
-      <CTA cta={t.raw('cta')} className="bg-muted" />
-    </>
-  );
+  // get landing page data
+  const tl = await getTranslations('landing');
+
+  // build page sections
+  const page: DynamicPage = {
+    sections: {
+      hero: {
+        title: t.raw('page.title'),
+        description: t.raw('page.description'),
+        background_image: {
+          src: '/imgs/bg/tree.jpg',
+          alt: 'hero background',
+        },
+      },
+      generator: {
+        component: <ImageGenerator srOnlyTitle={t.raw('generator.title')} />,
+      },
+      faq: tl.raw('faq'),
+      cta: tl.raw('cta'),
+    },
+  };
+
+  // load page component
+  const Page = await getThemePage('dynamic-page');
+
+  return <Page locale={locale} page={page} />;
 }

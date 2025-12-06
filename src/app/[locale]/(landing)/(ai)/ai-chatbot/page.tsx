@@ -9,7 +9,7 @@ export default async function AiChatbotPage() {
   return (
     <>
       <Hero
-        hero={{
+        section={{
           title: tt.raw('title'),
           description: tt.raw('description'),
         }}

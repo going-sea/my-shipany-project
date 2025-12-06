@@ -7,13 +7,13 @@ import { toast } from 'sonner';
 import { Button } from '@/shared/components/ui/button';
 import { ScrollAnimation } from '@/shared/components/ui/scroll-animation';
 import { cn } from '@/shared/lib/utils';
-import type { Subscribe as SubscribeType } from '@/shared/types/blocks/landing';
+import type { Section } from '@/shared/types/blocks/landing';
 
 export function Subscribe({
-  subscribe,
+  section,
   className,
 }: {
-  subscribe: SubscribeType;
+  section: Section;
   className?: string;
 }) {
   const [email, setEmail] = useState('');
@@ -24,13 +24,13 @@ export function Subscribe({
       return;
     }
 
-    if (!subscribe.submit?.action) {
+    if (!section.submit?.action) {
       return;
     }
 
     try {
       setLoading(true);
-      const resp = await fetch(subscribe.submit.action, {
+      const resp = await fetch(section.submit.action, {
         method: 'POST',
         body: JSON.stringify({ email }),
       });
@@ -57,18 +57,18 @@ export function Subscribe({
 
   return (
     <section
-      id={subscribe.id}
-      className={cn('py-16 md:py-24', subscribe.className, className)}
+      id={section.id}
+      className={cn('py-16 md:py-24', section.className, className)}
     >
       <div className="mx-auto max-w-5xl px-6">
         <div className="text-center">
           <ScrollAnimation>
             <h2 className="text-4xl font-semibold text-balance lg:text-5xl">
-              {subscribe.title}
+              {section.title}
             </h2>
           </ScrollAnimation>
           <ScrollAnimation delay={0.15}>
-            <p className="mt-4">{subscribe.description}</p>
+            <p className="mt-4">{section.description}</p>
           </ScrollAnimation>
 
           <ScrollAnimation delay={0.3}>
@@ -78,7 +78,7 @@ export function Subscribe({
 
                 <input
                   placeholder={
-                    subscribe.submit?.input?.placeholder || 'Enter your email'
+                    section.submit?.input?.placeholder || 'Enter your email'
                   }
                   className="h-14 w-full bg-transparent pl-12 focus:outline-none"
                   type="email"
@@ -90,7 +90,7 @@ export function Subscribe({
                   onChange={(e) => setEmail(e.target.value)}
                 />
 
-                {subscribe.submit?.button && (
+                {section.submit?.button && (
                   <div className="md:pr-1.5 lg:pr-0">
                     <Button
                       aria-label="submit"
@@ -103,7 +103,7 @@ export function Subscribe({
                         <Loader2 className="animate-spin" />
                       ) : (
                         <span className="hidden md:block">
-                          {subscribe.submit.button.title}
+                          {section.submit.button.title}
                         </span>
                       )}
                       <SendHorizonal
