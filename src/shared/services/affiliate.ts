@@ -39,10 +39,13 @@ let affiliateService: AffiliateManager | null = null;
 /**
  * get affiliate service instance
  */
-export async function getAffiliateService(): Promise<AffiliateManager> {
-  if (true) {
-    const configs = await getAllConfigs();
-    affiliateService = getAffiliateManagerWithConfigs(configs);
+export async function getAffiliateService(
+  configs?: Configs
+): Promise<AffiliateManager> {
+  if (!configs) {
+    configs = await getAllConfigs();
   }
+  affiliateService = getAffiliateManagerWithConfigs(configs);
+
   return affiliateService;
 }

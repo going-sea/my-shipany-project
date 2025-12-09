@@ -1,6 +1,6 @@
 {
   "name": "shipany-template-two",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "private": true,
   "author": "ShipAny.ai",
   "homepage": "https://shipany.ai",
@@ -10,6 +10,7 @@
   },
   "keywords": [
     "shipany",
+    "shipany-two",
     "shipany-template-two",
     "ai-saas-boilerplate",
     "ai-saas-template",

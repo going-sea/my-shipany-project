@@ -57,10 +57,13 @@ let storageService: StorageManager | null = null;
 /**
  * get storage service instance
  */
-export async function getStorageService(): Promise<StorageManager> {
-  if (true) {
-    const configs = await getAllConfigs();
-    storageService = getStorageServiceWithConfigs(configs);
+export async function getStorageService(
+  configs?: Configs
+): Promise<StorageManager> {
+  if (!configs) {
+    configs = await getAllConfigs();
   }
+  storageService = getStorageServiceWithConfigs(configs);
+
   return storageService;
 }

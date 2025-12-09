@@ -59,10 +59,11 @@ let aiService: AIManager | null = null;
 /**
  * get ai service manager
  */
-export async function getAIService(): Promise<AIManager> {
-  if (true) {
-    const configs = await getAllConfigs();
-    aiService = getAIManagerWithConfigs(configs);
+export async function getAIService(configs?: Configs): Promise<AIManager> {
+  if (!configs) {
+    configs = await getAllConfigs();
   }
+  aiService = getAIManagerWithConfigs(configs);
+
   return aiService;
 }

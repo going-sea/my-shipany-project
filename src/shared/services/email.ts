@@ -27,10 +27,13 @@ let emailService: EmailManager | null = null;
 /**
  * get email service instance
  */
-export async function getEmailService(): Promise<EmailManager> {
-  if (true) {
-    const configs = await getAllConfigs();
-    emailService = getEmailServiceWithConfigs(configs);
+export async function getEmailService(
+  configs?: Configs
+): Promise<EmailManager> {
+  if (!configs) {
+    configs = await getAllConfigs();
   }
+  emailService = getEmailServiceWithConfigs(configs);
+
   return emailService;
 }

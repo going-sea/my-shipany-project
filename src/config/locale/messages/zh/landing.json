@@ -5,7 +5,9 @@
       "title": "ShipAny Two",
       "logo": {
         "src": "/logo.png",
-        "alt": "ShipAny Two"
+        "alt": "ShipAny Two",
+        "width": 100,
+        "height": 100
       },
       "url": "/"
     },
@@ -122,11 +124,15 @@
     "show_award": false,
     "image": {
       "src": "/imgs/features/admin.png",
-      "alt": "hero"
+      "alt": "hero",
+      "width": 1200,
+      "height": 800
     },
     "image_invert": {
       "src": "/imgs/features/admin-dark.png",
-      "alt": "hero"
+      "alt": "hero",
+      "width": 1200,
+      "height": 800
     },
     "background_image": {
       "src": "/imgs/bg/tree.jpg",
@@ -499,7 +505,9 @@
       "description": "ShipAny 是专为 AI SaaS 创业项目打造的 NextJS 模板。丰富模板与组件，极速交付你的产品。",
       "logo": {
         "src": "/logo.png",
-        "alt": "ShipAny Two"
+        "alt": "ShipAny Two",
+        "width": 100,
+        "height": 100
       },
       "url": "/"
     },

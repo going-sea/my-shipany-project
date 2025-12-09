@@ -47,13 +47,25 @@ export function ThemeToggler({
         onValueChange={handleThemeChange}
         variant="outline"
       >
-        <ToggleGroupItem value="light" onClick={() => setTheme('light')}>
+        <ToggleGroupItem
+          value="light"
+          onClick={() => setTheme('light')}
+          aria-label="Switch to light mode"
+        >
           <SunDim />
         </ToggleGroupItem>
-        <ToggleGroupItem value="dark" onClick={() => setTheme('dark')}>
+        <ToggleGroupItem
+          value="dark"
+          onClick={() => setTheme('dark')}
+          aria-label="Switch to dark mode"
+        >
           <Moon />
         </ToggleGroupItem>
-        <ToggleGroupItem value="system" onClick={() => setTheme('system')}>
+        <ToggleGroupItem
+          value="system"
+          onClick={() => setTheme('system')}
+          aria-label="Switch to system mode"
+        >
           <Monitor />
         </ToggleGroupItem>
       </ToggleGroup>

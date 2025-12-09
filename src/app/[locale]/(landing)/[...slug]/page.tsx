@@ -5,6 +5,8 @@ import { getThemePage } from '@/core/theme';
 import { envConfigs } from '@/config';
 import { getLocalPage } from '@/shared/models/post';
 
+export const revalidate = 3600;
+
 // dynamic page metadata
 export async function generateMetadata({
   params,
@@ -24,6 +26,11 @@ export async function generateMetadata({
   // static page slug
   const staticPageSlug =
     typeof slug === 'string' ? slug : (slug as string[]).join('/') || '';
+
+  // filter invalid slug
+  if (staticPageSlug.includes('.')) {
+    return;
+  }
 
   // build canonical url
   canonicalUrl =
@@ -101,6 +108,11 @@ export default async function DynamicPage({
   // static page slug
   const staticPageSlug =
     typeof slug === 'string' ? slug : (slug as string[]).join('/') || '';
+
+  // filter invalid slug
+  if (staticPageSlug.includes('.')) {
+    return notFound();
+  }
 
   // get static page content
   const staticPage = await getLocalPage({ slug: staticPageSlug, locale });

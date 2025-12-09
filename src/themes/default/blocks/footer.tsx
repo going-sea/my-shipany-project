@@ -102,6 +102,7 @@ export function Footer({ footer }: { footer: FooterType }) {
                   href={item.url || ''}
                   target={item.target || ''}
                   className="text-muted-foreground hover:text-primary bg-background block cursor-pointer rounded-full p-2 duration-150"
+                  aria-label={item.title || 'Social media link'}
                 >
                   {item.icon && (
                     <SmartIcon name={item.icon as string} size={20} />

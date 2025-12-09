@@ -23,10 +23,11 @@ let adsService: AdsManager | null = null;
 /**
  * get ads service instance
  */
-export async function getAdsService(): Promise<AdsManager> {
-  if (true) {
-    const configs = await getAllConfigs();
-    adsService = getAdsManagerWithConfigs(configs);
+export async function getAdsService(configs?: Configs): Promise<AdsManager> {
+  if (!configs) {
+    configs = await getAllConfigs();
   }
+  adsService = getAdsManagerWithConfigs(configs);
+
   return adsService;
 }

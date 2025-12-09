@@ -5,6 +5,8 @@ import { VideoGenerator } from '@/shared/blocks/generator';
 import { getMetadata } from '@/shared/lib/seo';
 import { DynamicPage } from '@/shared/types/blocks/landing';
 
+export const revalidate = 3600;
+
 export const generateMetadata = getMetadata({
   metadataKey: 'ai.video.metadata',
   canonicalUrl: '/ai-video-generator',

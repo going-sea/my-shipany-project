@@ -9,9 +9,9 @@ import {
   PaymentStatus,
   PaymentType,
 } from '@/extensions/payment/types';
+import { getSnowId, getUuid } from '@/shared/lib/hash';
 import { Configs, getAllConfigs } from '@/shared/models/config';
 
-import { getSnowId, getUuid } from '../lib/hash';
 import {
   calculateCreditExpirationTime,
   CreditStatus,
@@ -107,11 +107,14 @@ let paymentService: PaymentManager | null = null;
 /**
  * get payment service instance
  */
-export async function getPaymentService(): Promise<PaymentManager> {
-  if (true) {
-    const configs = await getAllConfigs();
-    paymentService = getPaymentServiceWithConfigs(configs);
+export async function getPaymentService(
+  configs?: Configs
+): Promise<PaymentManager> {
+  if (!configs) {
+    configs = await getAllConfigs();
   }
+  paymentService = getPaymentServiceWithConfigs(configs);
+
   return paymentService;
 }
 
