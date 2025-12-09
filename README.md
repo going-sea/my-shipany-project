@@ -4,10 +4,6 @@
 
 [https://cf-two.shipany.site/](https://cf-two.shipany.site/)
 
-## ShipAny Template Nano Banana Pro 模板上新，可扫码购买
-
-![](https://cdn.jsdelivr.net/gh/ai-boomer/PicCDN/2025-12-9/1765259421745-image.png)
-
 ## 由于多次发生仓库被提交脏代码，给其他同学带来不便，现将仓库写权限关闭，仓库成员仅可读！
 
 ## Doc
@@ -35,6 +31,9 @@
 - `one/main`: one main branch (2025-08-06(v2.6.0))
 - `one/cloudfare`: one cloudfare branch 
 
+## ShipAny Template Nano Banana Pro 模板上新，可扫码购买
+
+![](https://cdn.jsdelivr.net/gh/ai-boomer/PicCDN/2025-12-9/1765259421745-image.png)
 
 ## Getting Started
 
