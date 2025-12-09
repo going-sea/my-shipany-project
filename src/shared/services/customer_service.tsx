@@ -46,10 +46,13 @@ let customerServiceManager: CustomerServiceManager | null = null;
 /**
  * get customer service instance
  */
-export async function getCustomerService(): Promise<CustomerServiceManager> {
-  if (true) {
-    const configs = await getAllConfigs();
-    customerServiceManager = getCustomerServiceWithConfigs(configs);
+export async function getCustomerService(
+  configs?: Configs
+): Promise<CustomerServiceManager> {
+  if (!configs) {
+    configs = await getAllConfigs();
   }
+  customerServiceManager = getCustomerServiceWithConfigs(configs);
+
   return customerServiceManager;
 }

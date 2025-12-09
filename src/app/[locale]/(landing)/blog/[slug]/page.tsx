@@ -6,6 +6,8 @@ import { Empty } from '@/shared/blocks/common';
 import { getPost } from '@/shared/models/post';
 import { DynamicPage } from '@/shared/types/blocks/landing';
 
+export const revalidate = 3600;
+
 export async function generateMetadata({
   params,
 }: {
