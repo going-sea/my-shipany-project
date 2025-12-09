@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { getMessages } from 'next-intl/server';
 
 import { getThemePage } from '@/core/theme';
 import { envConfigs } from '@/config';
@@ -57,42 +56,20 @@ export async function generateMetadata({
     typeof slug === 'string' ? slug : (slug as string[]).join('.') || '';
 
   const messageKey = `pages.${dynamicPageSlug}`;
-  
-  try {
-    const messages = await getMessages({ locale });
-    const messageKeys = messageKey.split('.');
-    let messageExists: any = messages;
-    let found = true;
-    
-    // Check if the nested message key exists
-    for (const key of messageKeys) {
-      if (messageExists && typeof messageExists === 'object' && key in messageExists) {
-        messageExists = messageExists[key];
-      } else {
-        found = false;
-        break;
-      }
-    }
+  const t = await getTranslations({ locale, namespace: messageKey });
 
-    if (found && messageExists) {
-      const t = await getTranslations({ locale, namespace: messageKey });
+  // return dynamic page metadata
+  if (t.has('metadata')) {
+    title = t.raw('metadata.title');
+    description = t.raw('metadata.description');
 
-      // return dynamic page metadata
-      if (t.has('metadata')) {
-        title = t.raw('metadata.title');
-        description = t.raw('metadata.description');
-
-        return {
-          title,
-          description,
-          alternates: {
-            canonical: canonicalUrl,
-          },
-        };
-      }
-    }
-  } catch (error) {
-    // Message namespace doesn't exist, continue to common metadata
+    return {
+      title,
+      description,
+      alternates: {
+        canonical: canonicalUrl,
+      },
+    };
   }
 
   // 3. return common metadata
@@ -145,33 +122,12 @@ export default async function DynamicPage({
 
   const messageKey = `pages.${dynamicPageSlug}`;
 
-  try {
-    const messages = await getMessages({ locale });
-    const messageKeys = messageKey.split('.');
-    let messageExists: any = messages;
-    let found = true;
-    
-    // Check if the nested message key exists
-    for (const key of messageKeys) {
-      if (messageExists && typeof messageExists === 'object' && key in messageExists) {
-        messageExists = messageExists[key];
-      } else {
-        found = false;
-        break;
-      }
-    }
+  const t = await getTranslations({ locale, namespace: messageKey });
 
-    if (found && messageExists) {
-      const t = await getTranslations({ locale, namespace: messageKey });
-
-      // return dynamic page
-      if (t.has('page')) {
-        const Page = await getThemePage('dynamic-page');
-        return <Page locale={locale} page={t.raw('page')} />;
-      }
-    }
-  } catch (error) {
-    // Message namespace doesn't exist, continue to 404
+  // return dynamic page
+  if (t.has('page')) {
+    const Page = await getThemePage('dynamic-page');
+    return <Page locale={locale} page={t.raw('page')} />;
   }
 
   // 3. page not found
