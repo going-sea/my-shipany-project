@@ -2,11 +2,11 @@ import packageJson from '../../package.json';
 
 // Load .env files for scripts (tsx/ts-node) - but NOT in Edge Runtime or browser
 // This ensures scripts can read DATABASE_URL and other env vars
-// Check for real Node.js environment by looking at global 'process' properties
+// Only load in Node.js environment (not Edge Runtime)
 if (
   typeof process !== 'undefined' &&
-  typeof process.cwd === 'function' &&
-  !process.env.NEXT_RUNTIME // Skip if in Next.js runtime (already loaded)
+  !process.env.NEXT_RUNTIME && // Skip if in Next.js runtime (already loaded)
+  typeof require !== 'undefined' // Check if require is available (Node.js only)
 ) {
   try {
     const dotenv = require('dotenv');
