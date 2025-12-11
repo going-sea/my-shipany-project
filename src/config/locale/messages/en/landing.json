@@ -59,14 +59,28 @@
           ]
         },
         {
-          "title": "Blog",
-          "url": "/blog",
-          "icon": "Newspaper"
-        },
-        {
-          "title": "Docs",
-          "url": "/docs",
-          "icon": "BookOpenText"
+          "title": "Content",
+          "icon": "FileText",
+          "children": [
+            {
+              "title": "Blog",
+              "description": "Read Blog Posts",
+              "url": "/blog",
+              "icon": "Newspaper"
+            },
+            {
+              "title": "Updates",
+              "description": "Read Update Logs",
+              "url": "/updates",
+              "icon": "Clock"
+            },
+            {
+              "title": "Docs",
+              "description": "Read Documentation",
+              "url": "/docs",
+              "icon": "BookOpenText"
+            }
+          ]
         }
       ]
     },

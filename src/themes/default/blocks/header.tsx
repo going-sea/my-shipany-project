@@ -23,6 +23,7 @@ import {
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
+  navigationMenuTriggerStyle,
   NavigationMenuTrigger as RawNavigationMenuTrigger,
 } from '@/shared/components/ui/navigation-menu';
 import { useMedia } from '@/shared/hooks/use-media';
@@ -89,56 +90,20 @@ export function Header({ header }: { header: HeaderType }) {
 
     return (
       <NavigationMenu
-        ref={menuRef}
-        onValueChange={handleViewportHeight}
-        className="[--color-muted:color-mix(in_oklch,var(--color-foreground)_5%,transparent)] [--viewport-outer-px:2rem] **:data-[slot=navigation-menu-viewport]:rounded-none **:data-[slot=navigation-menu-viewport]:border-0 **:data-[slot=navigation-menu-viewport]:bg-transparent **:data-[slot=navigation-menu-viewport]:shadow-none **:data-[slot=navigation-menu-viewport]:ring-0 max-lg:hidden"
+        viewport={false}
+        className="**:data-[slot=navigation-menu-content]:top-10 max-lg:hidden"
       >
-        <NavigationMenuList className="gap-3">
-          {header.nav?.items?.map((item, idx) => (
-            <NavigationMenuItem key={idx} value={item.title || ''}>
-              {item.children && item.children.length > 0 ? (
-                <>
-                  <NavigationMenuTrigger className="flex flex-row items-center gap-2 text-sm">
-                    {item.icon && (
-                      <SmartIcon
-                        name={item.icon as string}
-                        className="h-4 w-4"
-                      />
-                    )}
-                    {item.title}
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent className="mt-4.5 origin-top pt-5 pb-14 shadow-none ring-0">
-                    <div className="divide-foreground/10 grid w-full min-w-6xl grid-cols-4 gap-4 divide-x pr-22">
-                      <div className="col-span-2 row-span-2 grid grid-rows-subgrid gap-1 border-r-0">
-                        <span className="text-muted-foreground ml-2 text-xs">
-                          {item.title}
-                        </span>
-                        <ul className="mt-1 grid grid-cols-2 gap-2">
-                          {item.children?.map((subItem: NavItem, iidx) => (
-                            <ListItem
-                              key={iidx}
-                              href={subItem.url || ''}
-                              title={subItem.title || ''}
-                              description={subItem.description || ''}
-                            >
-                              {subItem.icon && (
-                                <SmartIcon name={subItem.icon as string} />
-                              )}
-                            </ListItem>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </NavigationMenuContent>
-                </>
-              ) : (
-                <NavigationMenuLink asChild>
+        <NavigationMenuList className="gap-2">
+          {header.nav?.items?.map((item, idx) => {
+            if (!item.children || item.children.length === 0) {
+              return (
+                <NavigationMenuLink key={idx} asChild>
                   <Link
                     href={item.url || ''}
                     target={item.target || '_self'}
-                    className={`flex flex-row items-center gap-2 text-sm ${
+                    className={`flex flex-row items-center gap-2 px-4 py-1.5 text-sm ${
                       item.is_active || pathname.endsWith(item.url as string)
-                        ? 'bg-muted text-muted-foreground'
+                        ? 'bg-muted/40 text-muted-foreground'
                         : ''
                     }`}
                   >
@@ -146,9 +111,38 @@ export function Header({ header }: { header: HeaderType }) {
                     {item.title}
                   </Link>
                 </NavigationMenuLink>
-              )}
-            </NavigationMenuItem>
-          ))}
+              );
+            }
+
+            return (
+              <NavigationMenuItem key={idx}>
+                <NavigationMenuTrigger className="flex flex-row items-center gap-2 text-sm">
+                  {item.icon && (
+                    <SmartIcon name={item.icon as string} className="h-4 w-4" />
+                  )}
+                  {item.title}
+                </NavigationMenuTrigger>
+                <NavigationMenuContent className="min-w-2xs origin-top p-0.5">
+                  <div className="border-foreground/5 bg-card ring-foreground/5 rounded-[calc(var(--radius)-2px)] border border-transparent p-2 shadow ring-1">
+                    <ul className="mt-1 space-y-2">
+                      {item.children?.map((subItem: NavItem, index: number) => (
+                        <ListItem
+                          key={index}
+                          href={subItem.url || ''}
+                          title={subItem.title || ''}
+                          description={subItem.description || ''}
+                        >
+                          {subItem.icon && (
+                            <SmartIcon name={subItem.icon as string} />
+                          )}
+                        </ListItem>
+                      ))}
+                    </ul>
+                  </div>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+            );
+          })}
         </NavigationMenuList>
       </NavigationMenu>
     );
@@ -294,13 +288,6 @@ export function Header({ header }: { header: HeaderType }) {
               {/* Header right section: theme toggler, locale selector, sign, buttons */}
               <div className="mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 in-data-[state=active]:flex max-lg:in-data-[state=active]:mt-6 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent">
                 <div className="flex w-full flex-row items-center gap-4 sm:flex-row sm:gap-6 sm:space-y-0 md:w-fit">
-                  {header.show_theme ? <ThemeToggler /> : null}
-                  {header.show_locale ? <LocaleSelector /> : null}
-                  <div className="flex-1 md:hidden"></div>
-                  {header.show_sign ? (
-                    <SignUser userNav={header.user_nav} />
-                  ) : null}
-
                   {header.buttons &&
                     header.buttons.map((button, idx) => (
                       <Link
@@ -311,16 +298,26 @@ export function Header({ header }: { header: HeaderType }) {
                           'focus-visible:ring-ring inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
                           'h-7 px-3 ring-0',
                           button.variant === 'outline'
-                            ? 'bg-background ring-foreground/10 hover:bg-muted/50 dark:ring-foreground/15 dark:hover:bg-muted/50 border border-transparent shadow-sm ring-1 shadow-black/15 duration-200'
+                            ? 'bg-background border-primary ring-foreground/10 hover:bg-muted/50 dark:ring-foreground/15 dark:hover:bg-muted/50 border border-transparent shadow-sm ring-1 shadow-black/15 duration-200'
                             : 'bg-primary text-primary-foreground hover:bg-primary/90 border-[0.5px] border-white/25 shadow-md ring-1 shadow-black/20 ring-(--ring-color) [--ring-color:color-mix(in_oklab,var(--color-foreground)15%,var(--color-primary))]'
                         )}
                       >
                         {button.icon && (
-                          <SmartIcon name={button.icon as string} />
+                          <SmartIcon
+                            name={button.icon as string}
+                            className="size-4"
+                          />
                         )}
                         <span>{button.title}</span>
                       </Link>
                     ))}
+
+                  {header.show_theme ? <ThemeToggler /> : null}
+                  {header.show_locale ? <LocaleSelector /> : null}
+                  <div className="flex-1 md:hidden"></div>
+                  {header.show_sign ? (
+                    <SignUser userNav={header.user_nav} />
+                  ) : null}
                 </div>
               </div>
             </div>

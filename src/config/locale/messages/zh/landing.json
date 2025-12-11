@@ -59,14 +59,28 @@
           ]
         },
         {
-          "title": "博客",
-          "url": "/blog",
-          "icon": "Newspaper"
-        },
-        {
-          "title": "文档",
-          "url": "/docs",
-          "icon": "BookOpenText"
+          "title": "内容",
+          "icon": "FileText",
+          "children": [
+            {
+              "title": "博客",
+              "description": "阅读博客文章",
+              "url": "/blog",
+              "icon": "Newspaper"
+            },
+            {
+              "title": "更新日志",
+              "description": "阅读更新日志",
+              "url": "/updates",
+              "icon": "Clock"
+            },
+            {
+              "title": "文档",
+              "description": "阅读文档",
+              "url": "/docs",
+              "icon": "BookOpenText"
+            }
+          ]
         }
       ]
     },

@@ -26,3 +26,5 @@ export * from './mdx-content';
 export * from '../sign/sign-user';
 
 export * from './audio-player';
+
+export * from './error-boundary';
