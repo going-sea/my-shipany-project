@@ -4,7 +4,7 @@ import { createRelativeLink } from 'fumadocs-ui/mdx';
 import moment from 'moment';
 
 import { db } from '@/core/db';
-import { pagesSource, postsSource } from '@/core/docs/source';
+import { logsSource, pagesSource, postsSource } from '@/core/docs/source';
 import { generateTOC } from '@/core/docs/toc';
 import { post } from '@/config/db/schema';
 import { MarkdownContent } from '@/shared/blocks/common/markdown-content';
@@ -22,6 +22,7 @@ export type UpdatePost = Partial<Omit<NewPost, 'id' | 'createdAt'>>;
 export enum PostType {
   ARTICLE = 'article',
   PAGE = 'page',
+  LOG = 'log',
 }
 
 export enum PostStatus {
@@ -453,15 +454,20 @@ export async function getLocalPostsAndCategories({
   locale,
   postPrefix = '/blog/',
   categoryPrefix = '/blog/category/',
+  type = PostType.ARTICLE,
 }: {
   locale: string;
   postPrefix?: string;
   categoryPrefix?: string;
+  type?: PostType;
 }) {
   const localPostsList: BlogPostType[] = [];
 
   // get posts from local files
-  const localPosts = postsSource.getPages(locale);
+  let localPosts = postsSource.getPages(locale);
+  if (type === PostType.LOG) {
+    localPosts = logsSource.getPages(locale);
+  }
 
   // no local posts
   if (!localPosts || localPosts.length === 0) {
@@ -483,6 +489,19 @@ export async function getLocalPostsAndCategories({
         prefix: postPrefix,
       });
 
+      let body: React.ReactNode = undefined;
+      if (type === PostType.LOG) {
+        const MDXContent = post.data.body;
+        body = <MDXContent components={getMDXComponents()} />;
+      }
+
+      const createdAt = frontmatter.created_at
+        ? getPostDate({
+            created_at: frontmatter.created_at,
+            locale,
+          })
+        : '';
+
       return {
         id: post.path,
         slug: slug,
@@ -490,14 +509,14 @@ export async function getLocalPostsAndCategories({
         description: post.data.description || '',
         author_name: frontmatter.author_name || '',
         author_image: frontmatter.author_image || '',
-        created_at: frontmatter.created_at
-          ? getPostDate({
-              created_at: frontmatter.created_at,
-              locale,
-            })
-          : '',
+        created_at: createdAt,
+        date: frontmatter.date || createdAt,
         image: frontmatter.image || '',
         url: `${postPrefix}${slug}`,
+        version: frontmatter.version || '',
+        tags: frontmatter.tags || [],
+        categories: frontmatter.categories || [],
+        body,
       };
     })
   );

@@ -1,6 +1,6 @@
 {
   "name": "shipany-template-two",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "private": true,
   "author": "ShipAny.ai",
   "homepage": "https://shipany.ai",
@@ -144,7 +144,7 @@
     "@types/pg": "^8.15.5",
     "@types/react": "19.2.2",
     "@types/react-copy-to-clipboard": "^5.0.7",
-    "@types/react-dom": "19.2.1",
+    "@types/react-dom": "19.2.2",
     "@types/react-lazy-load-image-component": "^1.6.4",
     "autoprefixer": "^10.4.21",
     "babel-plugin-react-compiler": "^1.0.0",
@@ -163,7 +163,7 @@
   "pnpm": {
     "overrides": {
       "@types/react": "19.2.2",
-      "@types/react-dom": "19.2.1"
+      "@types/react-dom": "19.2.2"
     }
   }
 } 

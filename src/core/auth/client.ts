@@ -6,6 +6,9 @@ import { envConfigs } from '@/config';
 // create default auth client, without plugins
 export const authClient = createAuthClient({
   baseURL: envConfigs.auth_url,
+  fetchOptions: {
+    retry: 3,
+  },
 });
 
 // export default auth client methods
@@ -16,6 +19,9 @@ export function getAuthClient(configs: Record<string, string>) {
   const authClient = createAuthClient({
     baseURL: envConfigs.auth_url,
     plugins: getAuthPlugins(configs),
+    fetchOptions: {
+      retry: 3,
+    },
   });
 
   return authClient;

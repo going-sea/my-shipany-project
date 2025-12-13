@@ -20,6 +20,7 @@ export const localeMessagesPaths = [
   'landing',
   'showcases',
   'blog',
+  'updates',
   'pricing',
   'settings/sidebar',
   'settings/profile',

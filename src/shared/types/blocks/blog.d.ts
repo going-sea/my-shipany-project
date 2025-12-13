@@ -29,6 +29,9 @@ export interface Post {
   categories?: Category[];
   body?: ReactNode;
   toc?: TOCItemType[];
+  tags?: string[];
+  version?: string;
+  date?: string;
 }
 
 export interface Category {

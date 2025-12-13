@@ -138,13 +138,17 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (session && session.user) {
-      setUser(session.user as User);
+    const sessionUser = session?.user;
+    const currentUserId = user?.id;
+    const sessionUserId = sessionUser?.id;
+
+    if (sessionUser && sessionUserId !== currentUserId) {
+      setUser(sessionUser as User);
       fetchUserInfo();
-    } else {
+    } else if (!sessionUser && currentUserId) {
       setUser(null);
     }
-  }, [session]);
+  }, [session?.user?.id, user?.id]);
 
   // one tap initialized
   const oneTapInitialized = useRef(false);
