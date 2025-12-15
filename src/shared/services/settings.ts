@@ -677,15 +677,6 @@ export async function getSettings() {
       tab: 'storage',
     },
     {
-      name: 'r2_account_id',
-      title: 'Account ID',
-      type: 'text',
-      placeholder: '',
-      tip: 'Cloudflare Account ID',
-      group: 'r2',
-      tab: 'storage',
-    },
-    {
       name: 'r2_bucket_name',
       title: 'Bucket Name',
       type: 'text',
