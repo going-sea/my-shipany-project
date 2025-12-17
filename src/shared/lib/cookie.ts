@@ -50,3 +50,59 @@ export function deleteCookie(name: string): void {
 
   document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
 }
+
+export function getCookieFromHeader(
+  cookieHeader: string | null | undefined,
+  name: string
+): string | undefined {
+  if (!cookieHeader) return undefined;
+  // cookie header format: "a=1; b=2; utm_source=xxx"
+  const parts = cookieHeader.split(';');
+  for (const part of parts) {
+    const trimmed = part.trim();
+    if (trimmed.startsWith(`${name}=`)) {
+      return trimmed.slice(name.length + 1);
+    }
+  }
+  return undefined;
+}
+
+export function getHeaderValue(
+  ctx: any,
+  headerName: string
+): string | undefined {
+  const h = ctx?.headers ?? ctx?.request?.headers;
+  if (!h) return undefined;
+
+  if (typeof h.get === 'function') {
+    return h.get(headerName) ?? undefined;
+  }
+
+  if (typeof h === 'object') {
+    // ctx.headers in your screenshot looks like a plain object
+    return h[headerName] ?? h[headerName.toLowerCase()] ?? undefined;
+  }
+
+  return undefined;
+}
+
+export function getCookieFromCtx(ctx: any, name: string): string | undefined {
+  if (typeof ctx?.getCookie === 'function') {
+    const v = ctx.getCookie(name);
+    if (typeof v === 'string') return v;
+  }
+
+  // Fallback: parse from cookie header
+  const cookieHeader = getHeaderValue(ctx, 'cookie');
+  return getCookieFromHeader(cookieHeader, name);
+}
+
+export function guessLocaleFromAcceptLanguage(
+  acceptLanguage: string | undefined
+) {
+  if (!acceptLanguage) return '';
+  // e.g. "zh-CN,zh;q=0.9,en;q=0.8" -> "zh"
+  const first = acceptLanguage.split(',')[0]?.trim() ?? '';
+  const lang = first.split('-')[0]?.trim() ?? '';
+  return lang.replace(/[^\w-]/g, '').slice(0, 10);
+}

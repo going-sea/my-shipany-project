@@ -8,7 +8,10 @@
     "remaining_credits": "剩余积分",
     "created_at": "创建时间",
     "actions": "操作",
-    "roles": "角色"
+    "roles": "角色",
+    "ip": "IP",
+    "locale": "语言",
+    "utm_source": "UTM Source"
   },
   "list": {
     "title": "用户",

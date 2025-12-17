@@ -1,10 +1,17 @@
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { oneTap } from 'better-auth/plugins';
+import { getLocale } from 'next-intl/server';
 
 import { db } from '@/core/db';
 import { envConfigs } from '@/config';
 import * as schema from '@/config/db/schema';
+import {
+  getCookieFromCtx,
+  getHeaderValue,
+  guessLocaleFromAcceptLanguage,
+} from '@/shared/lib/cookie';
 import { getUuid } from '@/shared/lib/hash';
+import { getClientIp } from '@/shared/lib/ip';
 import { grantCreditsForNewUser } from '@/shared/models/credit';
 import { grantRoleForNewUser } from '@/shared/services/rbac';
 
@@ -15,6 +22,31 @@ const authOptions = {
   baseURL: envConfigs.auth_url,
   secret: envConfigs.auth_secret,
   trustedOrigins: envConfigs.app_url ? [envConfigs.app_url] : [],
+  user: {
+    // Allow persisting custom columns on user table.
+    // Without this, better-auth may ignore extra properties during create/update.
+    additionalFields: {
+      utmSource: {
+        type: 'string',
+        // Not user-editable input; we set it internally.
+        input: false,
+        required: false,
+        defaultValue: '',
+      },
+      ip: {
+        type: 'string',
+        input: false,
+        required: false,
+        defaultValue: '',
+      },
+      locale: {
+        type: 'string',
+        input: false,
+        required: false,
+        defaultValue: '',
+      },
+    },
+  },
   advanced: {
     database: {
       generateId: () => getUuid(),
@@ -44,7 +76,48 @@ export async function getAuthOptions(configs: Record<string, string>) {
     databaseHooks: {
       user: {
         create: {
-          before: async (user: any) => {},
+          before: async (user: any, ctx: any) => {
+            try {
+              const ip = await getClientIp();
+              if (ip) {
+                user.ip = ip;
+              }
+
+              // Prefer NEXT_LOCALE cookie (next-intl). Fallback to accept-language.
+              const localeFromCookie = getCookieFromCtx(ctx, 'NEXT_LOCALE');
+
+              const localeFromHeader = guessLocaleFromAcceptLanguage(
+                getHeaderValue(ctx, 'accept-language')
+              );
+
+              const locale =
+                (localeFromCookie || localeFromHeader || (await getLocale())) ??
+                '';
+
+              if (locale && typeof locale === 'string') {
+                user.locale = locale.slice(0, 20);
+              }
+
+              // Only set on first creation; never overwrite later.
+              if (user?.utmSource) return user;
+
+              const raw = getCookieFromCtx(ctx, 'utm_source');
+              if (!raw || typeof raw !== 'string') return user;
+
+              // Keep it small & safe.
+              const decoded = decodeURIComponent(raw).trim();
+              const sanitized = decoded
+                .replace(/[^\w\-.:]/g, '') // allow a-zA-Z0-9_ - . :
+                .slice(0, 100);
+
+              if (sanitized) {
+                user.utmSource = sanitized;
+              }
+            } catch {
+              // best-effort only
+            }
+            return user;
+          },
           after: async (user: any) => {
             try {
               if (!user.id) {

@@ -101,6 +101,9 @@ export default async function AdminUsersPage({
         },
       },
       { name: 'createdAt', title: t('fields.created_at'), type: 'time' },
+      { name: 'ip', title: t('fields.ip'), type: 'copy' },
+      { name: 'locale', title: t('fields.locale') },
+      { name: 'utmSource', title: t('fields.utm_source') },
       {
         name: 'actions',
         title: t('fields.actions'),

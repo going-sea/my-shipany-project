@@ -8,7 +8,10 @@
     "remaining_credits": "Remaining Credits",
     "created_at": "Created At",
     "actions": "Actions",
-    "roles": "Roles"
+    "roles": "Roles",
+    "ip": "IP",
+    "locale": "Locale",
+    "utm_source": "UTM Source"
   },
   "list": {
     "title": "Users",
