@@ -7,7 +7,8 @@ import { envConfigs } from '@/config';
 export const authClient = createAuthClient({
   baseURL: envConfigs.auth_url,
   fetchOptions: {
-    retry: 3,
+    // Avoid amplifying request storms (e.g. during env/db switching in dev).
+    retry: 1,
   },
 });
 
@@ -20,7 +21,8 @@ export function getAuthClient(configs: Record<string, string>) {
     baseURL: envConfigs.auth_url,
     plugins: getAuthPlugins(configs),
     fetchOptions: {
-      retry: 3,
+      // Avoid amplifying request storms (e.g. during env/db switching in dev).
+      retry: 1,
     },
   });
 
