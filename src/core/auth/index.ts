@@ -1,4 +1,4 @@
-import { betterAuth } from 'better-auth';
+import { betterAuth, BetterAuthOptions } from 'better-auth';
 
 import { getAllConfigs } from '@/shared/models/config';
 
@@ -11,5 +11,5 @@ export async function getAuth() {
 
   const authOptions = await getAuthOptions(configs);
 
-  return betterAuth(authOptions);
+  return betterAuth(authOptions as BetterAuthOptions);
 }
