@@ -118,6 +118,12 @@ export default async function AdminUsersPage({
             icon: 'Users',
             url: `/admin/users/${item.id}/edit-roles`,
           },
+          {
+            name: 'grant-credits',
+            title: t('list.buttons.grant_credits'),
+            icon: 'Coins',
+            url: `/admin/users/${item.id}/grant-credits`,
+          },
         ],
       },
     ],
