@@ -4,6 +4,8 @@ import { and, eq, gt, inArray, isNull } from 'drizzle-orm';
 import { db } from '@/core/db';
 import { permission, role, rolePermission, userRole } from '@/config/db/schema';
 import { getUuid } from '@/shared/lib/hash';
+import { getAllConfigs } from '@/shared/models/config';
+import { User } from '@/shared/models/user';
 
 // Types
 export type Role = typeof role.$inferSelect;
@@ -418,4 +420,34 @@ export async function getUsersByRole(roleId: string): Promise<string[]> {
     .where(eq(userRole.roleId, roleId));
 
   return result.map((r) => r.userId);
+}
+
+export async function grantRoleForNewUser(user: User) {
+  try {
+    // get configs from db
+    const configs = await getAllConfigs();
+
+    // initial role not enabled
+    if (configs.initial_role_enabled !== 'true') {
+      return;
+    }
+
+    const roleName = configs.initial_role_name;
+
+    // initial role name not set
+    if (!roleName) {
+      return;
+    }
+
+    const role = await getRoleByName(roleName);
+
+    // initial role not found
+    if (!role) {
+      return;
+    }
+
+    await assignRoleToUser(user.id, role.id, user.createdAt);
+  } catch (e) {
+    console.error('grant role for new user failed', e);
+  }
 }

@@ -33,6 +33,59 @@ export class R2Provider implements StorageProvider {
     this.configs = configs;
   }
 
+  private getUploadPath() {
+    let uploadPath = this.configs.uploadPath || 'uploads';
+    if (uploadPath.startsWith('/')) {
+      uploadPath = uploadPath.slice(1);
+    }
+    if (uploadPath.endsWith('/')) {
+      uploadPath = uploadPath.slice(0, -1);
+    }
+    return uploadPath;
+  }
+
+  private getEndpoint() {
+    return (
+      this.configs.endpoint ||
+      `https://${this.configs.accountId}.r2.cloudflarestorage.com`
+    );
+  }
+
+  getPublicUrl = (options: { key: string; bucket?: string }) => {
+    const uploadBucket = options.bucket || this.configs.bucket;
+    const uploadPath = this.getUploadPath();
+    const url = `${this.getEndpoint()}/${uploadBucket}/${uploadPath}/${options.key}`;
+    return this.configs.publicDomain
+      ? `${this.configs.publicDomain}/${uploadPath}/${options.key}`
+      : url;
+  };
+
+  exists = async (options: { key: string; bucket?: string }) => {
+    try {
+      const uploadBucket = options.bucket || this.configs.bucket;
+      if (!uploadBucket) return false;
+      const uploadPath = this.getUploadPath();
+      const url = `${this.getEndpoint()}/${uploadBucket}/${uploadPath}/${options.key}`;
+
+      const { AwsClient } = await import('aws4fetch');
+      const client = new AwsClient({
+        accessKeyId: this.configs.accessKeyId,
+        secretAccessKey: this.configs.secretAccessKey,
+        region: this.configs.region || 'auto',
+      });
+
+      const response = await client.fetch(
+        new Request(url, {
+          method: 'HEAD',
+        })
+      );
+
+      return response.ok;
+    } catch {
+      return false;
+    }
+  };
+
   async uploadFile(
     options: StorageUploadOptions
   ): Promise<StorageUploadResult> {
@@ -51,20 +104,11 @@ export class R2Provider implements StorageProvider {
           ? new Uint8Array(options.body)
           : options.body;
 
-      let uploadPath = this.configs.uploadPath || 'uploads';
-      if (uploadPath.startsWith('/')) {
-        uploadPath = uploadPath.slice(1);
-      }
-      if (uploadPath.endsWith('/')) {
-        uploadPath = uploadPath.slice(0, -1);
-      }
+      const uploadPath = this.getUploadPath();
 
       // R2 endpoint format: https://<accountId>.r2.cloudflarestorage.com
       // Use custom endpoint if provided, otherwise use default
-      const endpoint =
-        this.configs.endpoint ||
-        `https://${this.configs.accountId}.r2.cloudflarestorage.com`;
-      const url = `${endpoint}/${uploadBucket}/${uploadPath}/${options.key}`;
+      const url = `${this.getEndpoint()}/${uploadBucket}/${uploadPath}/${options.key}`;
 
       const { AwsClient } = await import('aws4fetch');
 
@@ -97,9 +141,8 @@ export class R2Provider implements StorageProvider {
         };
       }
 
-      const publicUrl = this.configs.publicDomain
-        ? `${this.configs.publicDomain}/${uploadPath}/${options.key}`
-        : url;
+      const publicUrl =
+        this.getPublicUrl({ key: options.key, bucket: uploadBucket }) || url;
 
       return {
         success: true,

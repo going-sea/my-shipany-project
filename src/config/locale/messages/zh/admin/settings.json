@@ -24,7 +24,8 @@
     "tawk": "Tawk",
     "crisp": "Crisp",
     "credit": "积分",
-    "appinfo": "应用信息"
+    "appinfo": "应用信息",
+    "user_role": "用户角色"
   },
   "edit": {
     "title": "设置",

@@ -59,7 +59,7 @@ export function getMetadata(
       defaultMetadata.description;
 
     // image url
-    let imageUrl = options.imageUrl || '/logo.png';
+    let imageUrl = options.imageUrl || envConfigs.app_preview_image;
     if (imageUrl.startsWith('http')) {
       imageUrl = imageUrl;
     } else {
@@ -143,10 +143,10 @@ async function getCanonicalUrl(canonicalUrl: string, locale: string) {
     }
 
     canonicalUrl = `${envConfigs.app_url}${
-      !locale || locale === 'en' ? '' : `/${locale}`
+      !locale || locale === envConfigs.locale ? '' : `/${locale}`
     }${canonicalUrl}`;
 
-    if (locale !== 'en' && canonicalUrl.endsWith('/')) {
+    if (locale !== envConfigs.locale && canonicalUrl.endsWith('/')) {
       canonicalUrl = canonicalUrl.slice(0, -1);
     }
   }

@@ -31,6 +31,39 @@ export class S3Provider implements StorageProvider {
     this.configs = configs;
   }
 
+  getPublicUrl = (options: { key: string; bucket?: string }) => {
+    const uploadBucket = options.bucket || this.configs.bucket;
+    const url = `${this.configs.endpoint}/${uploadBucket}/${options.key}`;
+    return this.configs.publicDomain
+      ? `${this.configs.publicDomain}/${options.key}`
+      : url;
+  };
+
+  exists = async (options: { key: string; bucket?: string }) => {
+    try {
+      const uploadBucket = options.bucket || this.configs.bucket;
+      if (!uploadBucket) return false;
+
+      const url = `${this.configs.endpoint}/${uploadBucket}/${options.key}`;
+      const { AwsClient } = await import('aws4fetch');
+      const client = new AwsClient({
+        accessKeyId: this.configs.accessKeyId,
+        secretAccessKey: this.configs.secretAccessKey,
+        region: this.configs.region,
+      });
+
+      const response = await client.fetch(
+        new Request(url, {
+          method: 'HEAD',
+        })
+      );
+
+      return response.ok;
+    } catch {
+      return false;
+    }
+  };
+
   async uploadFile(
     options: StorageUploadOptions
   ): Promise<StorageUploadResult> {
@@ -81,9 +114,8 @@ export class S3Provider implements StorageProvider {
         };
       }
 
-      const publicUrl = this.configs.publicDomain
-        ? `${this.configs.publicDomain}/${options.key}`
-        : url;
+      const publicUrl =
+        this.getPublicUrl({ key: options.key, bucket: uploadBucket }) || url;
 
       return {
         success: true,

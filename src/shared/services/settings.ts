@@ -105,6 +105,12 @@ export async function getSettingGroups() {
       tab: 'general',
     },
     {
+      name: 'user_role',
+      title: t('groups.user_role'),
+      description: 'custom user role settings',
+      tab: 'general',
+    },
+    {
       name: 'credit',
       title: t('groups.credit'),
       description: 'custom credit settings',
@@ -301,6 +307,30 @@ export async function getSettings() {
       type: 'upload_image',
       group: 'appinfo',
       tab: 'general',
+    },
+    {
+      name: 'initial_role_enabled',
+      title: 'Initial Role Enabled',
+      type: 'switch',
+      value: 'false',
+      group: 'user_role',
+      tab: 'general',
+      tip: 'whether assign initial role for new user',
+    },
+    {
+      name: 'initial_role_name',
+      title: 'Initial Role',
+      type: 'select',
+      value: 'viewer',
+      options: [
+        { title: 'Viewer', value: 'viewer' },
+        { title: 'Editor', value: 'editor' },
+        { title: 'Admin', value: 'admin' },
+        { title: 'Super Admin', value: 'super_admin' },
+      ],
+      group: 'user_role',
+      tab: 'general',
+      tip: 'the initial role for new user',
     },
     {
       name: 'initial_credits_enabled',

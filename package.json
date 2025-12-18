@@ -1,6 +1,6 @@
 {
   "name": "shipany-template-two",
-  "version": "1.6.0",
+  "version": "1.6.3",
   "private": true,
   "author": "ShipAny.ai",
   "homepage": "https://shipany.ai",
@@ -10,6 +10,7 @@
   },
   "keywords": [
     "shipany",
+    "shipany-two",
     "shipany-template-two",
     "ai-saas-boilerplate",
     "ai-saas-template",
@@ -32,6 +33,7 @@
     "rbac:init": "npx tsx scripts/init-rbac.ts",
     "rbac:assign": "npx tsx scripts/assign-role.ts",
     "postinstall": "fumadocs-mdx",
+    "cf:build": "opennextjs-cloudflare build",
     "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "cf:upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",

@@ -2,11 +2,11 @@ import packageJson from '../../package.json';
 
 // Load .env files for scripts (tsx/ts-node) - but NOT in Edge Runtime or browser
 // This ensures scripts can read DATABASE_URL and other env vars
-// Only load in Node.js environment (not Edge Runtime)
+// Check for real Node.js environment by looking at global 'process' properties
 if (
   typeof process !== 'undefined' &&
-  !process.env.NEXT_RUNTIME && // Skip if in Next.js runtime (already loaded)
-  typeof require !== 'undefined' // Check if require is available (Node.js only)
+  typeof process.cwd === 'function' &&
+  !process.env.NEXT_RUNTIME // Skip if in Next.js runtime (already loaded)
 ) {
   try {
     const dotenv = require('dotenv');
@@ -22,6 +22,10 @@ export type ConfigMap = Record<string, string>;
 export const envConfigs = {
   app_url: process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
   app_name: process.env.NEXT_PUBLIC_APP_NAME ?? 'ShipAny App',
+  app_description: process.env.NEXT_PUBLIC_APP_DESCRIPTION ?? '',
+  app_logo: process.env.NEXT_PUBLIC_APP_LOGO ?? '/logo.png',
+  app_preview_image:
+    process.env.NEXT_PUBLIC_APP_PREVIEW_IMAGE ?? '/preview.png',
   theme: process.env.NEXT_PUBLIC_THEME ?? 'default',
   appearance: process.env.NEXT_PUBLIC_APPEARANCE ?? 'system',
   locale: process.env.NEXT_PUBLIC_DEFAULT_LOCALE ?? 'en',

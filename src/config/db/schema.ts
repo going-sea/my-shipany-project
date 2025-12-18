@@ -20,6 +20,10 @@ export const user = pgTable(
       .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
+    // Track first-touch acquisition channel (e.g. google, twitter, newsletter)
+    utmSource: text('utm_source').notNull().default(''),
+    ip: text('ip').notNull().default(''),
+    locale: text('locale').notNull().default(''),
   },
   (table) => [
     // Search users by name in admin dashboard

@@ -8,7 +8,10 @@
     "remaining_credits": "Remaining Credits",
     "created_at": "Created At",
     "actions": "Actions",
-    "roles": "Roles"
+    "roles": "Roles",
+    "ip": "IP",
+    "locale": "Locale",
+    "utm_source": "UTM Source"
   },
   "list": {
     "title": "Users",
@@ -21,7 +24,8 @@
       "edit": "Edit User",
       "view": "View User",
       "delete": "Delete User",
-      "edit_roles": "Edit Roles"
+      "edit_roles": "Edit Roles",
+      "grant_credits": "Grant Credits"
     },
     "search": {
       "email": {
@@ -50,6 +54,24 @@
     },
     "buttons": {
       "submit": "Update"
+    }
+  },
+  "grant_credits": {
+    "title": "Grant Credits",
+    "crumbs": {
+      "admin": "Admin",
+      "users": "Users",
+      "grant_credits": "Grant Credits"
+    },
+    "buttons": {
+      "submit": "Grant"
+    },
+    "fields": {
+      "credits": "Credits Amount",
+      "valid_days": "Credits Valid Days",
+      "valid_days_tip": "0 means no expiration",
+      "description": "Credits Grant Description",
+      "description_placeholder": "Admin grant credits"
     }
   }
 }

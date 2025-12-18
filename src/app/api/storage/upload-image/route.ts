@@ -1,7 +1,21 @@
-import { v4 as uuidv4 } from 'uuid';
-
+import { md5 } from '@/shared/lib/hash';
 import { respData, respErr } from '@/shared/lib/resp';
 import { getStorageService } from '@/shared/services/storage';
+
+const extFromMime = (mimeType: string) => {
+  const map: Record<string, string> = {
+    'image/jpeg': 'jpg',
+    'image/jpg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+    'image/gif': 'gif',
+    'image/svg+xml': 'svg',
+    'image/avif': 'avif',
+    'image/heic': 'heic',
+    'image/heif': 'heif',
+  };
+  return map[mimeType] || '';
+};
 
 export async function POST(req: Request) {
   try {
@@ -21,6 +35,7 @@ export async function POST(req: Request) {
       return respErr('No files provided');
     }
 
+    const storageService = await getStorageService();
     const uploadResults = [];
 
     for (const file of files) {
@@ -29,19 +44,33 @@ export async function POST(req: Request) {
         return respErr(`File ${file.name} is not an image`);
       }
 
-      // Generate unique key
-      const ext = file.name.split('.').pop();
-      const key = `${Date.now()}-${uuidv4()}.${ext}`;
-
       // Convert file to buffer
       const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+      const body = new Uint8Array(arrayBuffer);
 
-      const storageService = await getStorageService();
+      const digest = md5(body);
+      const ext = extFromMime(file.type) || file.name.split('.').pop() || 'bin';
+      const key = `${digest}.${ext}`;
+
+      // If the same image already exists, reuse its URL to save storage space.
+      // (Still depends on provider supporting signed HEAD + public url generation.)
+      const exists = await storageService.exists({ key });
+      if (exists) {
+        const publicUrl = storageService.getPublicUrl({ key });
+        if (publicUrl) {
+          uploadResults.push({
+            url: publicUrl,
+            key,
+            filename: file.name,
+            deduped: true,
+          });
+          continue;
+        }
+      }
 
       // Upload to storage
       const result = await storageService.uploadFile({
-        body: buffer,
+        body,
         key: key,
         contentType: file.type,
         disposition: 'inline',
@@ -58,6 +87,7 @@ export async function POST(req: Request) {
         url: result.url,
         key: result.key,
         filename: file.name,
+        deduped: false,
       });
     }
 
