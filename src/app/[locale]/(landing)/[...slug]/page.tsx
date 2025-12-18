@@ -134,12 +134,17 @@ export default async function DynamicPage({
 
   const messageKey = `pages.${dynamicPageSlug}`;
 
-  const t = await getTranslations({ locale, namespace: messageKey });
+  try {
+    const t = await getTranslations({ locale, namespace: messageKey });
 
-  // return dynamic page
-  if (t.has('page')) {
-    const Page = await getThemePage('dynamic-page');
-    return <Page locale={locale} page={t.raw('page')} />;
+    // return dynamic page
+    if (t.has('page')) {
+      const Page = await getThemePage('dynamic-page');
+      return <Page locale={locale} page={t.raw('page')} />;
+    }
+  } catch (error) {
+    // ignore error if translation not found
+    return notFound();
   }
 
   // 3. page not found

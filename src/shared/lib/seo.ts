@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { envConfigs } from '@/config';
+import { defaultLocale } from '@/config/locale';
 
 // get metadata for page component
 export function getMetadata(
@@ -59,7 +60,7 @@ export function getMetadata(
       defaultMetadata.description;
 
     // image url
-    let imageUrl = options.imageUrl || '/logo.png';
+    let imageUrl = options.imageUrl || envConfigs.app_preview_image;
     if (imageUrl.startsWith('http')) {
       imageUrl = imageUrl;
     } else {
@@ -143,10 +144,10 @@ async function getCanonicalUrl(canonicalUrl: string, locale: string) {
     }
 
     canonicalUrl = `${envConfigs.app_url}${
-      !locale || locale === 'en' ? '' : `/${locale}`
+      !locale || locale === defaultLocale ? '' : `/${locale}`
     }${canonicalUrl}`;
 
-    if (locale !== 'en' && canonicalUrl.endsWith('/')) {
+    if (locale !== defaultLocale && canonicalUrl.endsWith('/')) {
       canonicalUrl = canonicalUrl.slice(0, -1);
     }
   }

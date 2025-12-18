@@ -21,16 +21,6 @@ export async function saveConfigs(configs: Record<string, string>) {
     const configEntries = Object.entries(configs);
     const results: any[] = [];
 
-    // Auto-extract r2_account_id from r2_endpoint if provided
-    if (configs.r2_endpoint && !configs.r2_account_id) {
-      const match = configs.r2_endpoint.match(
-        /https?:\/\/([a-f0-9]+)\.r2\.cloudflarestorage\.com/i
-      );
-      if (match && match[1]) {
-        configs.r2_account_id = match[1];
-      }
-    }
-
     for (const [name, configValue] of configEntries) {
       const [upsertResult] = await tx
         .insert(config)

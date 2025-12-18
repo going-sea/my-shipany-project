@@ -339,11 +339,41 @@ export async function grantCreditsForNewUser(user: User) {
   const creditsValidDays =
     parseInt(configs.initial_credits_valid_days as string) || 0;
 
+  const description = configs.initial_credits_description || 'initial credits';
+
+  const newCredit = await grantCreditsForUser({
+    user: user,
+    credits: credits,
+    validDays: creditsValidDays,
+    description: description,
+  });
+
+  return newCredit;
+}
+
+// grant credits for user
+export async function grantCreditsForUser({
+  user,
+  credits,
+  validDays,
+  description,
+}: {
+  user: User;
+  credits: number;
+  validDays?: number;
+  description?: string;
+}) {
+  if (credits <= 0) {
+    return;
+  }
+
+  const creditsValidDays = validDays && validDays > 0 ? validDays : 0;
+
   const expiresAt = calculateCreditExpirationTime({
     creditsValidDays: creditsValidDays,
   });
 
-  const description = configs.initial_credits_description || 'initial credits';
+  const creditDescription = description || 'grant credits';
 
   const newCredit: NewCredit = {
     id: getUuid(),
@@ -356,7 +386,7 @@ export async function grantCreditsForNewUser(user: User) {
     transactionScene: CreditTransactionScene.GIFT,
     credits: credits,
     remainingCredits: credits,
-    description: description,
+    description: creditDescription,
     expiresAt: expiresAt,
     status: CreditStatus.ACTIVE,
   };

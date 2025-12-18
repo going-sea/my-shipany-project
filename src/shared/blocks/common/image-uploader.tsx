@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { IconUpload, IconX } from '@tabler/icons-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { IconRefresh, IconUpload, IconX } from '@tabler/icons-react';
 import { ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -31,6 +31,7 @@ interface ImageUploaderProps {
 
 interface UploadItem extends ImageUploaderValue {
   file?: File;
+  uploadKey?: string;
 }
 
 const formatBytes = (bytes?: number) => {
@@ -77,6 +78,9 @@ export function ImageUploader({
   const isInitializedRef = useRef(false);
   const onChangeRef = useRef(onChange);
   const isInternalChangeRef = useRef(false);
+  const replaceTargetIdRef = useRef<string | null>(null);
+  const dragCounterRef = useRef(0);
+  const [isDragActive, setIsDragActive] = useState(false);
 
   // 使用 defaultPreviews 初始化 items，只在组件挂载时执行一次
   const [items, setItems] = useState<UploadItem[]>(() => {
@@ -171,31 +175,135 @@ export function ImageUploader({
     );
   }, [items]);
 
-  const handleSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(event.target.files || []);
-    if (!selectedFiles.length) {
+  const replaceItems = (pairs: Array<{ id: string; file: File }>) => {
+    pairs.forEach(({ id, file }) => {
+      const uploadKey = `${Date.now()}-${Math.random()}`;
+      const nextPreview = URL.createObjectURL(file);
+
+      setItems((prev) =>
+        prev.map((item) => {
+          if (item.id !== id) return item;
+          if (item.preview.startsWith('blob:')) {
+            URL.revokeObjectURL(item.preview);
+          }
+          return {
+            ...item,
+            preview: nextPreview,
+            file,
+            size: file.size,
+            url: undefined,
+            status: 'uploading' as UploadStatus,
+            uploadKey,
+          };
+        })
+      );
+
+      uploadImageFile(file)
+        .then((url) => {
+          setItems((prev) =>
+            prev.map((item) => {
+              if (item.id !== id) return item;
+              if (item.uploadKey !== uploadKey) return item; // stale upload
+              if (item.preview.startsWith('blob:')) {
+                URL.revokeObjectURL(item.preview);
+              }
+              return {
+                ...item,
+                preview: url,
+                url,
+                status: 'uploaded' as UploadStatus,
+                file: undefined,
+              };
+            })
+          );
+        })
+        .catch((error: any) => {
+          console.error('Upload failed:', error);
+          toast.error(
+            error?.message ? `Upload failed: ${error.message}` : 'Upload failed'
+          );
+          setItems((prev) =>
+            prev.map((item) => {
+              if (item.id !== id) return item;
+              if (item.uploadKey !== uploadKey) return item; // stale upload
+              return { ...item, status: 'error' as UploadStatus };
+            })
+          );
+        })
+        .finally(() => {
+          if (inputRef.current) inputRef.current.value = '';
+        });
+    });
+  };
+
+  const handleFiles = (selectedFiles: File[]) => {
+    const replaceTargetId = replaceTargetIdRef.current;
+    if (replaceTargetId) {
+      // reset immediately to avoid sticky replace mode
+      replaceTargetIdRef.current = null;
+
+      const file = selectedFiles[0];
+      if (!file) return;
+      if (!file.type?.startsWith('image/')) {
+        toast.error('Only image files are supported');
+        if (inputRef.current) inputRef.current.value = '';
+        return;
+      }
+      if (file.size > maxBytes) {
+        toast.error(`"${file.name}" exceeds the ${maxSizeMB}MB limit`);
+        if (inputRef.current) inputRef.current.value = '';
+        return;
+      }
+      replaceItems([{ id: replaceTargetId, file }]);
       return;
     }
 
     const availableSlots = maxCount - items.length;
-    if (availableSlots <= 0) {
-      toast.error('Maximum number of images reached');
+    const filesToAdd = selectedFiles
+      .filter((file) => {
+        if (!file.type?.startsWith('image/')) {
+          toast.error(`"${file.name}" is not an image`);
+          return false;
+        }
+        if (file.size > maxBytes) {
+          toast.error(`"${file.name}" exceeds the ${maxSizeMB}MB limit`);
+          return false;
+        }
+        return true;
+      })
+      .slice(0, Math.max(availableSlots, 0));
+
+    if (!filesToAdd.length) {
+      // when full: replace from the end backwards
+      if (items.length) {
+        const normalized = selectedFiles.filter((file) =>
+          file.type?.startsWith('image/')
+        );
+        if (!normalized.length) return;
+
+        const k = Math.min(normalized.length, items.length);
+        const tail = items.slice(-k);
+        const pairs: Array<{ id: string; file: File }> = [];
+
+        for (let i = 0; i < k; i += 1) {
+          const targetId = tail[tail.length - 1 - i]?.id;
+          const file = normalized[i];
+          if (targetId && file) pairs.push({ id: targetId, file });
+        }
+
+        if (pairs.length) {
+          replaceItems(pairs);
+        }
+      }
+
+      if (inputRef.current) inputRef.current.value = '';
       return;
     }
 
-    const filesToAdd = selectedFiles.slice(0, availableSlots).filter((file) => {
-      if (file.size > maxBytes) {
-        toast.error(`"${file.name}" exceeds the ${maxSizeMB}MB limit`);
-        return false;
-      }
-      return true;
-    });
-
-    if (!filesToAdd.length) {
-      if (inputRef.current) {
-        inputRef.current.value = '';
-      }
-      return;
+    if (availableSlots < selectedFiles.length) {
+      toast.message(
+        `Only the first ${filesToAdd.length} image(s) will be added`
+      );
     }
 
     const newItems = filesToAdd.map((file) => ({
@@ -204,6 +312,7 @@ export function ImageUploader({
       file,
       size: file.size,
       status: 'uploading' as UploadStatus,
+      uploadKey: `${Date.now()}-${Math.random()}`,
     }));
 
     setItems((prev) => [...prev, ...newItems]);
@@ -216,6 +325,9 @@ export function ImageUploader({
           setItems((prev) => {
             const next = prev.map((current) => {
               if (current.id === item.id) {
+                if (current.uploadKey && item.uploadKey) {
+                  if (current.uploadKey !== item.uploadKey) return current; // stale upload
+                }
                 // Revoke the blob URL since we have the uploaded URL now
                 if (current.preview.startsWith('blob:')) {
                   URL.revokeObjectURL(current.preview);
@@ -238,11 +350,13 @@ export function ImageUploader({
             error?.message ? `Upload failed: ${error.message}` : 'Upload failed'
           );
           setItems((prev) => {
-            const next = prev.map((current) =>
-              current.id === item.id
-                ? { ...current, status: 'error' as UploadStatus }
-                : current
-            );
+            const next = prev.map((current) => {
+              if (current.id !== item.id) return current;
+              if (current.uploadKey && current.uploadKey !== item.uploadKey) {
+                return current; // stale upload
+              }
+              return { ...current, status: 'error' as UploadStatus };
+            });
             return next;
           });
         }
@@ -252,6 +366,61 @@ export function ImageUploader({
     if (inputRef.current) {
       inputRef.current.value = '';
     }
+  };
+
+  const handleSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(event.target.files || []);
+    if (!selectedFiles.length) return;
+    handleFiles(selectedFiles);
+  };
+
+  const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
+    const clipboardItems = Array.from(event.clipboardData?.items || []);
+    const files = clipboardItems
+      .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
+      .map((item) => item.getAsFile())
+      .filter(Boolean) as File[];
+
+    if (!files.length) return;
+    event.preventDefault();
+    handleFiles(files);
+  };
+
+  const handleDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    dragCounterRef.current += 1;
+    setIsDragActive(true);
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer.dropEffect = 'copy';
+    if (!isDragActive) setIsDragActive(true);
+  };
+
+  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    dragCounterRef.current -= 1;
+    if (dragCounterRef.current <= 0) {
+      dragCounterRef.current = 0;
+      setIsDragActive(false);
+    }
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    dragCounterRef.current = 0;
+    setIsDragActive(false);
+
+    const files = Array.from(event.dataTransfer?.files || []).filter((file) =>
+      file.type?.startsWith('image/')
+    );
+    if (!files.length) return;
+    handleFiles(files);
   };
 
   const handleRemove = (id: string) => {
@@ -269,13 +438,38 @@ export function ImageUploader({
     inputRef.current?.click();
   };
 
+  const openReplacePicker = (id: string) => {
+    replaceTargetIdRef.current = id;
+    openFilePicker();
+  };
+
   const countLabel = useMemo(
     () => `${items.length}/${maxCount}`,
     [items.length, maxCount]
   );
 
   return (
-    <div className={cn('space-y-4', className)}>
+    <div
+      className={cn(
+        'relative focus:outline-none',
+        isDragActive &&
+          'ring-primary/70 ring-offset-background ring-2 ring-offset-2',
+        className
+      )}
+      tabIndex={0}
+      onPaste={handlePaste}
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {isDragActive && (
+        <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-black/10 backdrop-blur-sm">
+          <div className="bg-background/80 text-foreground rounded-full px-4 py-2 text-sm font-medium shadow-sm">
+            Drop to upload
+          </div>
+        </div>
+      )}
       <input
         ref={inputRef}
         type="file"
@@ -317,21 +511,36 @@ export function ImageUploader({
                   {formatBytes(item.size)}
                 </span>
               )}
+              {item.status !== 'uploading' && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/35 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="secondary"
+                    className="bg-background/50 text-foreground hover:bg-background/50 h-10 w-10 rounded-full shadow-sm backdrop-blur focus-visible:ring-2 focus-visible:ring-white/70"
+                    onClick={() => openReplacePicker(item.id)}
+                    aria-label="Upload a new image to replace"
+                  >
+                    <IconRefresh className="h-5 w-5" />
+                  </Button>
+                </div>
+              )}
               {item.status === 'uploading' && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-xs font-medium text-white">
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 text-xs font-medium text-white">
                   Uploading...
                 </div>
               )}
               {item.status === 'error' && (
-                <div className="absolute inset-0 flex items-center justify-center bg-red-500/70 text-xs font-medium text-white">
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-red-500/70 text-xs font-medium text-white">
                   Failed
                 </div>
               )}
               <Button
                 size="icon"
                 variant="destructive"
-                className="absolute top-2 right-2 h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
+                className="absolute top-2 right-2 z-20 h-7 w-7"
                 onClick={() => handleRemove(item.id)}
+                aria-label="Remove image"
               >
                 <IconX className="h-4 w-4" />
               </Button>

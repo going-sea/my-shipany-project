@@ -101,6 +101,9 @@ export default async function AdminUsersPage({
         },
       },
       { name: 'createdAt', title: t('fields.created_at'), type: 'time' },
+      { name: 'ip', title: t('fields.ip'), type: 'copy' },
+      { name: 'locale', title: t('fields.locale') },
+      { name: 'utmSource', title: t('fields.utm_source') },
       {
         name: 'actions',
         title: t('fields.actions'),
@@ -117,6 +120,12 @@ export default async function AdminUsersPage({
             title: t('list.buttons.edit_roles'),
             icon: 'Users',
             url: `/admin/users/${item.id}/edit-roles`,
+          },
+          {
+            name: 'grant-credits',
+            title: t('list.buttons.grant_credits'),
+            icon: 'Coins',
+            url: `/admin/users/${item.id}/grant-credits`,
           },
         ],
       },

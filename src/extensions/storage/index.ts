@@ -53,6 +53,12 @@ export interface StorageProvider {
   // provider configs
   configs: StorageConfigs;
 
+  // check if object exists (optional)
+  exists?: (options: { key: string; bucket?: string }) => Promise<boolean>;
+
+  // get public url for key (optional)
+  getPublicUrl?: (options: { key: string; bucket?: string }) => string;
+
   // upload file
   uploadFile(options: StorageUploadOptions): Promise<StorageUploadResult>;
 
@@ -69,6 +75,19 @@ export class StorageManager {
   // storage providers
   private providers: StorageProvider[] = [];
   private defaultProvider?: StorageProvider;
+
+  private ensureDefaultProvider() {
+    // set default provider if not set
+    if (!this.defaultProvider && this.providers.length > 0) {
+      this.defaultProvider = this.providers[0];
+    }
+
+    if (!this.defaultProvider) {
+      throw new Error('No storage provider configured');
+    }
+
+    return this.defaultProvider;
+  }
 
   // add storage provider
   addProvider(provider: StorageProvider, isDefault = false) {
@@ -87,16 +106,7 @@ export class StorageManager {
   async uploadFile(
     options: StorageUploadOptions
   ): Promise<StorageUploadResult> {
-    // set default provider if not set
-    if (!this.defaultProvider && this.providers.length > 0) {
-      this.defaultProvider = this.providers[0];
-    }
-
-    if (!this.defaultProvider) {
-      throw new Error('No storage provider configured');
-    }
-
-    return this.defaultProvider.uploadFile(options);
+    return this.ensureDefaultProvider().uploadFile(options);
   }
 
   // upload file using specific provider
@@ -115,16 +125,21 @@ export class StorageManager {
   async downloadAndUpload(
     options: StorageDownloadUploadOptions
   ): Promise<StorageUploadResult> {
-    // set default provider if not set
-    if (!this.defaultProvider && this.providers.length > 0) {
-      this.defaultProvider = this.providers[0];
-    }
+    return this.ensureDefaultProvider().downloadAndUpload(options);
+  }
 
-    if (!this.defaultProvider) {
-      throw new Error('No storage provider configured');
-    }
+  // check if object exists using default provider (if supported)
+  async exists(options: { key: string; bucket?: string }): Promise<boolean> {
+    const provider = this.ensureDefaultProvider();
+    if (!provider.exists) return false;
+    return provider.exists(options);
+  }
 
-    return this.defaultProvider.downloadAndUpload(options);
+  // get public url using default provider (if supported)
+  getPublicUrl(options: { key: string; bucket?: string }): string | undefined {
+    const provider = this.ensureDefaultProvider();
+    if (!provider.getPublicUrl) return undefined;
+    return provider.getPublicUrl(options);
   }
 
   // download and upload using specific provider

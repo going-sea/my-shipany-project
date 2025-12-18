@@ -1,6 +1,12 @@
 'use client';
 
 import { Component, ErrorInfo, ReactNode } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+
+import { Button } from '@/shared/components/ui/button';
+
+import { SmartIcon } from './smart-icon';
 
 interface Props {
   children?: ReactNode;
@@ -16,7 +22,11 @@ export class ErrorBoundary extends Component<Props, State> {
     hasError: false,
   };
 
-  public static getDerivedStateFromError(_: Error): State {
+  public static getDerivedStateFromError(error: any): State {
+    // Ignore NEXT_NOT_FOUND error to let Next.js handle 404
+    if (error.digest === 'NEXT_NOT_FOUND') {
+      return { hasError: false };
+    }
     return { hasError: true };
   }
 
@@ -25,23 +35,25 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public render() {
+    console.log('ErrorBoundary render', this.state);
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
       }
       return (
-        <div className="bg-background flex h-[50vh] w-full flex-col items-center justify-center gap-4 text-center">
-          <h2 className="text-2xl font-bold">Something went wrong</h2>
+        <div className="flex h-screen flex-col items-center justify-center gap-4">
+          <Image src="/logo.png" alt="Logo" width={80} height={80} />
+          <h1 className="text-2xl font-normal">Something went wrong</h1>
           <p className="text-muted-foreground">
             Please try refreshing the page or contact support if the problem
             persists.
           </p>
-          <button
-            className="bg-primary text-primary-foreground hover:bg-primary/90 rounded px-4 py-2"
-            onClick={() => this.setState({ hasError: false })}
-          >
-            Try again
-          </button>
+          <Button asChild>
+            <Link href="/" className="mt-4">
+              <SmartIcon name="ArrowLeft" />
+              <span>Back to Home</span>
+            </Link>
+          </Button>
         </div>
       );
     }

@@ -24,7 +24,8 @@
     "tawk": "Tawk",
     "crisp": "Crisp",
     "credit": "Credit",
-    "appinfo": "App Info"
+    "appinfo": "App Info",
+    "user_role": "User Role"
   },
   "edit": {
     "title": "Settings",
