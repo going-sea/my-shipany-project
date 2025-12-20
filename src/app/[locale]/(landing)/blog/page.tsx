@@ -4,7 +4,6 @@ import { getThemePage } from '@/core/theme';
 import { getMetadata } from '@/shared/lib/seo';
 import { getPostsAndCategories } from '@/shared/models/post';
 import {
-  Blog as BlogType,
   Category as CategoryType,
   Post as PostType,
 } from '@/shared/types/blocks/blog';
@@ -13,7 +12,7 @@ import { DynamicPage } from '@/shared/types/blocks/landing';
 export const revalidate = 3600;
 
 export const generateMetadata = getMetadata({
-  metadataKey: 'blog.metadata',
+  metadataKey: 'pages.blog.metadata',
   canonicalUrl: '/blog',
 });
 
@@ -28,7 +27,7 @@ export default async function BlogPage({
   setRequestLocale(locale);
 
   // load blog data
-  const t = await getTranslations('blog');
+  const t = await getTranslations('pages.blog');
 
   let posts: PostType[] = [];
   let categories: CategoryType[] = [];
@@ -37,7 +36,7 @@ export default async function BlogPage({
   const currentCategory: CategoryType = {
     id: 'all',
     slug: 'all',
-    title: t('page.all'),
+    title: t('messages.all'),
     url: `/blog`,
   };
 
@@ -61,21 +60,16 @@ export default async function BlogPage({
     console.log('getting posts failed:', error);
   }
 
-  // build blog data
-  const blog: BlogType = {
-    ...t.raw('blog'),
-    categories,
-    currentCategory,
-    posts,
-  };
-
   // build page sections
   const page: DynamicPage = {
+    title: t('page.title'),
     sections: {
       blog: {
-        block: 'blog',
+        ...t.raw('page.sections.blog'),
         data: {
-          blog,
+          categories,
+          currentCategory,
+          posts,
         },
       },
     },

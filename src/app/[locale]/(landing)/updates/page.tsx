@@ -6,13 +6,13 @@ import {
   getLocalPostsAndCategories,
   PostType as PostDataType,
 } from '@/shared/models/post';
-import { Blog as BlogType, Post as PostType } from '@/shared/types/blocks/blog';
+import { Post as PostType } from '@/shared/types/blocks/blog';
 import { DynamicPage } from '@/shared/types/blocks/landing';
 
 export const revalidate = 3600;
 
 export const generateMetadata = getMetadata({
-  metadataKey: 'updates.metadata',
+  metadataKey: 'pages.updates.metadata',
   canonicalUrl: '/updates',
 });
 
@@ -25,7 +25,7 @@ export default async function UpdatesPage({
   setRequestLocale(locale);
 
   // load updates data
-  const t = await getTranslations('updates');
+  const t = await getTranslations('pages.updates');
 
   let posts: PostType[] = [];
 
@@ -59,19 +59,13 @@ export default async function UpdatesPage({
     console.log('getting posts failed:', error);
   }
 
-  // build updates data
-  const blog: BlogType = {
-    ...t.raw('updates'),
-    posts,
-  };
-
   // build page sections
   const page: DynamicPage = {
     sections: {
       updates: {
-        block: 'updates',
+        ...t.raw('page.sections.updates'),
         data: {
-          blog,
+          posts,
         },
       },
     },

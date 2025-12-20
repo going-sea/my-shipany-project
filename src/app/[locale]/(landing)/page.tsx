@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { getThemePage } from '@/core/theme';
-import { DynamicPage, Section } from '@/shared/types/blocks/landing';
+import { DynamicPage } from '@/shared/types/blocks/landing';
 
 export const revalidate = 3600;
 
@@ -13,32 +13,10 @@ export default async function LandingPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const t = await getTranslations('landing');
+  const t = await getTranslations('pages.index');
 
-  const showSections = [
-    'hero',
-    'logos',
-    'introduce',
-    'benefits',
-    'usage',
-    'features',
-    'stats',
-    'testimonials',
-    'subscribe',
-    'faq',
-    'cta',
-  ];
-
-  // build page sections
-  const page: DynamicPage = {
-    sections: showSections.reduce<Record<string, Section>>((acc, section) => {
-      const sectionData = t.raw(section) as Section;
-      if (sectionData) {
-        acc[section] = sectionData;
-      }
-      return acc;
-    }, {}),
-  };
+  // get page data
+  const page: DynamicPage = t.raw('page');
 
   // load page component
   const Page = await getThemePage('dynamic-page');

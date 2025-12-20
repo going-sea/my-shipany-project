@@ -29,9 +29,9 @@ export async function POST(req: Request) {
 
     const t = await getTranslations({
       locale: locale || 'en',
-      namespace: 'pricing',
+      namespace: 'pages.pricing',
     });
-    const pricing = t.raw('pricing');
+    const pricing = t.raw('page.sections.pricing');
 
     const pricingItem = pricing.items.find(
       (item: any) => item.product_id === product_id

@@ -19,11 +19,12 @@ if (
 
 export type ConfigMap = Record<string, string>;
 
-export const envConfigs = {
+export const envConfigs: ConfigMap = {
   app_url: process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
   app_name: process.env.NEXT_PUBLIC_APP_NAME ?? 'ShipAny App',
   app_description: process.env.NEXT_PUBLIC_APP_DESCRIPTION ?? '',
   app_logo: process.env.NEXT_PUBLIC_APP_LOGO ?? '/logo.png',
+  app_favicon: process.env.NEXT_PUBLIC_APP_FAVICON ?? '/favicon.ico',
   app_preview_image:
     process.env.NEXT_PUBLIC_APP_PREVIEW_IMAGE ?? '/preview.png',
   theme: process.env.NEXT_PUBLIC_THEME ?? 'default',
@@ -47,4 +48,6 @@ export const envConfigs = {
   auth_url: process.env.AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || '',
   auth_secret: process.env.AUTH_SECRET ?? '', // openssl rand -base64 32
   version: packageJson.version,
+  locale_detect_enabled:
+    process.env.NEXT_PUBLIC_LOCALE_DETECT_ENABLED ?? 'false',
 };

@@ -129,4 +129,5 @@ export interface DynamicPage {
   title?: string;
   description?: string;
   sections?: Record<string, Section>;
+  show_sections?: string[];
 }
