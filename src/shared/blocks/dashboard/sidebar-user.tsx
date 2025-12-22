@@ -85,7 +85,7 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
       return;
     }
 
-    if (!isPending && !session && !Object.values(configs).length) {
+    if (!isPending && !Object.values(configs).length) {
       fetchConfigs();
     }
 

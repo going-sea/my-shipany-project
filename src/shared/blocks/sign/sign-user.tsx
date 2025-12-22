@@ -71,7 +71,7 @@ export function SignUser({
 
   // show one tap if not initialized
   useEffect(() => {
-    if (!isPending && !session && !Object.values(configs).length) {
+    if (!isPending && !Object.values(configs).length) {
       fetchConfigs();
     }
 
