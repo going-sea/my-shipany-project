@@ -1,10 +1,10 @@
 'use client';
 
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { ChevronsUpDown, Loader2, LogOut, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { signOut } from '@/core/auth/client';
+import { signOut, useSession } from '@/core/auth/client';
 import { Link, useRouter } from '@/core/i18n/navigation';
 import { SmartIcon } from '@/shared/blocks/common';
 import { SignModal } from '@/shared/blocks/sign/sign-modal';
@@ -30,17 +30,21 @@ import {
   useSidebar,
 } from '@/shared/components/ui/sidebar';
 import { useAppContext } from '@/shared/contexts/app';
+import { User as UserType } from '@/shared/models/user';
 import { NavItem } from '@/shared/types/blocks/common';
 import { SidebarUser as SidebarUserType } from '@/shared/types/blocks/dashboard';
 
 // SSR/CSR hydration bug fix: Avoid rendering session-dependent UI until mounted on client
 export function SidebarUser({ user }: { user: SidebarUserType }) {
   const t = useTranslations('common.sign');
-  const { user: authUser, isCheckSign } = useAppContext();
   const { isMobile, open } = useSidebar();
   const router = useRouter();
 
-  const { setIsShowSignModal } = useAppContext();
+  // get session (MUST be called unconditionally to keep hook order stable)
+  const { data: session, isPending } = useSession();
+
+  // one tap initialized
+  const oneTapInitialized = useRef(false);
 
   // This state will ensure rendering only happens after client hydration
   const [hasMounted, setHasMounted] = useState(false);
@@ -52,6 +56,69 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
     await signOut();
     router.push(user.signout_callback || '/sign-in');
   };
+
+  // get app context values
+  const {
+    configs,
+    fetchConfigs,
+    setIsShowSignModal,
+    isCheckSign,
+    setIsCheckSign,
+    user: authUser,
+    setUser,
+    fetchUserInfo,
+    showOneTap,
+  } = useAppContext();
+
+  // set is check sign
+  useEffect(() => {
+    if (!hasMounted) {
+      return;
+    }
+
+    setIsCheckSign(isPending);
+  }, [hasMounted, isPending, setIsCheckSign]);
+
+  // show one tap if not initialized
+  useEffect(() => {
+    if (!hasMounted) {
+      return;
+    }
+
+    if (!isPending && !Object.values(configs).length) {
+      fetchConfigs();
+    }
+
+    if (
+      configs &&
+      configs.google_client_id &&
+      configs.google_one_tap_enabled === 'true' &&
+      !session &&
+      !isPending &&
+      !oneTapInitialized.current
+    ) {
+      oneTapInitialized.current = true;
+      showOneTap(configs);
+    }
+  }, [hasMounted, configs, session, isPending, showOneTap]);
+
+  // set user
+  useEffect(() => {
+    if (!hasMounted) {
+      return;
+    }
+
+    const sessionUser = session?.user;
+    const currentUserId = authUser?.id;
+    const sessionUserId = sessionUser?.id;
+
+    if (sessionUser && sessionUserId !== currentUserId) {
+      setUser(sessionUser as UserType);
+      fetchUserInfo();
+    } else if (!sessionUser && currentUserId) {
+      setUser(null);
+    }
+  }, [hasMounted, session?.user?.id, authUser?.id, setUser, fetchUserInfo]);
 
   // If not mounted, render placeholder to avoid hydration mismatch
   if (!hasMounted) {

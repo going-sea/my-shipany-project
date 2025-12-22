@@ -9,7 +9,7 @@ import { DynamicPage } from '@/shared/types/blocks/landing';
 export const revalidate = 3600;
 
 export const generateMetadata = getMetadata({
-  metadataKey: 'pricing.metadata',
+  metadataKey: 'pages.pricing.metadata',
   canonicalUrl: '/pricing',
 });
 
@@ -33,23 +33,18 @@ export default async function PricingPage({
   }
 
   // get pricing data
-  const t = await getTranslations('pricing');
-
-  // get landing data
-  const tl = await getTranslations('landing');
+  const t = await getTranslations('pages.pricing');
 
   // build page sections
   const page: DynamicPage = {
+    title: t.raw('page.title'),
     sections: {
       pricing: {
-        block: 'pricing',
+        ...t.raw('page.sections.pricing'),
         data: {
-          pricing: t.raw('pricing'),
           currentSubscription,
         },
       },
-      faq: tl.raw('faq'),
-      testimonials: tl.raw('testimonials'),
     },
   };
 

@@ -25,11 +25,6 @@ export async function getThemePage(pageName: string, theme?: string) {
     const module = await import(`@/themes/${loadTheme}/pages/${pageName}`);
     return module.default;
   } catch (error) {
-    console.log(
-      `Failed to load page "${pageName}" from theme "${theme}":`,
-      error
-    );
-
     // fallback to default theme
     if (loadTheme !== defaultTheme) {
       try {
@@ -38,7 +33,6 @@ export async function getThemePage(pageName: string, theme?: string) {
         );
         return fallbackModule.default;
       } catch (fallbackError) {
-        console.error(`Failed to load fallback page:`, fallbackError);
         throw fallbackError;
       }
     }
@@ -58,11 +52,6 @@ export async function getThemeLayout(layoutName: string, theme?: string) {
     const module = await import(`@/themes/${loadTheme}/layouts/${layoutName}`);
     return module.default;
   } catch (error) {
-    console.log(
-      `Failed to load layout "${layoutName}" from theme "${theme}":`,
-      error
-    );
-
     // fallback to default theme
     if (loadTheme !== defaultTheme) {
       try {
@@ -71,7 +60,6 @@ export async function getThemeLayout(layoutName: string, theme?: string) {
         );
         return fallbackModule.default;
       } catch (fallbackError) {
-        console.error(`Failed to load fallback layout:`, fallbackError);
         throw fallbackError;
       }
     }
@@ -107,11 +95,6 @@ export async function getThemeBlock(blockName: string, theme?: string) {
     }
     return component;
   } catch (error) {
-    console.error(
-      `Failed to load block "${blockName}" from theme "${loadTheme}":`,
-      error
-    );
-
     // fallback to default theme
     if (loadTheme !== defaultTheme) {
       try {
@@ -127,7 +110,6 @@ export async function getThemeBlock(blockName: string, theme?: string) {
         }
         return fallbackComponent;
       } catch (fallbackError) {
-        console.error(`Failed to load fallback block:`, fallbackError);
         throw fallbackError;
       }
     }

@@ -3,27 +3,32 @@
 import {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
 
-import { getAuthClient, useSession } from '@/core/auth/client';
-import { useRouter } from '@/core/i18n/navigation';
+import { getAuthClient } from '@/core/auth/client';
 import { envConfigs } from '@/config';
 import { User } from '@/shared/models/user';
 
 export interface ContextValue {
   user: User | null;
+  setUser: (user: User | null) => void;
   isCheckSign: boolean;
+  setIsCheckSign: (isCheckSign: boolean) => void;
   isShowSignModal: boolean;
   setIsShowSignModal: (show: boolean) => void;
   isShowPaymentModal: boolean;
   setIsShowPaymentModal: (show: boolean) => void;
   configs: Record<string, string>;
+  fetchConfigs: () => Promise<void>;
   fetchUserCredits: () => Promise<void>;
   fetchUserInfo: () => Promise<void>;
+  showOneTap: (configs: Record<string, string>) => Promise<void>;
 }
 
 const AppContext = createContext({} as ContextValue);
@@ -31,14 +36,11 @@ const AppContext = createContext({} as ContextValue);
 export const useAppContext = () => useContext(AppContext);
 
 export const AppContextProvider = ({ children }: { children: ReactNode }) => {
-  const router = useRouter();
   const [configs, setConfigs] = useState<Record<string, string>>({});
 
   // sign user
   const [user, setUser] = useState<User | null>(null);
-
-  // session
-  const { data: session, isPending } = useSession();
+  const userRef = useRef<User | null>(null);
 
   // is check sign (true during SSR and initial render to avoid hydration mismatch when auth is enabled)
   const [isCheckSign, setIsCheckSign] = useState(!!envConfigs.auth_secret);
@@ -49,7 +51,7 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
   // show payment modal
   const [isShowPaymentModal, setIsShowPaymentModal] = useState(false);
 
-  const fetchConfigs = async function () {
+  const fetchConfigs = useCallback(async () => {
     try {
       const resp = await fetch('/api/config/get-configs', {
         method: 'POST',
@@ -64,13 +66,15 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
 
       setConfigs(data);
     } catch (e) {
-      console.log('fetch configs failed:', e);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('fetch configs failed:', e);
+      }
     }
-  };
+  }, []);
 
-  const fetchUserCredits = async function () {
+  const fetchUserCredits = useCallback(async () => {
     try {
-      if (!user) {
+      if (!userRef.current) {
         return;
       }
 
@@ -85,13 +89,15 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(message);
       }
 
-      setUser({ ...user, credits: data });
+      setUser((prev) => (prev ? { ...prev, credits: data } : prev));
     } catch (e) {
-      console.log('fetch user credits failed:', e);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('fetch user credits failed:', e);
+      }
     }
-  };
+  }, []);
 
-  const fetchUserInfo = async function () {
+  const fetchUserInfo = useCallback(async () => {
     try {
       const resp = await fetch('/api/user/get-user-info', {
         method: 'POST',
@@ -106,11 +112,13 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
 
       setUser(data);
     } catch (e) {
-      console.log('fetch user info failed:', e);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('fetch user info failed:', e);
+      }
     }
-  };
+  }, []);
 
-  const showOneTap = async function (configs: Record<string, string>) {
+  const showOneTap = useCallback(async (configs: Record<string, string>) => {
     try {
       const authClient = getAuthClient(configs);
       await authClient.oneTap({
@@ -118,7 +126,9 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
         onPromptNotification: (notification: any) => {
           // Handle prompt dismissal silently
           // This callback is triggered when the prompt is dismissed or skipped
-          console.log('One Tap prompt notification:', notification);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('One Tap prompt notification:', notification);
+          }
         },
         // fetchOptions: {
         //   onSuccess: () => {
@@ -131,67 +141,40 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
       // These errors occur when users close the prompt or decline to sign in
       // Common errors: FedCM NetworkError, AbortError, etc.
     }
-  };
-
-  useEffect(() => {
-    fetchConfigs();
   }, []);
 
   useEffect(() => {
-    const sessionUser = session?.user;
-    const currentUserId = user?.id;
-    const sessionUserId = sessionUser?.id;
-
-    if (sessionUser && sessionUserId !== currentUserId) {
-      setUser(sessionUser as User);
-      fetchUserInfo();
-    } else if (!sessionUser && currentUserId) {
-      setUser(null);
-    }
-  }, [session?.user?.id, user?.id]);
-
-  // one tap initialized
-  const oneTapInitialized = useRef(false);
-
-  useEffect(() => {
-    if (
-      configs &&
-      configs.google_client_id &&
-      configs.google_one_tap_enabled === 'true' &&
-      !session &&
-      !isPending &&
-      !oneTapInitialized.current
-    ) {
-      oneTapInitialized.current = true;
-      showOneTap(configs);
-    }
-  }, [configs, session, isPending]);
-
-  useEffect(() => {
-    if (user && !user.credits) {
-      // fetchUserCredits();
-    }
+    userRef.current = user;
   }, [user]);
 
-  useEffect(() => {
-    setIsCheckSign(isPending);
-  }, [isPending]);
-
-  return (
-    <AppContext.Provider
-      value={{
-        user,
-        isCheckSign,
-        isShowSignModal,
-        setIsShowSignModal,
-        isShowPaymentModal,
-        setIsShowPaymentModal,
-        configs,
-        fetchUserCredits,
-        fetchUserInfo,
-      }}
-    >
-      {children}
-    </AppContext.Provider>
+  const value = useMemo(
+    () => ({
+      user,
+      setUser,
+      isCheckSign,
+      setIsCheckSign,
+      isShowSignModal,
+      setIsShowSignModal,
+      isShowPaymentModal,
+      setIsShowPaymentModal,
+      configs,
+      fetchConfigs,
+      fetchUserCredits,
+      fetchUserInfo,
+      showOneTap,
+    }),
+    [
+      user,
+      isCheckSign,
+      isShowSignModal,
+      isShowPaymentModal,
+      configs,
+      fetchConfigs,
+      fetchUserCredits,
+      fetchUserInfo,
+      showOneTap,
+    ]
   );
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

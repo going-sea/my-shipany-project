@@ -9,7 +9,7 @@ import {
 import { ScrollAnimation } from '@/shared/components/ui/scroll-animation';
 import { Section } from '@/shared/types/blocks/landing';
 
-export function FAQ({
+export function Faq({
   section,
   className,
 }: {

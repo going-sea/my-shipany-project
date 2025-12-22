@@ -1,44 +1,48 @@
 import { cn } from '@/shared/lib/utils';
-import { Blog as BlogType } from '@/shared/types/blocks/blog';
+import { Post as PostType } from '@/shared/types/blocks/blog';
+import { Section } from '@/shared/types/blocks/landing';
 
 export function Updates({
-  blog,
+  section,
   className,
+  posts,
 }: {
-  blog: BlogType;
+  section: Section;
   className?: string;
+  posts: PostType[];
 }) {
   return (
     <section
-      id={blog.id}
-      className={cn('py-24 md:py-36', blog.className, className)}
+      id={section.id}
+      className={cn('py-24 md:py-36', section.className, className)}
     >
       <div className="mx-auto mb-12 text-center">
         <h1 className="mb-6 text-3xl font-bold text-pretty lg:text-4xl">
-          {blog.title}
+          {section.title}
         </h1>
         <p className="text-muted-foreground mb-4 max-w-xl lg:max-w-none lg:text-lg">
-          {blog.description}
+          {section.description}
         </p>
       </div>
 
       {/* Timeline */}
       <div className="mx-auto max-w-5xl px-6 pt-10 lg:px-10">
         <div className="relative">
-          {blog.posts?.map((post) => {
+          {posts?.map((post) => {
             return (
               <div key={post.url} className="relative">
                 <div className="flex flex-col gap-y-6 md:flex-row">
                   <div className="flex-shrink-0 md:w-48">
                     <div className="pb-10 md:sticky md:top-8">
-                      <time className="text-muted-foreground mb-3 block text-sm font-medium">
-                        {post.date}
-                      </time>
-
                       {post.version && (
                         <div className="text-foreground border-primary text-primary relative z-10 inline-flex items-center justify-center rounded-lg border px-2 py-1 text-xs font-bold">
                           v{post.version}
                         </div>
+                      )}
+                      {post.date && post.date && (
+                        <time className="text-muted-foreground mt-3 block text-sm font-medium">
+                          {post.date}
+                        </time>
                       )}
                     </div>
                   </div>

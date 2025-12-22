@@ -12,7 +12,7 @@ import { NavItem } from '@/shared/types/blocks/common';
 import '@/config/style/docs.css';
 
 export function BlogDetail({ post }: { post: PostType }) {
-  const t = useTranslations('blog.page');
+  const t = useTranslations('pages.blog.messages');
 
   const crumbItems: NavItem[] = [
     {

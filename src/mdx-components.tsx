@@ -25,6 +25,7 @@ const CustomLink = ({
         href={href}
         target="_blank"
         rel="nofollow noopener noreferrer"
+        className="text-primary"
         {...props}
       >
         {children}
@@ -61,6 +62,7 @@ export function withNoFollow(
           href={href}
           target="_blank"
           rel="nofollow noopener noreferrer"
+          className="text-primary"
           {...props}
         >
           {children}

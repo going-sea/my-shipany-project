@@ -36,7 +36,7 @@ export interface Section {
 }
 
 // header props for header component
-export interface Header {
+export interface Header extends Section {
   id?: string;
   brand?: Brand;
   nav?: Nav;
@@ -49,7 +49,7 @@ export interface Header {
 }
 
 // footer props for footer component
-export interface Footer {
+export interface Footer extends Section {
   id?: string;
   brand?: Brand;
   nav?: Nav;
@@ -129,4 +129,5 @@ export interface DynamicPage {
   title?: string;
   description?: string;
   sections?: Record<string, Section>;
+  show_sections?: string[];
 }

@@ -12,6 +12,11 @@ export function db() {
   let databaseUrl = envConfigs.database_url;
 
   let isHyperdrive = false;
+  const schemaName = (envConfigs.db_schema || 'public').trim();
+  const connectionSchemaOptions =
+    schemaName && schemaName !== 'public'
+      ? { connection: { options: `-c search_path=${schemaName}` } }
+      : {};
 
   if (isCloudflareWorker) {
     const { env }: { env: any } = { env: {} };
@@ -38,6 +43,7 @@ export function db() {
       max: 1, // Limit to 1 connection in Workers
       idle_timeout: 10, // Shorter timeout for Workers
       connect_timeout: 5,
+      ...connectionSchemaOptions,
     });
 
     return drizzle(client);
@@ -56,6 +62,7 @@ export function db() {
       max: Number(envConfigs.db_max_connections) || 1, // Maximum connections in pool (default 1)
       idle_timeout: 30, // Idle connection timeout (seconds)
       connect_timeout: 10, // Connection timeout (seconds)
+      ...connectionSchemaOptions,
     });
 
     dbInstance = drizzle({ client });
@@ -69,6 +76,7 @@ export function db() {
     max: 1, // Use single connection in serverless
     idle_timeout: 20,
     connect_timeout: 10,
+    ...connectionSchemaOptions,
   });
 
   return drizzle({ client: serverlessClient });

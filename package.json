@@ -1,6 +1,6 @@
 {
   "name": "shipany-template-two",
-  "version": "1.6.3",
+  "version": "1.7.1",
   "private": true,
   "author": "ShipAny.ai",
   "homepage": "https://shipany.ai",
@@ -123,6 +123,7 @@
     "replicate": "^1.3.1",
     "resend": "^6.0.3",
     "rough-notation": "^0.5.1",
+    "shiki": "^3.20.0",
     "simple-flakeid": "^0.0.5",
     "sonner": "^2.0.7",
     "streamdown": "^1.4.0",
