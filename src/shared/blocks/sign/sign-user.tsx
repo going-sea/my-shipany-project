@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Fragment } from 'react/jsx-runtime';
 import { Coins, LayoutDashboard, Loader2, LogOut, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { signOut } from '@/core/auth/client';
+import { signOut, useSession } from '@/core/auth/client';
 import { Link, useRouter } from '@/core/i18n/navigation';
 import {
   Avatar,
@@ -22,6 +22,7 @@ import {
 } from '@/shared/components/ui/dropdown-menu';
 import { useAppContext } from '@/shared/contexts/app';
 import { cn } from '@/shared/lib/utils';
+import { User as UserType } from '@/shared/models/user';
 import { NavItem, UserNav } from '@/shared/types/blocks/common';
 
 import { SmartIcon } from '../common/smart-icon';
@@ -37,13 +38,70 @@ export function SignUser({
   userNav?: UserNav;
 }) {
   const t = useTranslations('common.sign');
-  const { isCheckSign, user, setIsShowSignModal } = useAppContext();
   const router = useRouter();
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // get app context values
+  const {
+    configs,
+    fetchConfigs,
+    setIsShowSignModal,
+    isCheckSign,
+    setIsCheckSign,
+    user,
+    setUser,
+    fetchUserInfo,
+    showOneTap,
+  } = useAppContext();
+
+  // get session
+  const { data: session, isPending } = useSession();
+
+  // one tap initialized
+  const oneTapInitialized = useRef(false);
+
+  // set is check sign
+  useEffect(() => {
+    setIsCheckSign(isPending);
+  }, [isPending]);
+
+  // show one tap if not initialized
+  useEffect(() => {
+    if (!isPending && !Object.values(configs).length) {
+      fetchConfigs();
+      return;
+    }
+
+    if (
+      configs &&
+      configs.google_client_id &&
+      configs.google_one_tap_enabled === 'true' &&
+      !session &&
+      !isPending &&
+      !oneTapInitialized.current
+    ) {
+      oneTapInitialized.current = true;
+      showOneTap(configs);
+    }
+  }, [session, isPending]);
+
+  // set user
+  useEffect(() => {
+    const sessionUser = session?.user;
+    const currentUserId = user?.id;
+    const sessionUserId = sessionUser?.id;
+
+    if (sessionUser && sessionUserId !== currentUserId) {
+      setUser(sessionUser as UserType);
+      fetchUserInfo();
+    } else if (!sessionUser && currentUserId) {
+      setUser(null);
+    }
+  }, [session?.user?.id, user?.id]);
 
   return (
     <>

@@ -6,21 +6,28 @@ import { Link } from '@/core/i18n/navigation';
 import { Tabs } from '@/shared/blocks/common/tabs';
 import { cn } from '@/shared/lib/utils';
 import {
-  Blog as BlogType,
   Category as CategoryType,
+  Post as PostType,
 } from '@/shared/types/blocks/blog';
 import { Tab } from '@/shared/types/blocks/common';
+import { Section } from '@/shared/types/blocks/landing';
 
 export function Blog({
-  blog,
+  section,
   className,
+  categories,
+  currentCategory,
+  posts,
 }: {
-  blog: BlogType;
+  section: Section;
   className?: string;
+  categories: CategoryType[];
+  currentCategory: CategoryType;
+  posts: PostType[];
 }) {
-  const t = useTranslations('blog.page');
+  const t = useTranslations('pages.blog.messages');
   const tabs: Tab[] = [];
-  blog.categories?.map((category: CategoryType) => {
+  categories?.map((category: CategoryType) => {
     tabs.push({
       name: category.slug,
       title: category.title,
@@ -28,37 +35,37 @@ export function Blog({
         !category.slug || category.slug === 'all'
           ? '/blog'
           : `/blog/category/${category.slug}`,
-      is_active: blog.currentCategory?.slug == category.slug,
+      is_active: currentCategory?.slug == category.slug,
     });
   });
 
   return (
     <section
-      id={blog.id}
-      className={cn('py-24 md:py-36', blog.className, className)}
+      id={section.id}
+      className={cn('py-24 md:py-36', section.className, className)}
     >
       <div className="mx-auto mb-12 text-center">
-        {blog.sr_only_title && (
-          <h1 className="sr-only">{blog.sr_only_title}</h1>
+        {section.sr_only_title && (
+          <h1 className="sr-only">{section.sr_only_title}</h1>
         )}
         <h2 className="mb-6 text-3xl font-bold text-pretty lg:text-4xl">
-          {blog.title}
+          {section.title}
         </h2>
         <p className="text-muted-foreground mb-4 max-w-xl lg:max-w-none lg:text-lg">
-          {blog.description}
+          {section.description}
         </p>
       </div>
 
       <div className="container flex flex-col items-center gap-8 lg:px-16">
-        {blog.categories && blog.categories.length > 0 && (
+        {categories && categories.length > 0 && (
           <div className="mb-2 flex flex-wrap items-center justify-center gap-4">
             <Tabs tabs={tabs} />
           </div>
         )}
 
-        {blog.posts && blog.posts.length > 0 ? (
+        {posts && posts.length > 0 ? (
           <div className="flex w-full flex-wrap items-start">
-            {blog.posts?.map((item, idx) => (
+            {posts?.map((item, idx) => (
               <Link
                 key={idx}
                 href={item.url || ''}

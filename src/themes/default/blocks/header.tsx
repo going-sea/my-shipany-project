@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 
-import { Link, usePathname, useRouter } from '@/core/i18n/navigation';
+import { Link, usePathname } from '@/core/i18n/navigation';
 import {
   BrandLogo,
   LocaleSelector,
@@ -23,7 +23,6 @@ import {
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  navigationMenuTriggerStyle,
   NavigationMenuTrigger as RawNavigationMenuTrigger,
 } from '@/shared/components/ui/navigation-menu';
 import { useMedia } from '@/shared/hooks/use-media';
@@ -47,47 +46,41 @@ function NavigationMenuTrigger(
 export function Header({ header }: { header: HeaderType }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const isScrolledRef = useRef(false);
+  const scrollRafRef = useRef<number | null>(null);
   const isLarge = useMedia('(min-width: 64rem)');
-  const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     // Listen to scroll event to enable header styles on scroll
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      // Coalesce high-frequency scroll events & only update state when value changes.
+      if (scrollRafRef.current != null) return;
+      scrollRafRef.current = window.requestAnimationFrame(() => {
+        scrollRafRef.current = null;
+        const next = window.scrollY > 50;
+        if (next === isScrolledRef.current) return;
+        isScrolledRef.current = next;
+        setIsScrolled(next);
+      });
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    // Initialize once on mount.
+    handleScroll();
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollRafRef.current != null) {
+        window.cancelAnimationFrame(scrollRafRef.current);
+        scrollRafRef.current = null;
+      }
+    };
   }, []);
 
   // Navigation menu for large screens
   const NavMenu = () => {
-    const menuRef = useRef<React.ElementRef<typeof NavigationMenu>>(null);
-
-    // Calculate dynamic viewport height for animated menu
-    const handleViewportHeight = () => {
-      requestAnimationFrame(() => {
-        const menuNode = menuRef.current;
-        if (!menuNode) return;
-
-        const openContent = document.querySelector<HTMLElement>(
-          '[data-slot="navigation-menu-viewport"][data-state="open"]'
-        );
-
-        if (openContent) {
-          const height = openContent.scrollHeight;
-          document.documentElement.style.setProperty(
-            '--navigation-menu-viewport-height',
-            `${height}px`
-          );
-        } else {
-          document.documentElement.style.removeProperty(
-            '--navigation-menu-viewport-height'
-          );
-        }
-      });
-    };
-
     return (
       <NavigationMenu
         viewport={false}
@@ -129,6 +122,7 @@ export function Header({ header }: { header: HeaderType }) {
                         <ListItem
                           key={index}
                           href={subItem.url || ''}
+                          target={subItem.target || '_self'}
                           title={subItem.title || ''}
                           description={subItem.description || ''}
                         >
@@ -219,17 +213,23 @@ export function Header({ header }: { header: HeaderType }) {
     description,
     children,
     href,
+    target,
     ...props
   }: React.ComponentPropsWithoutRef<'li'> & {
     href: string;
     title: string;
     description?: string;
+    target?: string;
   }) {
     return (
       <li {...props}>
         <NavigationMenuLink asChild>
-          <Link href={href} className="grid grid-cols-[auto_1fr] gap-3.5">
-            <div className="bg-background ring-foreground/10 relative flex size-9 items-center justify-center rounded border border-transparent shadow shadow-sm ring-1">
+          <Link
+            href={href}
+            target={target || '_self'}
+            className="grid grid-cols-[auto_1fr] gap-3.5"
+          >
+            <div className="bg-background ring-foreground/10 relative flex size-9 items-center justify-center rounded border border-transparent shadow-sm ring-1">
               {children}
             </div>
             <div className="space-y-0.5">

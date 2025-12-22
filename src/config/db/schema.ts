@@ -2,12 +2,24 @@ import {
   boolean,
   index,
   integer,
+  pgSchema,
   pgTable,
   text,
   timestamp,
 } from 'drizzle-orm/pg-core';
 
-export const user = pgTable(
+import { envConfigs } from '@/config';
+
+const schemaName = (envConfigs.db_schema || 'public').trim();
+// Drizzle forbids pgSchema('public'); for public schema use pgTable().
+// For non-public schema (e.g. 'web'), use pgSchema(name).table() to generate "schema"."table".
+const customSchema =
+  schemaName && schemaName !== 'public' ? pgSchema(schemaName) : null;
+const table: typeof pgTable = customSchema
+  ? (customSchema.table.bind(customSchema) as unknown as typeof pgTable)
+  : pgTable;
+
+export const user = table(
   'user',
   {
     id: text('id').primaryKey(),
@@ -33,7 +45,7 @@ export const user = pgTable(
   ]
 );
 
-export const session = pgTable(
+export const session = table(
   'session',
   {
     id: text('id').primaryKey(),
@@ -56,7 +68,7 @@ export const session = pgTable(
   ]
 );
 
-export const account = pgTable(
+export const account = table(
   'account',
   {
     id: text('id').primaryKey(),
@@ -86,7 +98,7 @@ export const account = pgTable(
   ]
 );
 
-export const verification = pgTable(
+export const verification = table(
   'verification',
   {
     id: text('id').primaryKey(),
@@ -105,12 +117,12 @@ export const verification = pgTable(
   ]
 );
 
-export const config = pgTable('config', {
+export const config = table('config', {
   name: text('name').unique().notNull(),
   value: text('value'),
 });
 
-export const taxonomy = pgTable(
+export const taxonomy = table(
   'taxonomy',
   {
     id: text('id').primaryKey(),
@@ -139,7 +151,7 @@ export const taxonomy = pgTable(
   ]
 );
 
-export const post = pgTable(
+export const post = table(
   'post',
   {
     id: text('id').primaryKey(),
@@ -172,7 +184,7 @@ export const post = pgTable(
   ]
 );
 
-export const order = pgTable(
+export const order = table(
   'order',
   {
     id: text('id').primaryKey(),
@@ -240,7 +252,7 @@ export const order = pgTable(
   ]
 );
 
-export const subscription = pgTable(
+export const subscription = table(
   'subscription',
   {
     id: text('id').primaryKey(),
@@ -298,7 +310,7 @@ export const subscription = pgTable(
   ]
 );
 
-export const credit = pgTable(
+export const credit = table(
   'credit',
   {
     id: text('id').primaryKey(),
@@ -343,7 +355,7 @@ export const credit = pgTable(
   ]
 );
 
-export const apikey = pgTable(
+export const apikey = table(
   'apikey',
   {
     id: text('id').primaryKey(),
@@ -370,7 +382,7 @@ export const apikey = pgTable(
 );
 
 // RBAC Tables
-export const role = pgTable(
+export const role = table(
   'role',
   {
     id: text('id').primaryKey(),
@@ -390,7 +402,7 @@ export const role = pgTable(
   ]
 );
 
-export const permission = pgTable(
+export const permission = table(
   'permission',
   {
     id: text('id').primaryKey(),
@@ -411,7 +423,7 @@ export const permission = pgTable(
   ]
 );
 
-export const rolePermission = pgTable(
+export const rolePermission = table(
   'role_permission',
   {
     id: text('id').primaryKey(),
@@ -437,7 +449,7 @@ export const rolePermission = pgTable(
   ]
 );
 
-export const userRole = pgTable(
+export const userRole = table(
   'user_role',
   {
     id: text('id').primaryKey(),
@@ -460,7 +472,7 @@ export const userRole = pgTable(
   ]
 );
 
-export const aiTask = pgTable(
+export const aiTask = table(
   'ai_task',
   {
     id: text('id').primaryKey(),
@@ -495,7 +507,7 @@ export const aiTask = pgTable(
   ]
 );
 
-export const chat = pgTable(
+export const chat = table(
   'chat',
   {
     id: text('id').primaryKey(),
@@ -517,7 +529,7 @@ export const chat = pgTable(
   (table) => [index('idx_chat_user_status').on(table.userId, table.status)]
 );
 
-export const chatMessage = pgTable(
+export const chatMessage = table(
   'chat_message',
   {
     id: text('id').primaryKey(),

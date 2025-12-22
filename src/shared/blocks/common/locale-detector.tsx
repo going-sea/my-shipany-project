@@ -5,6 +5,7 @@ import { X } from 'lucide-react';
 import { useLocale } from 'next-intl';
 
 import { usePathname, useRouter } from '@/core/i18n/navigation';
+import { envConfigs } from '@/config';
 import { localeNames, locales } from '@/config/locale';
 import { Button } from '@/shared/components/ui/button';
 import { cacheGet, cacheSet } from '@/shared/lib/cache';
@@ -15,11 +16,16 @@ const DISMISSED_EXPIRY_DAYS = 1; // Expiry in days
 const PREFERRED_LOCALE_KEY = 'locale';
 
 export function LocaleDetector() {
+  if (envConfigs.locale_detect_enabled !== 'true') {
+    return null;
+  }
+
   const currentLocale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
   const [showBanner, setShowBanner] = useState(false);
   const [browserLocale, setBrowserLocale] = useState<string | null>(null);
+  const [bannerHeight, setBannerHeight] = useState(0);
   const bannerRef = useRef<HTMLDivElement>(null);
   const hasCheckedRef = useRef(false);
 
@@ -99,10 +105,12 @@ export function LocaleDetector() {
     }
   }, [currentLocale, switchToLocale]);
 
-  // Adjust header and main content position when banner is shown
+  // Adjust header and layout spacing when banner visibility changes
   useEffect(() => {
     if (showBanner && bannerRef.current) {
       const bannerHeight = bannerRef.current.offsetHeight;
+
+      setBannerHeight(bannerHeight);
 
       // Adjust header if exists
       const header = document.querySelector('header');
@@ -127,6 +135,8 @@ export function LocaleDetector() {
       if (sidebarWrapper) {
         (sidebarWrapper as HTMLElement).style.paddingTop = `${bannerHeight}px`;
       }
+    } else {
+      setBannerHeight(0);
     }
 
     return () => {
@@ -153,6 +163,30 @@ export function LocaleDetector() {
     };
   }, [showBanner]);
 
+  useEffect(() => {
+    if (!showBanner || !bannerRef.current) {
+      return;
+    }
+
+    const updateHeight = () => {
+      if (bannerRef.current) {
+        setBannerHeight(bannerRef.current.offsetHeight);
+      }
+    };
+
+    updateHeight();
+
+    const resizeObserver = new ResizeObserver(updateHeight);
+    resizeObserver.observe(bannerRef.current);
+
+    window.addEventListener('resize', updateHeight);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateHeight);
+    };
+  }, [showBanner]);
+
   const handleSwitch = () => {
     if (browserLocale) {
       switchToLocale(browserLocale);
@@ -162,6 +196,7 @@ export function LocaleDetector() {
   const handleDismiss = () => {
     setDismissed();
     setShowBanner(false);
+    setBannerHeight(0);
 
     // Reset header position
     const header = document.querySelector('header');
@@ -187,46 +222,53 @@ export function LocaleDetector() {
     }
   };
 
+  const targetLocaleName =
+    localeNames[browserLocale as keyof typeof localeNames] || browserLocale;
+
   if (!showBanner || !browserLocale) {
     return null;
   }
 
-  const targetLocaleName =
-    localeNames[browserLocale as keyof typeof localeNames] || browserLocale;
-
   return (
-    <div
-      ref={bannerRef}
-      className="from-primary to-primary/80 text-primary-foreground fixed top-0 right-0 left-0 z-[51] bg-gradient-to-r shadow-lg"
-    >
-      <div className="container py-2.5">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex flex-1 items-center gap-3">
-            <span className="text-sm">
-              {browserLocale === 'zh'
-                ? `检测到浏览器语言是: ${targetLocaleName}，是否切换？`
-                : `We detected your browser language is ${targetLocaleName}. Switch to it?`}
-            </span>
-          </div>
-          <div className="flex flex-shrink-0 items-center gap-2">
-            <Button
-              onClick={handleSwitch}
-              variant="secondary"
-              size="sm"
-              className="bg-background text-xs"
-            >
-              {browserLocale === 'zh' ? '切换到中文' : 'Switch'}
-            </Button>
-            <button
-              onClick={handleDismiss}
-              className="bg-primary/10 flex-shrink-0 rounded p-1 transition-colors"
-              aria-label="Close"
-            >
-              <X className="h-4 w-4" />
-            </button>
+    <>
+      <div
+        ref={bannerRef}
+        className="from-primary to-primary/80 text-primary-foreground fixed top-0 right-0 left-0 z-[51] hidden bg-gradient-to-r shadow-lg md:block"
+      >
+        <div className="container py-2.5">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-1 items-center gap-3">
+              <span className="text-sm">
+                {browserLocale === 'zh'
+                  ? `检测到浏览器语言是: ${targetLocaleName}，是否切换？`
+                  : `We detected your browser language is ${targetLocaleName}. Switch to it?`}
+              </span>
+            </div>
+            <div className="flex flex-shrink-0 items-center gap-2">
+              <Button
+                onClick={handleSwitch}
+                variant="secondary"
+                size="sm"
+                className="bg-background text-xs"
+              >
+                {browserLocale === 'zh' ? '切换到中文' : 'Switch'}
+              </Button>
+              <button
+                onClick={handleDismiss}
+                className="bg-primary/10 flex-shrink-0 rounded p-1 transition-colors"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      <div
+        aria-hidden="true"
+        style={{ height: bannerHeight }}
+        className="pointer-events-none"
+      />
+    </>
   );
 }

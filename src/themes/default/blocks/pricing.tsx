@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Check, Lightbulb, Loader2, SendHorizonal, Zap } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -77,16 +77,17 @@ function getInitialCurrency(
 }
 
 export function Pricing({
-  pricing,
+  section,
   className,
   currentSubscription,
 }: {
-  pricing: PricingType;
+  section: PricingType;
   className?: string;
   currentSubscription?: Subscription;
 }) {
   const locale = useLocale();
-  const t = useTranslations('pricing.page');
+  const t = useTranslations('pages.pricing.messages');
+
   const {
     user,
     isShowPaymentModal,
@@ -97,15 +98,15 @@ export function Pricing({
 
   const [group, setGroup] = useState(() => {
     // find current pricing item
-    const currentItem = pricing.items?.find(
+    const currentItem = section.items?.find(
       (i) => i.product_id === currentSubscription?.productId
     );
 
     // First look for a group with is_featured set to true
-    const featuredGroup = pricing.groups?.find((g) => g.is_featured);
+    const featuredGroup = section.groups?.find((g) => g.is_featured);
     // If no featured group exists, fall back to the first group
     return (
-      currentItem?.group || featuredGroup?.name || pricing.groups?.[0]?.name
+      currentItem?.group || featuredGroup?.name || section.groups?.[0]?.name
     );
   });
 
@@ -123,13 +124,13 @@ export function Pricing({
 
   // Initialize currency states for all items
   useEffect(() => {
-    if (pricing.items && pricing.items.length > 0) {
+    if (section.items && section.items.length > 0) {
       const initialCurrencyStates: Record<
         string,
         { selectedCurrency: string; displayedItem: PricingItem }
       > = {};
 
-      pricing.items.forEach((item) => {
+      section.items.forEach((item) => {
         const currencies = getCurrenciesFromItem(item);
         const selectedCurrency = getInitialCurrency(
           currencies,
@@ -165,11 +166,11 @@ export function Pricing({
 
       setItemCurrencies(initialCurrencyStates);
     }
-  }, [pricing.items, locale]);
+  }, [section.items, locale]);
 
   // Handler for currency change
   const handleCurrencyChange = (productId: string, currency: string) => {
-    const item = pricing.items?.find((i) => i.product_id === productId);
+    const item = section.items?.find((i) => i.product_id === productId);
     if (!item) return;
 
     const currencies = getCurrenciesFromItem(item);
@@ -316,36 +317,36 @@ export function Pricing({
   };
 
   useEffect(() => {
-    if (pricing.items) {
-      const featuredItem = pricing.items.find((i) => i.is_featured);
-      setProductId(featuredItem?.product_id || pricing.items[0]?.product_id);
+    if (section.items) {
+      const featuredItem = section.items.find((i) => i.is_featured);
+      setProductId(featuredItem?.product_id || section.items[0]?.product_id);
       setIsLoading(false);
     }
-  }, [pricing.items]);
+  }, [section.items]);
 
   return (
     <section
-      id={pricing.id}
-      className={cn('py-24 md:py-36', pricing.className, className)}
+      id={section.id}
+      className={cn('py-24 md:py-36', section.className, className)}
     >
       <div className="mx-auto mb-12 px-4 text-center md:px-8">
-        {pricing.sr_only_title && (
-          <h1 className="sr-only">{pricing.sr_only_title}</h1>
+        {section.sr_only_title && (
+          <h1 className="sr-only">{section.sr_only_title}</h1>
         )}
         <h2 className="mb-6 text-3xl font-bold text-pretty lg:text-4xl">
-          {pricing.title}
+          {section.title}
         </h2>
         <p className="text-muted-foreground mx-auto mb-4 max-w-xl lg:max-w-none lg:text-lg">
-          {pricing.description}
+          {section.description}
         </p>
       </div>
 
       <div className="container">
-        {pricing.groups && pricing.groups.length > 0 && (
+        {section.groups && section.groups.length > 0 && (
           <div className="mx-auto mt-8 mb-16 flex w-full justify-center md:max-w-lg">
             <Tabs value={group} onValueChange={setGroup} className="">
               <TabsList>
-                {pricing.groups.map((item, i) => {
+                {section.groups.map((item, i) => {
                   return (
                     <TabsTrigger key={i} value={item.name || ''}>
                       {item.title}
@@ -362,11 +363,11 @@ export function Pricing({
 
         <div
           className={`mx-auto mt-0 grid w-full gap-6 md:grid-cols-${
-            pricing.items?.filter((item) => !item.group || item.group === group)
+            section.items?.filter((item) => !item.group || item.group === group)
               ?.length
           }`}
         >
-          {pricing.items?.map((item: PricingItem, idx) => {
+          {section.items?.map((item: PricingItem, idx) => {
             if (item.group && item.group !== group) {
               return null;
             }

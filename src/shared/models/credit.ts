@@ -297,27 +297,32 @@ export async function consumeCredits({
 
 // get remaining credits
 export async function getRemainingCredits(userId: string): Promise<number> {
-  const currentTime = new Date();
+  try {
+    const currentTime = new Date();
 
-  const [result] = await db()
-    .select({
-      total: sum(credit.remainingCredits),
-    })
-    .from(credit)
-    .where(
-      and(
-        eq(credit.userId, userId),
-        eq(credit.transactionType, CreditTransactionType.GRANT),
-        eq(credit.status, CreditStatus.ACTIVE),
-        gt(credit.remainingCredits, 0),
-        or(
-          isNull(credit.expiresAt), // Never expires
-          gt(credit.expiresAt, currentTime) // Not yet expired
+    const [result] = await db()
+      .select({
+        total: sum(credit.remainingCredits),
+      })
+      .from(credit)
+      .where(
+        and(
+          eq(credit.userId, userId),
+          eq(credit.transactionType, CreditTransactionType.GRANT),
+          eq(credit.status, CreditStatus.ACTIVE),
+          gt(credit.remainingCredits, 0),
+          or(
+            isNull(credit.expiresAt), // Never expires
+            gt(credit.expiresAt, currentTime) // Not yet expired
+          )
         )
-      )
-    );
+      );
 
-  return parseInt(result?.total || '0');
+    return parseInt(result?.total || '0');
+  } catch (error) {
+    console.error('Error getting remaining credits:', error);
+    return 0;
+  }
 }
 
 // grant credits for new user

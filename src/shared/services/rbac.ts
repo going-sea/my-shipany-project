@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { and, eq, gt, inArray, isNull } from 'drizzle-orm';
+import { and, eq, gt, inArray, isNull, or } from 'drizzle-orm';
 
 import { db } from '@/core/db';
 import { permission, role, rolePermission, userRole } from '@/config/db/schema';
@@ -235,7 +235,7 @@ export const getUserRoles = cache(async (userId: string): Promise<Role[]> => {
         eq(role.status, RoleStatus.ACTIVE),
         // Check if role is not expired
         // Either expiresAt is null or expiresAt > now
-        isNull(userRole.expiresAt) || gt(userRole.expiresAt, now)
+        or(isNull(userRole.expiresAt), gt(userRole.expiresAt, now))
       )
     );
 

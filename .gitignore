@@ -54,7 +54,7 @@ wrangler.toml
 .wrangler
 src/shared/types/cloudflare.d.ts
 
-src/config/db/migrations
+src/config/db/migrations*
 
 .debug 
 .test
