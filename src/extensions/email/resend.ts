@@ -1,3 +1,4 @@
+import { render } from '@react-email/components';
 import { Resend, type CreateEmailOptions } from 'resend';
 
 import type {
@@ -74,8 +75,9 @@ export class ResendProvider implements EmailProvider {
       }
 
       if (email.react) {
-        console.log('resend email react', email.react);
-        resendEmail.react = email.react;
+        // Explicitly render React to HTML for better compatibility (especially on Edge/Workers)
+        const html = await render(email.react);
+        resendEmail.html = html;
       }
 
       const result = await this.client.emails.send(

@@ -694,8 +694,8 @@ export async function getSettings() {
     {
       name: 'resend_sender_email',
       title: 'Resend Sender Email',
-      type: 'email',
-      placeholder: '',
+      type: 'text',
+      placeholder: 'ShipAny Two <no-reply@mail.shipany.site>',
       group: 'resend',
       tab: 'email',
     },

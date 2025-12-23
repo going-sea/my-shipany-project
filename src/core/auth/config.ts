@@ -184,7 +184,7 @@ export async function getAuthOptions(configs: Record<string, string>) {
                   ? envConfigs.app_logo
                   : `${envConfigs.app_url}${envConfigs.app_logo?.startsWith('/') ? '' : '/'}${envConfigs.app_logo || ''}`;
                 // Avoid blocking auth response on email sending.
-                void emailService.sendEmail({
+                await emailService.sendEmail({
                   to: user.email,
                   subject: `Verify your email - ${envConfigs.app_name}`,
                   react: VerifyEmail({
