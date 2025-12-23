@@ -70,6 +70,10 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
     showOneTap,
   } = useAppContext();
 
+  useEffect(() => {
+    fetchConfigs();
+  }, []);
+
   // set is check sign
   useEffect(() => {
     if (!hasMounted) {
@@ -83,10 +87,6 @@ export function SidebarUser({ user }: { user: SidebarUserType }) {
   useEffect(() => {
     if (!hasMounted) {
       return;
-    }
-
-    if (!isPending && !Object.values(configs).length) {
-      fetchConfigs();
     }
 
     if (

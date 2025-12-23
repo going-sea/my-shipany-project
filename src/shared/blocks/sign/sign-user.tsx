@@ -74,6 +74,10 @@ export function SignUser({
   // one tap initialized
   const oneTapInitialized = useRef(false);
 
+  useEffect(() => {
+    fetchConfigs();
+  }, []);
+
   // set is check sign
   useEffect(() => {
     setIsCheckSign(isPending);
@@ -81,10 +85,6 @@ export function SignUser({
 
   // show one tap if not initialized
   useEffect(() => {
-    if (!isPending && !Object.values(configs).length) {
-      fetchConfigs();
-    }
-
     if (
       configs &&
       configs.google_client_id &&
