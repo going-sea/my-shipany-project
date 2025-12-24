@@ -238,6 +238,8 @@ export function getDatabaseProvider(
   switch (provider) {
     case 'sqlite':
       return 'sqlite';
+    case 'turso':
+      return 'sqlite';
     case 'postgresql':
       return 'pg';
     case 'mysql':

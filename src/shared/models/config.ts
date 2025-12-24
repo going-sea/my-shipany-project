@@ -17,7 +17,7 @@ export type Configs = Record<string, string>;
 export const CACHE_TAG_CONFIGS = 'configs';
 
 export async function saveConfigs(configs: Record<string, string>) {
-  const result = await db().transaction(async (tx) => {
+  const result = await db().transaction(async (tx: any) => {
     const configEntries = Object.entries(configs);
     const results: any[] = [];
 

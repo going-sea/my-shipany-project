@@ -31,7 +31,9 @@ export const envConfigs: ConfigMap = {
   appearance: process.env.NEXT_PUBLIC_APPEARANCE ?? 'system',
   locale: process.env.NEXT_PUBLIC_DEFAULT_LOCALE ?? 'en',
   database_url: process.env.DATABASE_URL ?? '',
+  database_auth_token: process.env.DATABASE_AUTH_TOKEN ?? '',
   database_provider: process.env.DATABASE_PROVIDER ?? 'postgresql',
+  db_schema_file: process.env.DB_SCHEMA_FILE ?? './src/config/db/schema.ts',
   // PostgreSQL schema name (e.g. 'web'). Default: 'public'
   db_schema: process.env.DB_SCHEMA ?? 'public',
   // Drizzle migrations journal table name (avoid conflicts across projects)

@@ -395,7 +395,7 @@ export async function assignRolesToUser(
   userId: string,
   roleIds: string[]
 ): Promise<void> {
-  await db().transaction(async (tx) => {
+  await db().transaction(async (tx: any) => {
     await tx.delete(userRole).where(eq(userRole.userId, userId));
 
     if (roleIds.length > 0) {
@@ -419,7 +419,7 @@ export async function getUsersByRole(roleId: string): Promise<string[]> {
     .from(userRole)
     .where(eq(userRole.roleId, roleId));
 
-  return result.map((r) => r.userId);
+  return result.map((r: any) => r.userId);
 }
 
 export async function grantRoleForNewUser(user: User) {

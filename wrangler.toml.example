@@ -27,14 +27,10 @@ NEXT_PUBLIC_THEME = "default"
 NEXT_PUBLIC_APPEARANCE = "system"
 
 # database
-DATABASE_URL = ""
 DATABASE_PROVIDER = "postgresql"
+DATABASE_URL = ""
 DB_SINGLETON_ENABLED = "true"
 DB_MAX_CONNECTIONS = "1"
-DB_SCHEMA = "public"
-DB_MIGRATIONS_SCHEMA = "drizzle"
-DB_MIGRATIONS_TABLE = "__drizzle_migrations"
-DB_MIGRATIONS_OUT = "./src/config/db/migrations"
 
 # auth secret
 # openssl rand -base64 32
