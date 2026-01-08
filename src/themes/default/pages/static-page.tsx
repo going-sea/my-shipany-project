@@ -1,5 +1,5 @@
+import { getThemeBlock } from '@/core/theme';
 import { Post as PostType } from '@/shared/types/blocks/blog';
-import { PageDetail } from '@/themes/default/blocks';
 
 export default async function StaticPage({
   locale,
@@ -8,5 +8,7 @@ export default async function StaticPage({
   locale?: string;
   post: PostType;
 }) {
+  const PageDetail = await getThemeBlock('page-detail');
+
   return <PageDetail post={post} />;
 }
