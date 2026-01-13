@@ -1,0 +1,78 @@
+{
+  "page": {
+    "show_sections": [
+      "hero",
+      "terms"
+    ],
+    "sections": {
+      "hero": {
+        "id": "hero",
+        "title": "Terms of Service",
+        "description": "Last updated: January 13, 2026",
+        "background_image": {
+          "src": "/imgs/bg/tree.jpg",
+          "alt": "Terms of Service"
+        }
+      },
+      "terms": {
+        "id": "terms",
+        "title": "Terms of Service for ShipAny",
+        "description": "These Terms of Service govern your purchase, use, and deployment of the ShipAny NextJS boilerplate template and any related services provided by us.",
+        "items": [
+          {
+            "title": "Acceptance of Terms",
+            "content": "By purchasing, downloading, or using the ShipAny template, you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree to abide by these terms, please do not purchase or use the ShipAny template."
+          },
+          {
+            "title": "License Grant",
+            "content": "Upon purchase, ShipAny grants you a non-exclusive, non-transferable license to use the ShipAny template for the purpose of creating and deploying your own AI SaaS applications. You may modify the template code for your personal or commercial use, deploy multiple instances of your modified application, and distribute your final application to end users. You may not resell, redistribute, or provide the original ShipAny template code to third parties without explicit written permission."
+          },
+          {
+            "title": "Product Description",
+            "content": "ShipAny is a comprehensive NextJS boilerplate template designed specifically for building AI SaaS startups. The template includes production-ready components, authentication systems, payment integration, AI service integrations, database schemas, and deployment configurations to help you launch AI-powered applications rapidly."
+          },
+          {
+            "title": "User Accounts",
+            "content": "When you create an account with us, you must provide information that is accurate, complete, and current at all times. You are responsible for safeguarding the password and for all activities that occur under your account."
+          },
+          {
+            "title": "Intellectual Property",
+            "content": "The ShipAny template and all associated materials, including but not limited to code, documentation, designs, and graphics, are protected by copyright and other intellectual property laws. ShipAny retains all rights, title, and interest in the original template code and materials. Your license allows you to use and modify the template for your applications, but you may not claim ownership of the original ShipAny intellectual property."
+          },
+          {
+            "title": "Prohibited Uses",
+            "content": "You may not use the ShipAny template: for any unlawful purpose or to create applications that violate laws or regulations; to create competing products or services that directly compete with ShipAny; to reverse engineer, decompile, or disassemble the template code for purposes other than integration into your own applications; to remove or alter any copyright notices, trademarks, or other proprietary markings in the template."
+          },
+          {
+            "title": "Content",
+            "content": "Our service allows you to post, link, store, share and otherwise make available certain information, text, graphics, or other material. You are responsible for content that you post to the service, including its legality, reliability, and appropriateness."
+          },
+          {
+            "title": "Termination",
+            "content": "We may terminate or suspend your account and bar access to the service immediately, without prior notice or liability, under our sole discretion, for any reason whatsoever and without limitation, including but not limited to a breach of the Terms."
+          },
+          {
+            "title": "Limitation of Liability",
+            "content": "In no event shall ShipAny, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses."
+          },
+          {
+            "title": "Disclaimer",
+            "content": "The information on this website is provided on an 'as is' basis. To the fullest extent permitted by law, ShipAny excludes all representations, warranties, conditions and terms whether express or implied, statutory or otherwise."
+          },
+          {
+            "title": "Governing Law",
+            "content": "These Terms shall be interpreted and governed by the laws of the jurisdiction in which ShipAny operates, without regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights."
+          },
+          {
+            "title": "Changes to Terms",
+            "content": "We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision is material, we will try to provide at least 30 days notice prior to any new terms taking effect."
+          },
+          {
+            "title": "Contact Information",
+            "content": "If you have any questions about these Terms of Service, please contact us at support@shipany.ai or visit our website at https://shipany.ai."
+          }
+        ]
+      }
+    }
+  }
+}

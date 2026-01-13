@@ -2,10 +2,10 @@
   "header": {
     "id": "header",
     "brand": {
-      "title": "ShipAny Two",
+      "title": "Flux AI",
       "logo": {
-        "src": "/logo.png",
-        "alt": "ShipAny Two",
+        "src": "/logo-new.png",
+        "alt": "Flux AI Image Generator",
         "width": 100,
         "height": 100
       },
@@ -29,32 +29,32 @@
           "icon": "DollarSign"
         },
         {
-          "title": "AI",
+          "title": "AI Tools",
           "icon": "RiRobot2Line",
           "children": [
             {
-              "title": "AI Image Generator",
-              "description": "Use AI to generate images",
+              "title": "Flux AI Image Generator",
+              "description": "Generate stunning images with advanced AI",
               "url": "/ai-image-generator",
               "icon": "RiImage2Line"
             },
             {
-              "title": "AI Music Generator",
-              "description": "Use AI to generate music",
-              "url": "/ai-music-generator",
-              "icon": "RiMusic2Line"
+              "title": "Image Styles",
+              "description": "Choose from various artistic styles",
+              "url": "/styles",
+              "icon": "RiPaletteLine"
             },
             {
-              "title": "AI Video Generator",
-              "description": "Use AI to generate videos",
-              "url": "/ai-video-generator",
-              "icon": "RiVideoLine"
+              "title": "Gallery",
+              "description": "Explore AI-generated artwork",
+              "url": "/gallery",
+              "icon": "RiGalleryLine"
             },
             {
-              "title": "AI Chatbot",
-              "description": "Chat with AI chatbot",
-              "url": "/chat",
-              "icon": "RiMessage2Line"
+              "title": "API Access",
+              "description": "Integrate Flux AI into your applications",
+              "url": "/api",
+              "icon": "RiCodeLine"
             }
           ]
         },
@@ -107,17 +107,17 @@
     "show_theme": true,
     "show_locale": true,
     "topbanner": {
-      "text": "This website is a demo site for the ShipAny template. To purchase the ShipAny template, please visit the <a href='https://shipany.ai/pricing' class='text-orange-300' target='_blank'>ShipAny website</a>"
+      "text": "✨ Transform your ideas into stunning visuals with Flux AI - The most advanced AI image generator"
     }
   },
   "footer": {
     "id": "footer",
     "brand": {
-      "title": "ShipAny Two",
-      "description": "ShipAny is a NextJS boilerplate for building AI SaaS startups. Ship Fast with a variety of templates and components.",
+      "title": "Flux AI",
+      "description": "Flux AI is the most advanced AI image generator, creating stunning visuals from text prompts with cutting-edge technology and lightning-fast processing.",
       "logo": {
-        "src": "/logo.png",
-        "alt": "ShipAny Two",
+        "src": "/logo-new.png",
+        "alt": "Flux AI Image Generator",
         "width": 1024,
         "height": 1024
       },
@@ -126,7 +126,7 @@
     "nav": {
       "items": [
         {
-          "title": "About",
+          "title": "Product",
           "children": [
             {
               "title": "Features",
@@ -134,8 +134,8 @@
               "target": "_self"
             },
             {
-              "title": "Showcases",
-              "url": "/showcases",
+              "title": "Gallery",
+              "url": "/gallery",
               "target": "_self"
             },
             {
@@ -166,22 +166,22 @@
           ]
         },
         {
-          "title": "Friends",
+          "title": "Resources",
           "children": [
             {
-              "title": "ShipAny",
-              "url": "https://shipany.ai",
+              "title": "API Documentation",
+              "url": "/docs",
+              "target": "_self"
+            },
+            {
+              "title": "Community",
+              "url": "https://discord.gg/fluxai",
               "target": "_blank"
             },
             {
-              "title": "ThinkAny",
-              "url": "https://thinkany.ai",
-              "target": "_blank"
-            },
-            {
-              "title": "MCP.so",
-              "url": "https://mcp.so",
-              "target": "_blank"
+              "title": "Blog",
+              "url": "/blog",
+              "target": "_self"
             }
           ]
         }
@@ -192,25 +192,25 @@
         {
           "title": "X",
           "icon": "RiTwitterXFill",
-          "url": "https://x.com/your-app-name",
+          "url": "https://x.com/fluxai",
           "target": "_blank"
         },
         {
           "title": "Github",
           "icon": "Github",
-          "url": "https://github.com/your-app-name",
+          "url": "https://github.com/fluxai",
           "target": "_blank"
         },
         {
           "title": "Discord",
           "icon": "RiDiscordFill",
-          "url": "https://discord.gg/your-app-name",
+          "url": "https://discord.gg/fluxai",
           "target": "_blank"
         },
         {
           "title": "Email",
           "icon": "Mail",
-          "url": "mailto:support@your-domain.com",
+          "url": "mailto:support@fluxai.com",
           "target": "_self"
         }
       ]
