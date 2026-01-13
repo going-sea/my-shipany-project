@@ -4,7 +4,6 @@ import { Link } from '@/core/i18n/navigation';
 import { Brand as BrandType } from '@/shared/types/blocks/common';
 
 export function BrandLogo({ brand }: { brand: BrandType }) {
-  console.log('333 :>> ', brand);
   return (
     <Link
       href={brand.url || ''}
