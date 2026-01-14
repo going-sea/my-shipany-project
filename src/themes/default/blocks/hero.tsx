@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 
+
+
 import { Link } from '@/core/i18n/navigation';
 import { SmartIcon } from '@/shared/blocks/common';
 import { Button } from '@/shared/components/ui/button';
@@ -8,7 +10,10 @@ import { Highlighter } from '@/shared/components/ui/highlighter';
 import { cn } from '@/shared/lib/utils';
 import { Section } from '@/shared/types/blocks/landing';
 
+
+
 import { SocialAvatars } from './social-avatars';
+
 
 export function Hero({
   section,
@@ -32,7 +37,7 @@ export function Hero({
         className
       )}
     >
-      {section.announcement && (
+      {section.announcement && !section.announcement.disabled && (
         <Link
           href={section.announcement.url || ''}
           target={section.announcement.target || '_self'}
@@ -76,7 +81,7 @@ export function Hero({
           dangerouslySetInnerHTML={{ __html: section.description ?? '' }}
         />
 
-        {section.buttons && (
+        {/* {section.buttons && (
           <div className="flex items-center justify-center gap-4">
             {section.buttons.map((button, idx) => (
               <Button
@@ -93,21 +98,21 @@ export function Hero({
               </Button>
             ))}
           </div>
-        )}
+        )} */}
 
-        {section.tip && (
+        {/* {section.tip && (
           <p
             className="text-muted-foreground mt-6 block text-center text-sm"
             dangerouslySetInnerHTML={{ __html: section.tip ?? '' }}
           />
-        )}
+        )} */}
 
-        {section.show_avatars && (
+        {/* {section.show_avatars && (
           <SocialAvatars tip={section.avatars_tip || ''} />
-        )}
+        )} */}
       </div>
 
-      {(section.image?.src || section.image_invert?.src) && (
+      {/* {(section.image?.src || section.image_invert?.src) && (
         <div className="border-foreground/10 relative mt-8 border-y sm:mt-16">
           <div className="relative z-10 mx-auto max-w-6xl border-x px-3">
             <div className="border-x">
@@ -154,9 +159,9 @@ export function Hero({
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
-      {section.background_image?.src && (
+      {/* {section.background_image?.src && (
         <div className="absolute inset-0 -z-10 hidden h-full w-full overflow-hidden md:block">
           <div className="from-background/80 via-background/80 to-background absolute inset-0 z-10 bg-gradient-to-b" />
           <Image
@@ -170,7 +175,7 @@ export function Hero({
             unoptimized={section.background_image.src.startsWith('http')}
           />
         </div>
-      )}
+      )} */}
     </section>
   );
 }

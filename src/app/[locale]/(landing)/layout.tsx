@@ -1,12 +1,15 @@
 import { ReactNode } from 'react';
 import { getTranslations } from 'next-intl/server';
 
+
+
 import { getThemeLayout } from '@/core/theme';
 import { LocaleDetector, TopBanner } from '@/shared/blocks/common';
-import {
-  Footer as FooterType,
-  Header as HeaderType,
-} from '@/shared/types/blocks/landing';
+import { Footer as FooterType, Header as HeaderType } from '@/shared/types/blocks/landing';
+
+
+
+
 
 export default async function LandingLayout({
   children,

@@ -15,114 +15,403 @@
     "sections": {
       "hero": {
         "id": "hero",
-        "title": "Transform Your Ideas into Stunning Visuals with Flux AI",
-        "highlight_text": "Flux AI",
-        "description": "Flux AI is the most advanced AI image generator, creating breathtaking artwork from text prompts.<br/>Generate high-quality images in seconds with cutting-edge AI technology.",
+        "title": "Create Stunning AI Images from Text",
+        "highlight_text": "AI Images from Text",
+        "description": "Flux AI Image Generator transforms your words into breathtaking visuals instantly. From realistic photos to artistic masterpieces - generate unlimited images with advanced AI technology.",
         "announcement": {
-          "badge": "New",
-          "title": "🚀 Advanced AI Image Generation",
+          "disabled": true,
+          "badge": "Revolutionary",
+          "title": "🎨 World's Most Advanced Image Generator",
           "url": "/ai-image-generator"
         },
+        "tip": "⚡ Generate images in under 10 seconds",
         "buttons": [
           {
-            "title": "Start Generating",
+            "title": "Try Flux AI Now",
             "icon": "Zap",
             "url": "/ai-image-generator",
             "target": "_self",
             "variant": "default"
           },
           {
-            "title": "View Gallery",
-            "icon": "RiGalleryLine",
-            "url": "/gallery",
+            "title": "Explore Styles",
+            "icon": "RiPaletteLine",
+            "url": "/styles",
             "target": "_self",
             "variant": "outline"
           }
         ],
-        "show_avatars": false,
-        "show_award": false
+        "show_avatars": true,
+        "avatars_tip": "15,000+ artists & creators trust Flux AI",
+        "show_award": true,
+        "image": {
+          "src": "/imgs/features/landing-page.png",
+          "alt": "Flux AI Image Generator Hero",
+          "width": 1200,
+          "height": 800
+        },
+        "image_invert": {
+          "src": "/imgs/features/landing-page.png",
+          "alt": "Flux AI Image Generator Hero Dark",
+          "width": 1200,
+          "height": 800
+        },
+        "background_image": {
+          "src": "/imgs/bg/tree.jpg",
+          "alt": "Flux AI Background"
+        }
       },
-      "introduce": {
-        "block": "features-list",
-        "id": "introduce",
-        "title": "What is Flux AI",
-        "label": "About",
-        "description": "Flux AI is a cutting-edge AI image generator that transforms text descriptions into stunning, high-quality visuals using advanced machine learning algorithms.",
+      "logos": {
+        "disabled": true,
+        "id": "logos",
+        "title": "Powered by Next-Generation AI Technology",
         "items": [
           {
-            "title": "Advanced AI Models",
-            "description": "Powered by state-of-the-art AI technology that understands context, style, and artistic intent to generate unique images.",
-            "icon": "RiRobot2Line",
+            "title": "Flux AI Engine",
             "image": {
-              "src": "/imgs/features/1.png",
-              "alt": "Advanced AI Models"
+              "src": "/imgs/logos/nextjs.svg",
+              "alt": "Flux AI Engine"
             }
           },
           {
-            "title": "Lightning Fast Generation",
-            "description": "Generate high-quality images in seconds, not minutes. Experience the speed of next-generation AI processing.",
-            "icon": "RiZapFill",
+            "title": "4K Resolution",
             "image": {
-              "src": "/imgs/features/2.png",
-              "alt": "Fast Generation"
+              "src": "/imgs/logos/react.svg",
+              "alt": "4K Resolution Support"
             }
           },
           {
-            "title": "Multiple Art Styles",
-            "description": "Choose from various artistic styles including realistic, artistic, abstract, and more to match your creative vision.",
-            "icon": "RiPaletteFill",
+            "title": "Real-time Generation",
             "image": {
-              "src": "/imgs/features/3.png",
-              "alt": "Multiple Styles"
+              "src": "/imgs/logos/tailwindcss.svg",
+              "alt": "Real-time Generation"
+            }
+          },
+          {
+            "title": "Professional Quality",
+            "image": {
+              "src": "/imgs/logos/shadcn.svg",
+              "alt": "Professional Quality Output"
             }
           },
           {
             "title": "API Integration",
-            "description": "Seamlessly integrate Flux AI into your applications with our developer-friendly API and comprehensive documentation.",
-            "icon": "RiCodeFill",
+            "image": {
+              "src": "/imgs/logos/vercel.svg",
+              "alt": "API Integration Ready"
+            }
+          }
+        ]
+      },
+      "introduce": {
+        "disabled": true,
+        "block": "features-list",
+        "id": "introduce",
+        "title": "How Flux AI Image Generator Works",
+        "label": "AI-Powered Creation",
+        "description": "Flux AI Image Generator uses cutting-edge artificial intelligence to understand your text descriptions and convert them into high-quality, unique images. No design skills required - just describe what you want to see.",
+        "image": {
+          "src": "/imgs/features/landing-page.png",
+          "alt": "Flux AI Process"
+        },
+        "items": [
+          {
+            "title": "Natural Language Processing",
+            "description": "Advanced AI understands complex descriptions, styles, emotions, and artistic concepts to create exactly what you envision.",
+            "icon": "RiBrainLine",
+            "image": {
+              "src": "/imgs/features/1.png",
+              "alt": "NLP Technology"
+            }
+          },
+          {
+            "title": "Multiple AI Models",
+            "description": "Choose from Flux Pro, Flux Dev, and Flux Schnell models optimized for different quality and speed requirements.",
+            "icon": "RiRobot2Line",
+            "image": {
+              "src": "/imgs/features/2.png",
+              "alt": "Multiple Models"
+            }
+          },
+          {
+            "title": "Style Customization",
+            "description": "Transform your ideas with artistic styles, color palettes, lighting effects, and composition preferences.",
+            "icon": "RiPaletteFill",
+            "image": {
+              "src": "/imgs/features/3.png",
+              "alt": "Style Customization"
+            }
+          },
+          {
+            "title": "High-Resolution Output",
+            "description": "Generate images up to 4K resolution, perfect for print, web, social media, and professional presentations.",
+            "icon": "RiImageFill",
             "image": {
               "src": "/imgs/features/4.png",
-              "alt": "API Integration"
+              "alt": "High Resolution"
             }
           }
         ],
         "className": "bg-muted"
       },
-      "faq": {
-        "id": "faq",
-        "title": "Frequently Asked Questions About Flux AI",
-        "description": "Have another question? Contact us on Discord or by email.",
+      "benefits": {
+        "disabled": true,
+        "block": "features-accordion",
+        "id": "benefits",
+        "title": "Why Creators Choose Flux AI Image Generator",
+        "label": "Unmatched Advantages",
+        "description": "Experience the future of creative content generation with AI technology that delivers professional results in seconds, not hours.",
         "items": [
           {
-            "question": "What exactly is Flux AI and how does it work?",
-            "answer": "Flux AI is an advanced AI image generator that transforms text descriptions into high-quality, unique images using cutting-edge machine learning technology. Simply describe what you want to create, and Flux AI generates stunning visuals in seconds."
+            "title": "Instant Creative Output",
+            "description": "Transform ideas into visuals instantly. What used to take hours of design work now takes seconds with Flux AI.",
+            "icon": "RiZapFill",
+            "image": {
+              "src": "/imgs/features/user-billing.png",
+              "alt": "Instant Creation"
+            }
           },
           {
-            "question": "Do I need artistic skills to use Flux AI?",
-            "answer": "Not at all! Flux AI is designed for everyone - from professional artists to complete beginners. The AI handles the technical aspects of image creation, while you focus on describing your creative vision."
+            "title": "Professional Quality Results",
+            "description": "Generate images that rival professional photographers and digital artists, with exceptional detail and artistic quality.",
+            "icon": "RiStarFill",
+            "image": {
+              "src": "/imgs/features/admin-settings.png",
+              "alt": "Professional Quality"
+            }
           },
           {
-            "question": "What types of images can Flux AI generate?",
-            "answer": "Flux AI can generate a wide variety of images including realistic photos, artistic illustrations, abstract art, product visualizations, character designs, landscapes, and much more. The possibilities are virtually endless!"
-          },
-          {
-            "question": "How long does it take to generate an image?",
-            "answer": "Most images are generated in just 5-15 seconds! Our advanced AI infrastructure ensures lightning-fast processing while maintaining exceptional quality."
-          },
-          {
-            "question": "Can I use Flux AI for commercial purposes?",
-            "answer": "Yes! Images generated with Flux AI can be used for commercial purposes including marketing materials, social media content, product designs, and more. Check our terms of service for specific usage guidelines."
-          },
-          {
-            "question": "Is there an API available for developers?",
-            "answer": "Absolutely! Flux AI offers a comprehensive REST API that allows developers to integrate our image generation capabilities into their applications, websites, and workflows."
+            "title": "Limitless Creative Possibilities",
+            "description": "From photorealistic portraits to abstract art, fantasy worlds to product visualizations - create anything imaginable.",
+            "icon": "RiMagicFill",
+            "image": {
+              "src": "/imgs/features/landing-page.png",
+              "alt": "Limitless Creativity"
+            }
           }
         ]
       },
+      "usage": {
+        "block": "features-step",
+        "id": "usage",
+        "title": "Generate Your First AI Image in 3 Simple Steps",
+        "description": "Getting started with Flux AI Image Generator is incredibly easy. Follow these steps to create your first AI-generated masterpiece.",
+        "image": {
+          "src": "/imgs/features/1.png",
+          "alt": "Flux AI Usage Guide"
+        },
+        "image_position": "left",
+        "text_align": "center",
+        "items": [
+          {
+            "title": "Write Your Prompt",
+            "description": "Describe your image in detail. Include subject, style, mood, colors, and any specific elements you want to include. The more specific, the better the results!",
+            "image": {
+              "src": "/imgs/features/5.png",
+              "alt": "Write Prompt"
+            }
+          },
+          {
+            "title": "Choose AI Model & Style",
+            "description": "Select from our AI models (Flux Pro for highest quality, Flux Schnell for fastest generation) and pick your preferred artistic style.",
+            "image": {
+              "src": "/imgs/features/6.png",
+              "alt": "Select Model"
+            }
+          },
+          {
+            "title": "Generate & Download",
+            "description": "Click generate and watch as Flux AI creates your image in seconds. Download your high-resolution masterpiece and share it with the world!",
+            "image": {
+              "src": "/imgs/features/7.png",
+              "alt": "Generate & Download"
+            }
+          }
+        ],
+        "className": "bg-muted"
+      },
+      "features": {
+        "id": "features",
+        "title": "Advanced Features of Flux AI Image Generator",
+        "description": "Discover the powerful capabilities that make Flux AI the leading choice for AI image generation.",
+        "items": [
+          {
+            "title": "Text-to-Image Generation",
+            "description": "Convert any text description into stunning visuals with our advanced AI understanding.",
+            "icon": "RiText"
+          },
+          {
+            "title": "Negative Prompt Support",
+            "description": "Exclude unwanted elements from your images by specifying what you don't want to see.",
+            "icon": "RiSubtractLine"
+          },
+          {
+            "title": "Aspect Ratio Control",
+            "description": "Generate images in perfect proportions for social media, print, or any specific use case.",
+            "icon": "RiRectangleLine"
+          },
+          {
+            "title": "Batch Image Generation",
+            "description": "Create multiple variations of your prompt simultaneously to explore different creative directions.",
+            "icon": "RiStackFill"
+          },
+          {
+            "title": "Commercial License",
+            "description": "Use generated images for commercial purposes with confidence - no hidden restrictions.",
+            "icon": "RiShieldCheckLine"
+          },
+          {
+            "title": "API Access",
+            "description": "Integrate Flux AI into your applications with our comprehensive REST API and developer tools.",
+            "icon": "RiCodeFill"
+          }
+        ]
+      },
+      "stats": {
+        "disabled": true,
+        "id": "stats",
+        "title": "Join Millions of Creators Using AI Image Generation",
+        "description": "Flux AI Image Generator is trusted by creators worldwide for professional-quality results.",
+        "items": [
+          {
+            "title": "2M+",
+            "description": "Images Generated Daily"
+          },
+          {
+            "title": "500K+",
+            "description": "Active Creators"
+          },
+          {
+            "title": "4.9/5",
+            "description": "Average User Rating"
+          }
+        ],
+        "className": "bg-muted"
+      },
+      "testimonials": {
+        "disabled": true,
+        "id": "testimonials",
+        "title": "What Creators Say About Flux AI Image Generator",
+        "description": "Real stories from artists, designers, and content creators who have transformed their creative workflow.",
+        "items": [
+          {
+            "name": "Alexandra Chen",
+            "role": "Digital Artist & Illustrator",
+            "quote": "Flux AI Image Generator has completely revolutionized my creative process. I can now visualize ideas instantly and iterate on concepts that would have taken days to sketch by hand. The quality is absolutely stunning!",
+            "image": {
+              "src": "/imgs/avatars/1.png",
+              "alt": "Alexandra Chen"
+            }
+          },
+          {
+            "name": "Marcus Rodriguez",
+            "role": "Social Media Manager",
+            "quote": "As someone who creates content for multiple brands, Flux AI saves me hours every week. The variety of styles and lightning-fast generation means I can create unique visuals for every client, every day.",
+            "image": {
+              "src": "/imgs/avatars/2.png",
+              "alt": "Marcus Rodriguez"
+            }
+          },
+          {
+            "name": "Sarah Kim",
+            "role": "Product Photographer",
+            "quote": "The photorealistic quality of Flux AI images is incredible. I use it to create product mockups and lifestyle shots that look professional enough to fool clients into thinking they're real photographs!",
+            "image": {
+              "src": "/imgs/avatars/3.png",
+              "alt": "Sarah Kim"
+            }
+          },
+          {
+            "name": "David Thompson",
+            "role": "Game Concept Artist",
+            "quote": "Flux AI Image Generator is perfect for rapid prototyping in game development. I can quickly visualize environments, characters, and concepts before investing time in detailed artwork.",
+            "image": {
+              "src": "/imgs/avatars/4.png",
+              "alt": "David Thompson"
+            }
+          },
+          {
+            "name": "Emma Watson",
+            "role": "Marketing Director",
+            "quote": "Our content creation workflow has improved dramatically with Flux AI. We can now generate custom visuals for campaigns, social media, and presentations in minutes instead of days.",
+            "image": {
+              "src": "/imgs/avatars/5.png",
+              "alt": "Emma Watson"
+            }
+          },
+          {
+            "name": "James Liu",
+            "role": "Freelance Designer",
+            "quote": "I've tried every AI image generator out there, and Flux AI consistently produces the highest quality results. The attention to detail and artistic understanding is unmatched.",
+            "image": {
+              "src": "/imgs/avatars/6.png",
+              "alt": "James Liu"
+            }
+          }
+        ]
+      },
+      "faq": {
+        "id": "faq",
+        "title": "Frequently Asked Questions About Flux AI Image Generator",
+        "description": "Get answers to common questions about our AI-powered image generation platform.",
+        "items": [
+          {
+            "question": "How does Flux AI Image Generator work?",
+            "answer": "Flux AI uses advanced machine learning models trained on millions of images to understand text descriptions and generate corresponding visuals. Simply enter a detailed prompt, and our AI creates a unique image in seconds."
+          },
+          {
+            "question": "What makes Flux AI different from other image generators?",
+            "answer": "Flux AI offers superior image quality, faster generation speeds, more artistic style options, and better understanding of complex prompts. Our models are specifically trained for creative and professional use cases."
+          },
+          {
+            "question": "Can I use generated images for commercial purposes?",
+            "answer": "Yes! All images generated with Flux AI come with commercial usage rights. You can use them in marketing materials, products, websites, social media, and any other commercial applications without restrictions."
+          },
+          {
+            "question": "How long does it take to generate an image?",
+            "answer": "Generation times vary by model: Flux Schnell creates images in 5-10 seconds, Flux Dev in 10-20 seconds, and Flux Pro (highest quality) in 20-30 seconds. Premium plans offer priority processing for even faster results."
+          },
+          {
+            "question": "What types of images can I create?",
+            "answer": "You can generate virtually any type of image: realistic photos, artistic illustrations, abstract art, fantasy scenes, product visualizations, character designs, landscapes, architecture, and much more. The only limit is your imagination!"
+          },
+          {
+            "question": "Do I need design skills to use Flux AI?",
+            "answer": "Not at all! Flux AI is designed for everyone, from complete beginners to professional artists. The better your text description, the better the results, but you don't need any technical art or design knowledge."
+          },
+          {
+            "question": "Is there an API available for developers?",
+            "answer": "Yes! We offer a comprehensive REST API that allows developers to integrate Flux AI image generation into their applications, websites, and workflows. Check our developer documentation for details."
+          }
+        ]
+      },
+      "cta": {
+        "disabled": true,
+        "id": "cta",
+        "title": "Ready to Create Amazing AI Images?",
+        "description": "Join thousands of creators who are already using Flux AI Image Generator to bring their ideas to life. Start creating stunning visuals today!",
+        "buttons": [
+          {
+            "title": "Start Creating Free",
+            "url": "/ai-image-generator",
+            "target": "_self",
+            "icon": "Zap"
+          },
+          {
+            "title": "View Examples",
+            "url": "/gallery",
+            "target": "_self",
+            "variant": "outline",
+            "icon": "RiGalleryLine"
+          }
+        ],
+        "className": "bg-muted"
+      },
       "subscribe": {
+        "disabled": true,
         "id": "subscribe",
-        "title": "Subscribe to our newsletter",
-        "description": "Get the latest news and updates from ShipAny.",
+        "title": "Stay Updated with Flux AI",
+        "description": "Get the latest updates on AI image generation technology and new features.",
         "submit": {
           "input": {
             "placeholder": "Enter your email"
