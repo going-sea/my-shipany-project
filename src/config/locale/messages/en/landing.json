@@ -88,6 +88,7 @@
     "buttons": [],
     "user_nav": {
       "show_name": true,
+      "show_email": true,
       "show_credits": true,
       "show_sign_out": true,
       "items": [

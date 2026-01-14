@@ -2,31 +2,26 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Fragment } from 'react/jsx-runtime';
-import { Coins, LayoutDashboard, Loader2, LogOut, User } from 'lucide-react';
+import { Coins, LayoutDashboard, Loader2, LogOut, Mail, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+
+
 
 import { authClient, signOut, useSession } from '@/core/auth/client';
 import { Link, useRouter } from '@/core/i18n/navigation';
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@/shared/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/shared/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/shared/components/ui/dropdown-menu';
 import { useAppContext } from '@/shared/contexts/app';
 import { cn } from '@/shared/lib/utils';
 import { User as UserType } from '@/shared/models/user';
 import { NavItem, UserNav } from '@/shared/types/blocks/common';
 
+
+
 import { SmartIcon } from '../common/smart-icon';
 import { SignModal } from './sign-modal';
+
 
 function extractSessionUser(data: any): UserType | null {
   const u = data?.user ?? data?.data?.user ?? null;
@@ -173,7 +168,20 @@ export function SignUser({
                 <DropdownMenuSeparator />
               </>
             )}
-
+            {userNav?.show_email && (
+              <>
+                <DropdownMenuItem asChild>
+                  <Link
+                    className="w-full cursor-pointer"
+                    href="/settings/profile"
+                  >
+                    <Mail />
+                    {displayUser.email}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
             {userNav?.show_credits && (
               <>
                 <DropdownMenuItem asChild>

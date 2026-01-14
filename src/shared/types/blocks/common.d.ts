@@ -86,6 +86,7 @@ export interface AgreementNav extends Nav {}
 // user props for user menu component
 export interface UserNav extends Nav {
   show_name?: boolean;
+  show_email?: boolean;
   show_credits?: boolean;
   show_sign_out?: boolean;
 }
