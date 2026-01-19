@@ -2,6 +2,7 @@
   "page": {
     "show_sections": [
       "hero",
+      "wallpaper-generator",
       "logos",
       "introduce",
       "benefits",
@@ -60,6 +61,11 @@
           "src": "/imgs/bg/tree.jpg",
           "alt": "Flux AI Background"
         }
+      },
+      "wallpaper-generator": {
+        "id": "wallpaper-generator",
+        "title": "AI Wallpaper Generator",
+        "description": "Generate beautiful wallpapers with AI models"
       },
       "logos": {
         "disabled": true,
@@ -407,6 +413,7 @@
         ],
         "className": "bg-muted"
       },
+    
       "subscribe": {
         "disabled": true,
         "id": "subscribe",

@@ -2,6 +2,7 @@
   "page": {
     "show_sections": [
       "hero",
+      "wallpaper-generator",
       "logos",
       "introduce",
       "benefits",
@@ -60,6 +61,11 @@
           "src": "/imgs/bg/tree.jpg",
           "alt": "hero"
         }
+      },
+      "wallpaper-generator": {
+        "id": "wallpaper-generator",
+        "title": "AI 壁纸生成器",
+        "description": "输入描述文字，AI 将为您生成精美的壁纸图片"
       },
       "logos": {
         "disabled": true,
@@ -410,6 +416,7 @@
         ],
         "className": "bg-muted"
       },
+     
       "subscribe": {
         "disabled": true,
         "id": "subscribe",
