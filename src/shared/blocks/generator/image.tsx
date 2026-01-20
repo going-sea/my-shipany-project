@@ -74,6 +74,12 @@ const MAX_PROMPT_LENGTH = 2000;
 
 const MODEL_OPTIONS = [
   {
+    value: 'google/imagen-4',
+    label: 'imagen-4',
+    provider: 'replicate',
+    scenes: ['text-to-image'],
+  },
+  {
     value: 'google/nano-banana-pro',
     label: 'Nano Banana Pro',
     provider: 'replicate',
